@@ -6,7 +6,7 @@ MB Backoffice is a Node app written in Typescript.
 - Remix / React - Full stack client framework (https://remix.run)
   - Material UI - UI component library (https://mui.com) 
 - Prisma - Database ORM (https://prisma.io)
-- Fly.io - Cloud host used for deployment and as database host (https://fly.io)
+- Google Cloud
 - Database: PostgreSQL database hosted on Google Cloud
   - To access database a credentials file and a Cloud SQL Proxy is needed. The credentials file is downloaded from Google Cloud Console.
 
