@@ -90,7 +90,7 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --region=europe-north1 \
-            --image=eu.gcr.io/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/mb-backoffice:latest \
+            --image=eu.gcr.io/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/mb-backoffice2:latest \
             --service-account=${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT }} \
             --set-cloudsql-instances mb-backoffice:europe-north1:mb-backoffice-db \
             --set-secrets="DATABASE_URL=MB_BACKOFFICE__DEV__DATABASE_URL:latest" \
