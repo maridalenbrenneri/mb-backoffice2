@@ -94,4 +94,3 @@ jobs:
             --service-account=${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT }} \
             --set-cloudsql-instances maridalen-brenneri:europe-north1:mb-backoffice \
             --set-secrets="DATABASE_URL=MB_BACKOFFICE__DEV__DATABASE_URL:latest" \
-            --set-secrets="SESSION_SECRET=MB_BACKOFFICE__DEV__SESSION_SECRET:latest" \
