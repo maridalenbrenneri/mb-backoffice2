@@ -1,0 +1,170 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id    String @id @default(cuid())
+  email String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  password Password?
+}
+
+model Password {
+  hash String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
+}
+
+model Coffee {
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  status      String
+  productCode String
+  name        String
+  country     String
+
+  DeliveryCoffee1 Delivery[] @relation(name: "delivery_to_coffee_1")
+  DeliveryCoffee2 Delivery[] @relation(name: "delivery_to_coffee_2")
+  DeliveryCoffee3 Delivery[] @relation(name: "delivery_to_coffee_3")
+  DeliveryCoffee4 Delivery[] @relation(name: "delivery_to_coffee_4")
+}
+
+enum SubscriptionType {
+  PRIVATE
+  PRIVATE_GIFT
+  B2B
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  ON_HOLD
+  CANCELLED
+  COMPLETED
+  DELETED
+}
+
+enum SubscriptionFrequency {
+  MONTHLY
+  FORTNIGHTLY
+}
+
+model Subscription {
+  id Int @id @default(autoincrement())
+
+  orderDate DateTime @default(now())
+
+  type   SubscriptionType
+  status SubscriptionStatus
+
+  frequency    SubscriptionFrequency
+  quantity250  Int @default(0)
+  quantity500  Int @default(0)
+  quantity1200 Int @default(0)
+
+  recipientName    String
+  recipientEmail   String?
+  recipientMobile  String?
+  recipientAddress String?
+
+  customerNote String?
+  internalNote String?
+
+  wooSubscriptionId Int? @unique
+  wooCustomerId     Int?
+  wooUpdatedAt      DateTime?
+
+  fikenContactId Int? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  giftSubscription GiftSubscription?
+}
+
+model GiftSubscription {
+  id Int @id @default(autoincrement())
+
+  durationMonths              Int
+  originalFirstDeliveryDate   DateTime
+  firstDeliveryDate           DateTime
+  customerName                String
+  messageToRecipient          String?
+
+  wooOrderId            Int?
+  wooOrderLineItemId    String? @unique
+
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subscriptionId    Int? @unique
+}
+
+model Delivery {
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  date DateTime
+  type String
+
+  coffee1     Coffee? @relation(name: "delivery_to_coffee_1", fields: [coffee1Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  coffee1Id   Int?
+
+  coffee2     Coffee? @relation(name: "delivery_to_coffee_2", fields: [coffee2Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  coffee2Id   Int?
+
+  coffee3     Coffee? @relation(name: "delivery_to_coffee_3", fields: [coffee3Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  coffee3Id   Int?
+
+  coffee4     Coffee? @relation(name: "delivery_to_coffee_4", fields: [coffee4Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  coffee4Id   Int?
+}
+
+model WooImportResult {
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  result String
+}
+
+// export interface OrderItem {
+//   quantity: number;
+//   wooProductId: number;
+//   wooVariationId: number;
+// }
+
+// export interface Order {
+//   status: string;
+//   shippingName: string;
+//   shippingAddress1: string;
+//   shippingAddress2: string | undefined;
+//   shippingPostcode: string;
+//   shippingCity: undefined;
+//   shippingCountry: string | undefined;
+//   shippingEmail: string | undefined;
+//   shippingPhone: string | undefined;
+//   customerNote: string | undefined; // COMMENT FROM CUSTOMER - FOR REFERENCE
+//   specialRequest: string | undefined; // SPECIFIED BY US - WILL BE USED FOR FILTERING ORDERS THAT NEEDS SPECIAL HANDLING
+//   items: Array<OrderItem>;
+
+//   subscriptionRenewal: SUBSCRIPTION_VARIATIONS | null;
+
+//   wooId: number;
+//   wooCustomerId: number;
+//   wooStatus: string;
+//   wooCreatedDate: DateTime;
+//   wooUpdatedDate: DateTime;
+// }
