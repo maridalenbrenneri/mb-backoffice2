@@ -85,7 +85,7 @@ jobs:
         run: |
           export CLOUDSDK_CORE_DISABLE_PROMPTS=1
           gcloud run deploy mb-backoffice \
-            --command="PORT=8080 npm start" \
+            --command="npm start" \
             --project=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} \
             --platform=managed \
             --allow-unauthenticated \
