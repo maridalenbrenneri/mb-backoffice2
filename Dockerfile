@@ -26,4 +26,4 @@ RUN npx prisma generate
 
 EXPOSE 8080
 
-CMD npm start
+CMD PORT=8080 npm start
