@@ -90,9 +90,8 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --region=europe-north1 \
-            --image=eu.gcr.io/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/mb-backoffice:v.dev.${GITHUB_RUN_NUMBER} \
+            --image=eu.gcr.io/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/mb-backoffice:latest \
             --service-account=${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT }} \
             --set-cloudsql-instances mb-backoffice:europe-north1:mb-backoffice-db \
-            --set-env-vars="SYSTEM_VERSION=v.dev.${GITHUB_RUN_NUMBER}" \
             --set-secrets="DATABASE_URL=MB_BACKOFFICE__DEV__DATABASE_URL:latest" \
             --set-secrets="SESSION_SECRET=MB_BACKOFFICE__DEV__SESSION_SECRET:latest" \
