@@ -1,0 +1,7 @@
+*
+
+!build/*
+!public/*
+!node_modules/*
+!package.json
+!remix.config.js

@@ -59,10 +59,8 @@ jobs:
       - name: Docker build and push
         run: |
           docker build -t mb-backoffice .
-          docker tag mb-backoffice eu.gcr.io/mb-backoffice/mb-backoffice2:v.dev.$GITHUB_RUN_NUMBER
-          docker tag mb-backoffice eu.gcr.io/mb-backoffice/mb-backoffice2:git.$GITHUB_SHA
-          docker push eu.gcr.io/mb-backoffice/mb-backoffice2:v.dev.$GITHUB_RUN_NUMBER
-          docker push eu.gcr.io/mb-backoffice/mb-backoffice2:git.$GITHUB_SHA
+          docker tag mb-backoffice eu.gcr.io/mb-backoffice/mb-backoffice2:latest
+          docker push eu.gcr.io/mb-backoffice/mb-backoffice2:latest
 
   deploy:
     runs-on: ubuntu-latest
