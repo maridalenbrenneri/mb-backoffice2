@@ -7,7 +7,8 @@ MB Backoffice is a Node app written in Typescript.
   - Material UI - UI component library (https://mui.com) 
 - Prisma - Database ORM (https://prisma.io)
 - Fly.io - Cloud host used for deployment and as database host (https://fly.io)
-- Database: PostgreSQL database hosted on Fly.io
+- Database: PostgreSQL database hosted on Google Cloud
+  - To access database a credentials file and a Cloud SQL Proxy is needed. The credentials file is downloaded from Google Cloud Console.
 
 ## Integrations
   - Cargonizer
@@ -33,6 +34,34 @@ Start locally:
   Url: https://mb-app.fly.dev
 
 ### Database
+The databases are hosted in Cloud SQL in Google Cloud. To access them a credentials file and a SQL Proxy is needed.
+
+- The credential file can be downloaded from Google Cloud.
+
+#### Install SQL Proxy
+Example for MacOS, for other OS's see https://cloud.google.com/sql/docs/mysql/connect-admin-proxy#install
+
+Download SQL proxy and make it executable
+```sh
+curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd64
+
+chmod +x cloud_sql_proxy
+```
+
+#### Run SQL proxy
+```sh
+./cloud_sql_proxy -instances=mb-backoffice:europe-north1:mb-backoffice-db=tcp:7001 -credential_file=/Users/bjoda/_private/MB/gcloud/gcloud-mb-backoffice-access-key.json
+```
+
+Database is then available on localhost:7001
+
+We have two databases. Dev/Test: "mb_backoffice_dev" Production: "mb_backoffice_prod"
+
+Username:   postgres
+Password:   ### 
+Host:       localhost:7001
+
+
   Postgres app name: mb-pg
   
   Username:   postgres
@@ -41,12 +70,14 @@ Start locally:
   Proxy Port: 5432
   PG Port: 5433
 
-  We have two databases. Dev/Test: "mb_dev" Production: "mb_prod"
+  
 
 ### Start local database proxy
 ```sh
 flyctl proxy 5432 -a mb-pg
 ```
+
+
 
 ### Sync database with schema.prisma
 ```sh

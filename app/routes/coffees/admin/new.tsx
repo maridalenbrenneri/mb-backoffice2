@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 import { upsertAction } from "./_shared";
-import { Button, TextField } from "@mui/material";
+import { Button, FormControl, TextField } from "@mui/material";
 
 export const action: ActionFunction = async ({ request }) => {
   return await upsertAction(request);
@@ -20,40 +20,39 @@ export default function NewCoffee() {
     <Box 
       m={2}
       sx={{
-      "& .MuiTextField-root": { m: 1, width: "30ch" },
+      "& .MuiTextField-root": { m: 1, minWidth: 250 },
     }}>
       <Typography variant="h2">Create New Coffee</Typography>
       <Form method="post">
-        <div>
+        <FormControl>
           <TextField
             name="name"
             label="Name"
             variant="outlined"
             error={errors?.name}
           />
-        </div>
-        <div>
+        </FormControl>
+        <FormControl>
           <TextField
             name="productCode"
             label="Code"
             variant="outlined"
             error={errors?.productCode}
-            sx={{margin: 5}}
           />
-        </div>
-        <div>
+        </FormControl>
+        <FormControl>
           <TextField
             name="country"
             label="Country"
             variant="outlined"
             error={errors?.country}
           />
-        </div>
-        <div>
+        </FormControl>
+        <FormControl sx={{m: 1}}>
           <Button type="submit" disabled={isCreating}>
             {isCreating ? "Creating..." : "Create Coffee"}
           </Button>
-        </div>
+        </FormControl>
       </Form>
     </Box>
   );

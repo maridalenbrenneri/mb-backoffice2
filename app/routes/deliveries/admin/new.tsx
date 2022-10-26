@@ -63,50 +63,47 @@ export default function NewDelivery() {
       <Form method="post">
         <input type="hidden" name="delivery_date" value={deliveryDate.date.toString()} />
         <input type="hidden" name="delivery_type" value={deliveryDate.type} />
-        <div>
-          <FormControl sx={{margin: '10px'}}>
-            <InputLabel id="date-label">
-              Date
+
+        <FormControl sx={{m: 1}}>
+          <InputLabel id="date-label">
+            Date
+          </InputLabel>
+          <Select
+            labelId="date-label"
+            defaultValue={`${deliveryDates[0].id}`}
+            onChange={handleChange}>
+              {deliveryDates.map((date: DeliveryDate) => (
+                <MenuItem value={date.id} key={date.id}>
+                  {toPrettyDate(date.date)} - {date.type}
+                </MenuItem>
+              ))}
+          </Select>
+        </FormControl>
+
+        {[1, 2, 3, 4].map((coffeeNr: number) => (
+          <FormControl key={coffeeNr} sx={{m: 1}}>
+            <InputLabel id={`coffee-${coffeeNr}-label`}>
+              Coffee {coffeeNr}
             </InputLabel>
             <Select
-              labelId="date-label"
-              defaultValue={`${deliveryDates[0].id}`}
-              onChange={handleChange}>
-                {deliveryDates.map((date: DeliveryDate) => (
-                  <MenuItem value={date.id} key={date.id}>
-                    {toPrettyDate(date.date)} - {date.type}
+              labelId={`coffee-${coffeeNr}-label`}
+              name={`coffee${coffeeNr}`}
+              defaultValue={''}
+              displayEmpty
+              sx={{ minWidth: 200 }}>
+                {coffees.map((coffee: Coffee) => (
+                  <MenuItem value={coffee.id} key={coffee.id}>
+                    {coffee.productCode} - {coffee.name}
                   </MenuItem>
                 ))}
             </Select>
           </FormControl>
-        </div>
-
-        {[1, 2, 3, 4].map((coffeeNr: number) => (
-          <div key={coffeeNr}>
-            <FormControl sx={{margin: '10px'}}>
-              <InputLabel id={`coffee-${coffeeNr}-label`}>
-                Coffee {coffeeNr}
-              </InputLabel>
-              <Select
-                labelId={`coffee-${coffeeNr}-label`}
-                name={`coffee${coffeeNr}`}
-                defaultValue={''}
-                displayEmpty
-                sx={{ minWidth: 200 }}>
-                  {coffees.map((coffee: Coffee) => (
-                    <MenuItem value={coffee.id} key={coffee.id}>
-                      {coffee.productCode} - {coffee.name}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
-          </div>
         ))}
-        <p>
+        <FormControl sx={{m: 1}}>
           <Button type="submit" disabled={isCreating}>
             {isCreating ? "Creating..." : "Create Delivery"}
           </Button>
-        </p>
+          </FormControl>
       </Form>
     </Box>
   );

@@ -8,7 +8,7 @@ import {
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
 
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, FormControl, TextField, Typography } from "@mui/material";
 
 import { getCoffee } from "~/_libs/core/models/coffee.server";
 import type { Coffee } from "~/_libs/core/models/coffee.server";
@@ -38,13 +38,14 @@ export default function UpdateCoffee() {
     <Box
       m={2}
       sx={{
-        "& .MuiTextField-root": { m: 1, width: "30ch" },
+        "& .MuiTextField-root": { m: 1, minWidth: 250 },
       }}
     >
       <Typography variant="h2">Edit Coffee</Typography>
       <Form method="post">
         <input type="hidden" name="id" value={coffee.id} />
-        <div>
+
+        <FormControl>
           <TextField
             name="name"
             label="Name"
@@ -52,8 +53,8 @@ export default function UpdateCoffee() {
             defaultValue={coffee.name}
             error={errors?.name}
           />
-        </div>
-        <div>
+        </FormControl>
+        <FormControl>
           <TextField
             name="productCode"
             label="Code"
@@ -61,8 +62,8 @@ export default function UpdateCoffee() {
             defaultValue={coffee.productCode}
             error={errors?.productCode}
           />
-        </div>
-        <div>
+        </FormControl>
+        <FormControl>
           <TextField
             name="country"
             label="Country"
@@ -70,12 +71,12 @@ export default function UpdateCoffee() {
             defaultValue={coffee.country}
             error={errors?.country}
           />
-        </div>
-        <div>
+        </FormControl>
+        <FormControl sx={{m: 1}}>
           <Button type="submit" disabled={isUpdating}>
             {isUpdating ? "Updating..." : "Update Coffee"}
           </Button>
-        </div>
+        </FormControl>
       </Form>
     </Box>
   );
