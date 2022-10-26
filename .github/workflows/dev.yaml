@@ -59,8 +59,8 @@ jobs:
       - name: Docker build and push
         run: |
           docker build -t mb-backoffice .
-          docker tag mb-backoffice eu.gcr.io/mb-backoffice/mb-backoffice2:latest
-          docker push eu.gcr.io/mb-backoffice/mb-backoffice2:latest
+          docker tag mb-backoffice eu.gcr.io/maridalen-brenneri/mb-backoffice:latest
+          docker push eu.gcr.io/maridalen-brenneri/mb-backoffice:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -90,8 +90,8 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --region=europe-north1 \
-            --image=eu.gcr.io/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/mb-backoffice2:latest \
+            --image=eu.gcr.io/maridalen-brenneri/mb-backoffice:latest \
             --service-account=${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT }} \
-            --set-cloudsql-instances mb-backoffice:europe-north1:mb-backoffice-db \
+            --set-cloudsql-instances maridalen-brenneri:europe-north1:mb-backoffice \
             --set-secrets="DATABASE_URL=MB_BACKOFFICE__DEV__DATABASE_URL:latest" \
             --set-secrets="SESSION_SECRET=MB_BACKOFFICE__DEV__SESSION_SECRET:latest" \

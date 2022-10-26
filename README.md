@@ -50,7 +50,7 @@ chmod +x cloud_sql_proxy
 
 #### Run SQL proxy
 ```sh
-./cloud_sql_proxy -instances=mb-backoffice:europe-north1:mb-backoffice-db=tcp:7001 -credential_file=/Users/bjoda/_private/MB/gcloud/gcloud-mb-backoffice-access-key.json
+./cloud_sql_proxy -instances=maridalen-brenneri:europe-north1:mb-backoffice=tcp:7001 -credential_file=/Users/bjoda/_private/MB/gcloud/gcloud_maridalen-brenneri-credentials.json
 ```
 
 Database is then available on localhost:7001
