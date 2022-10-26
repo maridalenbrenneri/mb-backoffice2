@@ -58,7 +58,7 @@ jobs:
       # Build the Docker image
       - name: Docker build and push
         run: |
-          docker build -t mb-backoffice --build-arg port=$PORT .
+          docker build -t mb-backoffice --build-arg port=8080 .
           docker tag mb-backoffice eu.gcr.io/maridalen-brenneri/mb-backoffice:latest
           docker push eu.gcr.io/maridalen-brenneri/mb-backoffice:latest
 
@@ -85,7 +85,7 @@ jobs:
         run: |
           export CLOUDSDK_CORE_DISABLE_PROMPTS=1
           gcloud run deploy mb-backoffice \
-            --command="PORT=8080 npm start" \
+            --command="npm start" \
             --project=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} \
             --platform=managed \
             --allow-unauthenticated \
