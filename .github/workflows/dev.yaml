@@ -85,7 +85,7 @@ jobs:
         run: |
           export CLOUDSDK_CORE_DISABLE_PROMPTS=1
           gcloud run deploy mb-backoffice \
-            --command="npm start" \
+            --command="PORT=8080 npm start" \
             --project=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} \
             --platform=managed \
             --allow-unauthenticated \
@@ -94,3 +94,4 @@ jobs:
             --service-account=${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT }} \
             --set-cloudsql-instances maridalen-brenneri:europe-north1:mb-backoffice \
             --set-secrets="DATABASE_URL=MB_BACKOFFICE__DEV__DATABASE_URL:latest" \
+            --set-env-vars="PORT=8080" \
