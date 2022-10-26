@@ -10,17 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Setup node 16
       - name: Setup node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16
 
       # Set up NPM cache
       - name: Set up NPM cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -91,6 +91,7 @@ jobs:
             --project=${{ secrets.GOOGLE_CLOUD_PROJECT_ID }} \
             --platform=managed \
             --allow-unauthenticated \
+            --region=europe-north1 \
             --image=eu.gcr.io/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/mb-backoffice:v.dev.${GITHUB_RUN_NUMBER} \
             --service-account=${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT }} \
             --set-cloudsql-instances mb-backoffice:europe-north1:mb-backoffice-db \
