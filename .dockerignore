@@ -2,6 +2,7 @@
 
 !build/*
 !public/*
-!node_modules/*
 !package.json
+!package-lock.json
 !remix.config.js
+!app/_libs/prisma/schema.prisma

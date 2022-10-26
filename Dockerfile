@@ -1,8 +1,5 @@
 FROM node:16.14.2-alpine
 
-ARG port
-ENV PORT=$port
-
 # Hide NPM update notifier
 ENV NO_UPDATE_NOTIFIER=1
 
@@ -20,3 +17,13 @@ WORKDIR /app
 COPY . /app/
 
 ENV NODE_ENV=production
+
+# Install npm dependencies
+RUN npm ci --only=production --quiet
+
+# Generate prisma models
+RUN npx prisma generate
+
+EXPOSE 3000
+
+CMD npm start
