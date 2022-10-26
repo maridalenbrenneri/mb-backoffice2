@@ -1,5 +1,8 @@
 FROM node:16.14.2-alpine
 
+ARG port
+ENV PORT=$port
+
 # Hide NPM update notifier
 ENV NO_UPDATE_NOTIFIER=1
 

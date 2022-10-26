@@ -58,7 +58,7 @@ jobs:
       # Build the Docker image
       - name: Docker build and push
         run: |
-          docker build -t mb-backoffice .
+          docker build -t mb-backoffice --build-arg port=$PORT .
           docker tag mb-backoffice eu.gcr.io/maridalen-brenneri/mb-backoffice:latest
           docker push eu.gcr.io/maridalen-brenneri/mb-backoffice:latest
 
