@@ -1,8 +1,8 @@
-*
-
-!build/*
-!public/*
-!package.json
-!package-lock.json
-!remix.config.js
-!app/_libs/prisma/schema.prisma
+/node_modules
+*.log
+.DS_Store
+.env
+/.cache
+/public/build
+/build
+cloud_sql_proxy
