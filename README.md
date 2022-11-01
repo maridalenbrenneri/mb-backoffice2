@@ -5,8 +5,8 @@ MB Backoffice is a Node app written in Typescript. The app was initially created
 Github repo: https://github.com/maridalenbrenneri/mb-backoffice2
 
 ## Development
-First run:
-- Run node >= 16
+Before first run:
+- Install/Run Node >= 16
 - Install flyctl (Fly.io command util), https://fly.io/docs/hands-on/install-flyctl/
 - Start local database proxy (see command below)
 - Run "npm install" (in app root folder)
@@ -19,41 +19,62 @@ Run app:
 - Remix / React - Full stack client framework (https://remix.run)
   - Material UI - UI component library (https://mui.com) 
 - Prisma - Database ORM (https://prisma.io)
-- Database: PostgreSQL database hosted on Fly.io (https://fly.io)
-- Deploy - Runs on Fly.io (https://fly.io)
+- PostgreSQL - Database hosted on Fly.io (https://fly.io)
+- Fly.io - Cloud and run environment (https://fly.io)
 
 ## Integrations
-- Cargonizer
-- Woo Commerce
+- Cargonizer 
+  - https://logistra.no/cargonizer-api-documentation.html
+- Woo Commerce 
+  - https://woocommerce.github.io/woocommerce-rest-api-docs 
+  - https://woocommerce.github.io/subscriptions-rest-api-docs)
 - Fiken
+  - https://api.fiken.no/api/v2/docs/
 
 Integration libs are located in app/_libs folder. All code referencing third party API's is found here.
 
 ## Fly.io devops and deployment
-- Deploy scripts were initially created by the "fly launch" command.
-- DATABASE_URL is set by "fly pg attach" command.
 
-App is automatically deployed on commit with Github Actions.
-- Branch "dev" => https://mb-backoffice.fly.dev
-- Branch "prod" => ...
-
-### Fly.io app info
+Organization name: Maridalen Brenneri
 App name: mb-backoffice
 
-### Database info
+### Deply app
+```sh
+fly deploy
+```
+Deploy app to https://mb-backoffice.fly.dev
+
+### Database
 Postgres app name: mb-pg
 
-Username:   postgres
-Password:   ### 
-Hostname:   mb-pg.internal
-Proxy Port: 5432
-PG Port:    5433
+- Username:   postgres
+- Password:   ### 
+- Hostname:   mb-pg.internal
+- Proxy Port: 5432
+- PG Port:    5433
 
-There are two databases in the cluster, "mb_backoffice" (development/test) and "???" (production database)
+- Dev/Test database:  "mb_backoffice_dev" 
+- Production database: "mb_backoffice_prod"
 
-Connection string example: postgres://username:password@localhost:5432/mb_dev
+Connection string example, when using database proxy on localhost (env var DATABASE_URL)
+```sh
+postgres://username:password@localhost:5432/mb_backoffice_dev
+```
 
-## Misc info / commands / etc.
+### Info / Misc / History
+- Deploy scripts were initially created by the "fly launch" command.
+- DATABASE_URL was set by the "fly pg attach" command.
+
+### TODOs 
+
+#### Task: Deploy dev and prod versions (with different DATABASE_URL)
+- How to configure this with Fly.io?
+
+#### Task: Automatic deploys with GitHub Actions
+- Commit to branch "dev" => https://mb-backoffice.fly.dev
+- Commit to branch "prod" => ...
+
+## Commands 
 
 ### Start local database proxy
 ```sh
@@ -70,7 +91,7 @@ npx prisma db push
 npx prisma migrate dev --name init
 ```
 
-### Deploy app (manual deploy)
+### Deploy to Fly.io
 ```sh
 fly deploy
 ```
