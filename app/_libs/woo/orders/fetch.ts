@@ -1,4 +1,4 @@
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
 
 import {
   WOO_API_DEFAULT_PER_PAGE,
@@ -6,9 +6,9 @@ import {
   WOO_GABO_PRODUCT_ID,
   WOO_STATUS_ON_HOLD,
   WOO_STATUS_PROCESSING,
-} from "../settings";
-import wooApiToGiftSubscriptions from "./woo-api-to-giftsubscriptions";
-import wooApiToOrder from "./woo-api-to-order";
+} from '../settings';
+import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
+import wooApiToOrder from './woo-api-to-order';
 
 async function _fetchOrders(page: number = 1, status: string, after: string) {
   const url = `${WOO_API_BASE_URL}orders?page=${page}&per_page=${WOO_API_DEFAULT_PER_PAGE}&status=${status}&after=${after}&${process.env.WOO_SECRET_PARAM}`;
@@ -26,7 +26,7 @@ async function _fetchOrders(page: number = 1, status: string, after: string) {
 
   return {
     nextPage:
-      response.headers.get("x-wp-totalpages") === `${page}` ? null : page + 1,
+      response.headers.get('x-wp-totalpages') === `${page}` ? null : page + 1,
     orders: data,
   };
 }
@@ -34,10 +34,10 @@ async function _fetchOrders(page: number = 1, status: string, after: string) {
 async function _fetchGiftSubscriptionOrders(page: number = 1) {
   const fromCreatedDate = DateTime.now()
     .minus({ months: 14 })
-    .startOf("second")
+    .startOf('second')
     .toISO({ suppressMilliseconds: true, includeOffset: false });
 
-  const url = `${WOO_API_BASE_URL}orders?product=${WOO_GABO_PRODUCT_ID}&per_page=${WOO_API_DEFAULT_PER_PAGE}&after=${fromCreatedDate}&${process.env.WOO_SECRET_PARAM}`;
+  const url = `${WOO_API_BASE_URL}orders?product=${WOO_GABO_PRODUCT_ID}&page=${page}&per_page=${WOO_API_DEFAULT_PER_PAGE}&after=${fromCreatedDate}&${process.env.WOO_SECRET_PARAM}`;
 
   const response = await fetch(url);
 
@@ -51,7 +51,7 @@ async function _fetchGiftSubscriptionOrders(page: number = 1) {
   }
   return {
     nextPage:
-      response.headers.get("x-wp-totalpages") === `${page}` ? null : page + 1,
+      response.headers.get('x-wp-totalpages') === `${page}` ? null : page + 1,
     orders: data,
   };
 }
@@ -100,9 +100,9 @@ export async function fetchGiftSubscriptionOrders(): Promise<any> {
   let page: number | null = 1;
 
   do {
-    const result3 = (await _fetchGiftSubscriptionOrders(page)) as any;
-    page = result3.nextPage;
-    giftSubscriptionOrders = giftSubscriptionOrders.concat(result3.orders);
+    const result = (await _fetchGiftSubscriptionOrders(page)) as any;
+    page = result.nextPage;
+    giftSubscriptionOrders = giftSubscriptionOrders.concat(result.orders);
   } while (page);
 
   return wooApiToGiftSubscriptions(giftSubscriptionOrders);

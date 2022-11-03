@@ -1,15 +1,15 @@
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
 
 import type {
   GiftSubscriptionCreateInput,
   Subscription,
-} from "~/_libs/core/models/subscription.server";
+} from '~/_libs/core/models/subscription.server';
 import {
   SubscriptionFrequency,
   SubscriptionType,
-} from "~/_libs/core/models/subscription.server";
-import { resolveStatusAndFirstDeliveryDate } from "~/_libs/core/utils/gift-subscription-helper";
-import { WOO_GABO_PRODUCT_ID } from "../settings";
+} from '~/_libs/core/models/subscription.server';
+import { resolveStatusAndFirstDeliveryDate } from '~/_libs/core/utils/gift-subscription-helper';
+import { WOO_GABO_PRODUCT_ID } from '../settings';
 
 function resolveMetadataValue(meta_data: Array<any>, key: string) {
   const res = meta_data.find((data) => data.key === key);
@@ -19,16 +19,16 @@ function resolveMetadataValue(meta_data: Array<any>, key: string) {
 function itemToSubscription(item: any): GiftSubscriptionCreateInput {
   const duration_months = +resolveMetadataValue(
     item.meta_data,
-    "antall-maneder"
+    'antall-maneder'
   );
 
   let startDate = null;
-  let startDateString = resolveMetadataValue(item.meta_data, "abo_start");
+  let startDateString = resolveMetadataValue(item.meta_data, 'abo_start');
 
   if (!startDateString) {
     startDate = DateTime.fromISO(item.date_created_gmt);
   } else {
-    startDate = DateTime.fromFormat(startDateString, "dd.MM.yyyy");
+    startDate = DateTime.fromFormat(startDateString, 'dd.MM.yyyy');
   }
 
   // console.log("date_created_gmt", item.date_created_gmt);
@@ -42,7 +42,7 @@ function itemToSubscription(item: any): GiftSubscriptionCreateInput {
 
   // IF RECIPIENT EMAIL IS NOT SET, WE USE EMAIL OF THE PAYING CUSTOMER
   const email =
-    resolveMetadataValue(item.meta_data, "abo_email") || item.customer_email;
+    resolveMetadataValue(item.meta_data, 'abo_email') || item.customer_email;
 
   return {
     subscriptionInput: {
@@ -55,16 +55,16 @@ function itemToSubscription(item: any): GiftSubscriptionCreateInput {
       wooCustomerId: item.customer_id,
 
       frequency: SubscriptionFrequency.MONTHLY,
-      quantity250: +resolveMetadataValue(item.meta_data, "poser"),
+      quantity250: +resolveMetadataValue(item.meta_data, 'poser'),
 
-      recipientName: resolveMetadataValue(item.meta_data, "abo_name"),
+      recipientName: resolveMetadataValue(item.meta_data, 'abo_name'),
       recipientEmail: email,
-      recipientMobile: resolveMetadataValue(item.meta_data, "abo_mobile"),
+      recipientMobile: resolveMetadataValue(item.meta_data, 'abo_mobile'),
       recipientAddress: JSON.stringify({
-        street1: resolveMetadataValue(item.meta_data, "abo_address1"),
-        street2: resolveMetadataValue(item.meta_data, "abo_address2"),
-        postcode: resolveMetadataValue(item.meta_data, "abo_zip"),
-        place: resolveMetadataValue(item.meta_data, "city"),
+        street1: resolveMetadataValue(item.meta_data, 'abo_address1'),
+        street2: resolveMetadataValue(item.meta_data, 'abo_address2'),
+        postcode: resolveMetadataValue(item.meta_data, 'abo_zip'),
+        place: resolveMetadataValue(item.meta_data, 'city'),
       }),
       customerNote: item.customer_note,
     },
@@ -77,7 +77,7 @@ function itemToSubscription(item: any): GiftSubscriptionCreateInput {
       firstDeliveryDate: statusAndDeliveryDate.firstDeliveryDate.toJSDate(),
       messageToRecipient: resolveMetadataValue(
         item.meta_data,
-        "abo_msg_retriever"
+        'abo_msg_retriever'
       ),
     },
   };
@@ -91,11 +91,11 @@ export default function wooApiToGiftSubscriptions(
   const subscriptions = new Array<any>();
 
   for (const order of wooGaboOrders) {
-    console.debug(order);
+    // console.debug(order);
 
     const order_number = +resolveMetadataValue(
       order.meta_data,
-      "_order_number"
+      '_order_number'
     );
 
     for (const item of order.line_items) {
@@ -112,7 +112,7 @@ export default function wooApiToGiftSubscriptions(
 
       const mbSubscription = itemToSubscription(item);
 
-      console.log("GIFTSUBSCRIPTION TO WRITE", mbSubscription);
+      // console.log('GIFTSUBSCRIPTION TO WRITE', mbSubscription);
 
       subscriptions.push(mbSubscription);
     }

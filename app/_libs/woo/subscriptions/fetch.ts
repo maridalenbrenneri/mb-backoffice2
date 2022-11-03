@@ -1,5 +1,5 @@
-import * as settings from "../settings";
-import wooApiToSubscription from "./woo-api-to-subscription";
+import * as settings from '../settings';
+import wooApiToSubscription from './woo-api-to-subscription';
 
 async function _fetchSubscriptions(status: string, page: number = 1) {
   const url = `${settings.WOO_SUBSCRIPTION_API_BASE_URL}subscriptions?page=${page}&per_page=${settings.WOO_API_DEFAULT_PER_PAGE}&${process.env.WOO_SECRET_PARAM}&status=${status}`;
@@ -15,7 +15,7 @@ async function _fetchSubscriptions(status: string, page: number = 1) {
   }
 
   const nextPage =
-    response.headers.get("x-wp-totalpages") === `${page}` ? null : page + 1;
+    response.headers.get('x-wp-totalpages') === `${page}` ? null : page + 1;
 
   return {
     nextPage,

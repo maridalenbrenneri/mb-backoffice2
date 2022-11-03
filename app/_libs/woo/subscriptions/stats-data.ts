@@ -1,8 +1,8 @@
-import type { Subscription } from "~/_libs/core/models/subscription.server";
+import type { Subscription } from '~/_libs/core/models/subscription.server';
 import {
   SubscriptionStatus,
   SubscriptionFrequency,
-} from "~/_libs/core/models/subscription.server";
+} from '~/_libs/core/models/subscription.server';
 
 interface Counter {
   one: number;
@@ -12,7 +12,6 @@ interface Counter {
   five: number;
   six: number;
   seven: number;
-  eight: number;
 }
 
 interface BagCounter {
@@ -108,7 +107,6 @@ function initBagCounter(): BagCounter {
       five: 0,
       six: 0,
       seven: 0,
-      eight: 0,
     },
     monthly: {
       one: 0,
@@ -118,7 +116,6 @@ function initBagCounter(): BagCounter {
       five: 0,
       six: 0,
       seven: 0,
-      eight: 0,
     },
   };
 }
@@ -129,7 +126,7 @@ function resolveBagCount(
   bagCount: number
 ) {
   return subscriptions.filter(
-    (s) => s.frequency === frequency && s.bagCount250 === bagCount
+    (s) => s.frequency === frequency && s.quantity250 === bagCount
   ).length;
 }
 

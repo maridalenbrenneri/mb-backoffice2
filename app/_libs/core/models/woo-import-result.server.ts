@@ -1,20 +1,21 @@
-import { prisma } from "~/db.server";
+import { prisma } from '~/db.server';
 
-import type { WooImportResult } from "@prisma/client";
+import type { WooImportResult } from '@prisma/client';
 export type { WooImportResult };
 
 export async function getWooImportResults() {
   return prisma.wooImportResult.findMany({
+    take: 100,
     orderBy: [
       {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     ],
   });
 }
 
 export async function createWooImportResult(
-  result: Pick<WooImportResult, "result">
+  result: Pick<WooImportResult, 'result'>
 ) {
   await prisma.wooImportResult.create({ data: result });
 }

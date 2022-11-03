@@ -1,56 +1,56 @@
-import { prisma } from "~/db.server";
+import { prisma } from '~/db.server';
 
-import type { GiftSubscription, Subscription } from "@prisma/client";
+import type { GiftSubscription, Subscription } from '@prisma/client';
 import {
   SubscriptionType,
   SubscriptionStatus,
   SubscriptionFrequency,
-} from "@prisma/client";
+} from '@prisma/client';
 
 export type { Subscription };
 export { SubscriptionType, SubscriptionStatus, SubscriptionFrequency };
 
 export type SubscriptionUpsertInput = Pick<
   Subscription,
-  | "id"
-  | "orderDate"
-  | "type"
-  | "status"
-  | "frequency"
-  | "quantity250"
-  | "recipientName"
-  | "recipientEmail"
-  | "recipientMobile"
-  | "recipientAddress"
-  | "customerNote"
-  | "wooSubscriptionId"
-  | "wooCustomerId"
-  | "wooUpdatedAt"
+  | 'id'
+  | 'orderDate'
+  | 'type'
+  | 'status'
+  | 'frequency'
+  | 'quantity250'
+  | 'recipientName'
+  | 'recipientEmail'
+  | 'recipientMobile'
+  | 'recipientAddress'
+  | 'customerNote'
+  | 'wooSubscriptionId'
+  | 'wooCustomerId'
+  | 'wooUpdatedAt'
 >;
 
 export type GiftSubscriptionUpsertInput = Pick<
   GiftSubscription,
-  | "durationMonths"
-  | "originalFirstDeliveryDate"
-  | "firstDeliveryDate"
-  | "customerName"
-  | "messageToRecipient"
-  | "wooOrderId"
-  | "wooOrderLineItemId"
+  | 'durationMonths'
+  | 'originalFirstDeliveryDate'
+  | 'firstDeliveryDate'
+  | 'customerName'
+  | 'messageToRecipient'
+  | 'wooOrderId'
+  | 'wooOrderLineItemId'
 >;
 
 export type B2BSubscriptionUpsertInput = Pick<
   Subscription,
-  | "id"
-  | "type"
-  | "fikenContactId"
-  | "recipientName"
-  | "status"
-  | "frequency"
-  | "quantity250"
-  | "quantity500"
-  | "quantity1200"
-  | "internalNote"
+  | 'id'
+  | 'type'
+  | 'fikenContactId'
+  | 'recipientName'
+  | 'status'
+  | 'frequency'
+  | 'quantity250'
+  | 'quantity500'
+  | 'quantity1200'
+  | 'internalNote'
 >;
 
 export type GiftSubscriptionCreateInput = {
@@ -73,7 +73,7 @@ export async function upsertSubscription(
 
   return prisma.subscription.upsert({
     where: {
-      wooSubscriptionId: subscription.wooSubscriptionId || undefined,
+      wooSubscriptionId: subscription.wooSubscriptionId || 0,
     },
     update: subscription,
     create: subscription,
@@ -100,9 +100,9 @@ export async function createGiftSubscriptionWithSubscriptionRelation(
 ) {
   inputData.subscriptionInput.type = SubscriptionType.PRIVATE_GIFT;
 
-  return prisma.giftSubscription.upsert({
+  return await prisma.giftSubscription.upsert({
     where: {
-      woo_order_line_item_id:
+      wooOrderLineItemId:
         inputData.giftSubscriptionInput.wooOrderLineItemId || undefined,
     },
     update: {},

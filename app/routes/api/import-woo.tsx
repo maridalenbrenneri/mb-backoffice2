@@ -1,17 +1,13 @@
-import { json } from "@remix-run/node";
-import type { LoaderFunction } from "@remix-run/node";
+import { json } from '@remix-run/node';
+import type { ActionFunction } from '@remix-run/node';
 
-export const loader: LoaderFunction = async ({
-  request,
-}) => {
-  switch (request.method) {
-    case "GET": {
-      return json({ success: true, data: "hello resource route" }, 200);
-    }
-    case "POST": {
-      /* handle "POST" */
-    }
-    default: 
-      return json({ message: "Method not allowed" }, 405);
-  }
+import importWooData from '~/_libs/woo/import-woo';
+
+export const action: ActionFunction = async ({ request }) => {
+  if (request.method !== 'POST')
+    return json({ message: 'Method not allowed' }, 405);
+
+  const res = await importWooData();
+
+  return json(res);
 };
