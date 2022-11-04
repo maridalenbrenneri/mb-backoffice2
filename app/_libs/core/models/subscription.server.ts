@@ -18,14 +18,7 @@ export type SubscriptionUpsertInput = Pick<
   | 'status'
   | 'frequency'
   | 'quantity250'
-  | 'recipientName'
-  | 'recipientEmail'
-  | 'recipientMobile'
-  | 'recipientAddress'
   | 'customerNote'
-  | 'wooSubscriptionId'
-  | 'wooCustomerId'
-  | 'wooUpdatedAt'
 >;
 
 export type GiftSubscriptionUpsertInput = Pick<
@@ -35,6 +28,14 @@ export type GiftSubscriptionUpsertInput = Pick<
   | 'firstDeliveryDate'
   | 'customerName'
   | 'messageToRecipient'
+  | 'recipientName'
+  | 'recipientEmail'
+  | 'recipientMobile'
+  | 'recipientStreet1'
+  | 'recipientStreet2'
+  | 'recipientPostcode'
+  | 'recipientPlace'
+  | 'wooCustomerId'
   | 'wooOrderId'
   | 'wooOrderLineItemId'
 >;
@@ -44,7 +45,6 @@ export type B2BSubscriptionUpsertInput = Pick<
   | 'id'
   | 'type'
   | 'fikenContactId'
-  | 'recipientName'
   | 'status'
   | 'frequency'
   | 'quantity250'
@@ -59,7 +59,10 @@ export type GiftSubscriptionCreateInput = {
 };
 
 export async function getSubscription(id: number) {
-  return prisma.subscription.findUnique({ where: { id } });
+  return prisma.subscription.findUnique({
+    where: { id },
+    include: { giftSubscription: true },
+  });
 }
 
 export async function getSubscriptions() {
@@ -73,7 +76,7 @@ export async function upsertSubscription(
 
   return prisma.subscription.upsert({
     where: {
-      wooSubscriptionId: subscription.wooSubscriptionId || 0,
+      id: subscription.id || 0,
     },
     update: subscription,
     create: subscription,
@@ -95,12 +98,14 @@ export async function upsertB2BSubscription(
 }
 
 // CREATES IF NEW (NO MATCH ON woo_order_id + woo_line_item_id), ON CONFLICT DO NOTHING
-export async function createGiftSubscriptionWithSubscriptionRelation(
+export async function createGiftSubscription(
   inputData: GiftSubscriptionCreateInput
 ) {
   inputData.subscriptionInput.type = SubscriptionType.PRIVATE_GIFT;
 
-  return await prisma.giftSubscription.upsert({
+  console.debug('CREATE GIFT', inputData);
+
+  return prisma.giftSubscription.upsert({
     where: {
       wooOrderLineItemId:
         inputData.giftSubscriptionInput.wooOrderLineItemId || undefined,

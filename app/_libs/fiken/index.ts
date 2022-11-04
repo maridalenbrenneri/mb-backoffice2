@@ -1,4 +1,4 @@
-import { FIKEN_API_BASE_URI, FIKEN_COMPANY_SLUG } from "./settings";
+import { FIKEN_API_BASE_URI, FIKEN_COMPANY_SLUG } from './settings';
 
 const fiken_uri = `${FIKEN_API_BASE_URI}/companies/${FIKEN_COMPANY_SLUG}`;
 
@@ -31,7 +31,7 @@ function mapToFikenCustomer(api: any) {
       street2: api.address.address2,
       place: api.address.postalPlace,
       zipCode: api.address.postalCode,
-      country: "NO",
+      country: 'NO',
     },
     inactive: api.inactive,
     customer: api.customer,
@@ -39,7 +39,7 @@ function mapToFikenCustomer(api: any) {
 }
 
 export async function getCustomers(): Promise<FikenCustomer[]> {
-  const contacts_uri = `${fiken_uri}/contacts`;
+  const contacts_uri = `${fiken_uri}/contacts?sortBy=name%20asc&pageSize=100`;
   const auth = { authorization: `Bearer ${process.env.FIKEN_API_TOKEN}` };
 
   const response = await fetch(contacts_uri, { headers: auth });

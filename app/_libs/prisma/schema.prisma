@@ -27,9 +27,6 @@ model Password {
 model Coffee {
   id Int @id @default(autoincrement())
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
   status      String
   productCode String
   name        String
@@ -39,6 +36,9 @@ model Coffee {
   DeliveryCoffee2 Delivery[] @relation(name: "delivery_to_coffee_2")
   DeliveryCoffee3 Delivery[] @relation(name: "delivery_to_coffee_3")
   DeliveryCoffee4 Delivery[] @relation(name: "delivery_to_coffee_4")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum SubscriptionType {
@@ -48,10 +48,10 @@ enum SubscriptionType {
 }
 
 enum SubscriptionStatus {
-  ACTIVE
-  ON_HOLD
-  CANCELLED
-  COMPLETED
+  ACTIVE    // RECURRING ORDERS ACTIVE 
+  PASSIVE   // ORDERS CAN BE MANUALLY TRIGGERED
+  CANCELLED // ORDERS CANNOT BE TRIGGERED
+  COMPLETED 
   DELETED
 }
 
@@ -73,24 +73,16 @@ model Subscription {
   quantity500  Int @default(0)
   quantity1200 Int @default(0)
 
-  recipientName    String
-  recipientEmail   String?
-  recipientMobile  String?
-  recipientAddress String?
-
   customerNote String?
   internalNote String?
 
-  wooSubscriptionId Int? @unique
-  wooCustomerId     Int?
-  wooUpdatedAt      DateTime?
-
   fikenContactId Int? @unique
+  giftSubscription GiftSubscription?
+
+  orders Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  giftSubscription GiftSubscription?
 }
 
 model GiftSubscription {
@@ -102,21 +94,28 @@ model GiftSubscription {
   customerName                String
   messageToRecipient          String?
 
-  wooOrderId            Int?
-  wooOrderLineItemId    String? @unique
+  recipientName    String
+  recipientEmail   String?
+  recipientMobile  String?
+  recipientStreet1  String
+  recipientStreet2  String?
+  recipientPostcode String
+  recipientPlace    String
+  recipientCountry  String?
+  
+  wooCustomerId      Int?
+  wooOrderId         Int?
+  wooOrderLineItemId String? @unique
+
+  subscription      Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subscriptionId    Int @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  subscription      Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  subscriptionId    Int? @unique
 }
 
 model Delivery {
   id Int @id @default(autoincrement())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   date DateTime
   type String
@@ -132,15 +131,60 @@ model Delivery {
 
   coffee4     Coffee? @relation(name: "delivery_to_coffee_4", fields: [coffee4Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   coffee4Id   Int?
+
+  Orders      Order[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id Int @id @default(autoincrement())
+
+  productId Int
+  variation String
+  quantity Int
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id Int @id @default(autoincrement())
+
+  // An order always origin from a subscription
+
+  name     String
+  email    String?
+  mobile   String?
+  addressStreet1  String
+  addressStreet2  String?
+  addressPostcode String
+  addressPlace    String
+  addressCountry  String?
+  
+  orderItems OrderItem[]
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subscriptionId Int
+
+  delivery Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  deliveryId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model WooImportResult {
   id Int @id @default(autoincrement())
 
+  result String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  result String
 }
 
 // export interface OrderItem {

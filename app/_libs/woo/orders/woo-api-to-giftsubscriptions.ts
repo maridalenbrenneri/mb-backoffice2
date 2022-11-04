@@ -50,31 +50,29 @@ function itemToSubscription(item: any): GiftSubscriptionCreateInput {
       status: statusAndDeliveryDate.status,
       orderDate: DateTime.fromISO(item.date_created).toJSDate(),
 
-      wooSubscriptionId: null,
-      wooUpdatedAt: DateTime.fromISO(item.date_modified).toJSDate(),
-      wooCustomerId: item.customer_id,
-
       frequency: SubscriptionFrequency.MONTHLY,
       quantity250: +resolveMetadataValue(item.meta_data, 'poser'),
 
-      recipientName: resolveMetadataValue(item.meta_data, 'abo_name'),
-      recipientEmail: email,
-      recipientMobile: resolveMetadataValue(item.meta_data, 'abo_mobile'),
-      recipientAddress: JSON.stringify({
-        street1: resolveMetadataValue(item.meta_data, 'abo_address1'),
-        street2: resolveMetadataValue(item.meta_data, 'abo_address2'),
-        postcode: resolveMetadataValue(item.meta_data, 'abo_zip'),
-        place: resolveMetadataValue(item.meta_data, 'city'),
-      }),
       customerNote: item.customer_note,
     },
     giftSubscriptionInput: {
+      // wooSubscriptionId: null,
+      // wooUpdatedAt: DateTime.fromISO(item.date_modified).toJSDate(),
+      wooCustomerId: item.customer_id,
       wooOrderId: item.order_id,
       wooOrderLineItemId: `${item.order_id}-${item.id}`, // MAKE SURE THIS IS UNIQUE
+
       customerName: item.customer_name,
       durationMonths: duration_months,
       originalFirstDeliveryDate: startDate.toJSDate(),
       firstDeliveryDate: statusAndDeliveryDate.firstDeliveryDate.toJSDate(),
+      recipientName: resolveMetadataValue(item.meta_data, 'abo_name'),
+      recipientEmail: email,
+      recipientMobile: resolveMetadataValue(item.meta_data, 'abo_mobile'),
+      recipientStreet1: resolveMetadataValue(item.meta_data, 'abo_address1'),
+      recipientStreet2: resolveMetadataValue(item.meta_data, 'abo_address2'),
+      recipientPostcode: resolveMetadataValue(item.meta_data, 'abo_zip'),
+      recipientPlace: resolveMetadataValue(item.meta_data, 'city'),
       messageToRecipient: resolveMetadataValue(
         item.meta_data,
         'abo_msg_retriever'
@@ -87,8 +85,8 @@ function itemToSubscription(item: any): GiftSubscriptionCreateInput {
 //  PICK SOME DATA FROM ORDER AND SOME FROM EACH ORDER LINE
 export default function wooApiToGiftSubscriptions(
   wooGaboOrders: any[]
-): Array<Subscription> {
-  const subscriptions = new Array<any>();
+): Array<GiftSubscriptionCreateInput> {
+  const giftSubscriptionsData = new Array<GiftSubscriptionCreateInput>();
 
   for (const order of wooGaboOrders) {
     // console.debug(order);
@@ -110,13 +108,13 @@ export default function wooApiToGiftSubscriptions(
       item.customer_name = `${order.billing.first_name} ${order.billing.last_name}`;
       item.customer_email = order.billing.email;
 
-      const mbSubscription = itemToSubscription(item);
+      const giftSubscriptionData = itemToSubscription(item);
 
       // console.log('GIFTSUBSCRIPTION TO WRITE', mbSubscription);
 
-      subscriptions.push(mbSubscription);
+      giftSubscriptionsData.push(giftSubscriptionData);
     }
   }
 
-  return subscriptions;
+  return giftSubscriptionsData;
 }

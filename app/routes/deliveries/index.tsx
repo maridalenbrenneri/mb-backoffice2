@@ -1,19 +1,19 @@
-import { json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { json } from '@remix-run/node';
+import { Link, useLoaderData } from '@remix-run/react';
 
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import Typography from "@mui/material/Typography";
-import { Button } from "@mui/material";
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import { Button } from '@mui/material';
 
-import type { Delivery } from "~/_libs/core/models/delivery.server";
-import { getDeliveries } from "~/_libs/core/models/delivery.server";
-import { toPrettyDate } from "~/_libs/core/utils/dates";
+import type { Delivery } from '~/_libs/core/models/delivery.server';
+import { getDeliveries } from '~/_libs/core/models/delivery.server';
+import { toPrettyDate } from '~/_libs/core/utils/dates';
 
 type LoaderData = {
   deliveries: Awaited<ReturnType<typeof getDeliveries>>;
@@ -52,7 +52,7 @@ export default function Deliveries() {
             {deliveries.map((delivery: Delivery) => (
               <TableRow
                 key={delivery.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
                   <Link to={`admin/${delivery.id}`}>{delivery.id}</Link>

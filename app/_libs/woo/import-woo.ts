@@ -3,13 +3,14 @@ import { DateTime } from 'luxon';
 import fetchSubscriptions from './subscriptions/fetch';
 import resolveSubscriptionData from './subscriptions/stats-data';
 import { fetchGiftSubscriptionOrders, fetchOrders } from './orders/fetch';
+import type { GiftSubscriptionCreateInput } from '../core/models/subscription.server';
+import { createGiftSubscription } from '../core/models/subscription.server';
 import { createWooImportResult } from '../core/models/woo-import-result.server';
-import { createGiftSubscriptionWithSubscriptionRelation } from '../core/models/subscription.server';
 
 const importWooData = async () => {
   const IMPORT_ORDERS = false;
   const IMPORT_GIFT_SUBSCRIPTIONS = true;
-  const IMPORT_SUBSCRIPTIONS = true;
+  const IMPORT_SUBSCRIPTIONS = false;
 
   console.debug('START IMPORT WOO DATA');
 
@@ -17,7 +18,7 @@ const importWooData = async () => {
   const errors: string[] = [];
 
   let orders = [];
-  let giftSubscriptions = [];
+  let giftSubscriptions: GiftSubscriptionCreateInput[] = [];
   let subscriptionData;
 
   if (IMPORT_ORDERS) {
@@ -53,7 +54,7 @@ const importWooData = async () => {
     console.debug('UPSERTING GIFT SUBSCRIPTIONS...');
 
     for (const subscription of giftSubscriptions) {
-      await createGiftSubscriptionWithSubscriptionRelation(subscription);
+      await createGiftSubscription(subscription);
     }
 
     console.debug(' => DONE');

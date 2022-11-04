@@ -1,19 +1,12 @@
-import { DateTime } from "luxon";
-
 import {
   WOO_STATUS_ACTIVE,
   WOO_STATUS_CANCELLED,
   WOO_STATUS_ON_HOLD,
-} from "../settings";
+} from '../settings';
 
-import * as settings from "../settings";
+import * as settings from '../settings';
 
-import type { SubscriptionUpsertInput } from "~/_libs/core/models/subscription.server";
-import {
-  SubscriptionStatus,
-  SubscriptionFrequency,
-  SubscriptionType,
-} from "~/_libs/core/models/subscription.server";
+import { SubscriptionFrequency } from '~/_libs/core/models/subscription.server';
 
 interface IWooSubscriptionProduct {
   name: string;
@@ -74,20 +67,20 @@ const resolveSubscriptionVariation = (
   }
 };
 
-const resolveSubscriptionStatus = (wooStatus: string): SubscriptionStatus => {
+const resolveSubscriptionStatus = (wooStatus: string): string => {
   switch (wooStatus) {
     case WOO_STATUS_ACTIVE:
-      return SubscriptionStatus.ACTIVE;
+      return 'ACTIVE';
     case WOO_STATUS_ON_HOLD:
-      return SubscriptionStatus.ON_HOLD;
+      return 'ON_HOLD';
     case WOO_STATUS_CANCELLED:
-      return SubscriptionStatus.CANCELLED;
+      return 'CANCELLED';
     default:
-      return SubscriptionStatus.DELETED;
+      return 'DELETED';
   }
 };
 
-const wooApiToSubscription = (subscription: any): SubscriptionUpsertInput => {
+const wooApiToSubscription = (subscription: any): any => {
   if (!subscription.line_items?.length)
     throw new Error(
       `ERROR when importing Woo subscription, no line items on subscription. Woo subscription id ${subscription.id}`
@@ -105,30 +98,9 @@ const wooApiToSubscription = (subscription: any): SubscriptionUpsertInput => {
   });
 
   return {
-    id: 1,
     status: resolveSubscriptionStatus(subscription.status),
-    orderDate: DateTime.fromISO(subscription.date_created).toJSDate(),
-    type: SubscriptionType.PRIVATE,
     frequency: variation.frequency,
     quantity250: variation.bagCount250,
-    recipientName: `
-      ${subscription.shipping?.first_name || ""} ${
-      subscription.shipping?.last_name || ""
-    }`,
-    recipientEmail: subscription.billing?.email,
-    recipientMobile: subscription.billing?.mobile,
-    recipientAddress: JSON.stringify({
-      address1: subscription.shipping?.address_1,
-      address2: subscription.shipping?.address_2,
-      place: subscription.shipping?.city,
-      postcode: subscription.shipping?.postcode,
-    }),
-
-    customerNote: subscription.customer_note,
-
-    wooSubscriptionId: subscription.id,
-    wooCustomerId: subscription.customer_id,
-    wooUpdatedAt: DateTime.fromISO(subscription.date_modified).toJSDate(),
   };
 };
 

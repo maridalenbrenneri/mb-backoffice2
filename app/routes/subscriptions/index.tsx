@@ -11,28 +11,29 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Button } from '@mui/material';
 
-import type { Coffee } from '~/_libs/core/models/coffee.server';
-import { getCoffees } from '~/_libs/core/models/coffee.server';
+import type { Subscription } from '~/_libs/core/models/subscription.server';
+import { getSubscriptions } from '~/_libs/core/models/subscription.server';
+import { resolveSubscriptionCode } from '~/_libs/core/utils/gift-subscription-helper';
 
 type LoaderData = {
-  coffees: Awaited<ReturnType<typeof getCoffees>>;
+  subscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
 };
 
 export const loader = async () => {
-  const coffees = await getCoffees();
+  const subscriptions = await getSubscriptions();
   return json<LoaderData>({
-    coffees,
+    subscriptions,
   });
 };
 
-export default function Coffees() {
-  const { coffees } = useLoaderData() as unknown as LoaderData;
+export default function Subscriptions() {
+  const { subscriptions } = useLoaderData() as unknown as LoaderData;
 
   return (
     <main>
-      <Typography variant="h2">Coffees</Typography>
+      <Typography variant="h2">Subscriptions</Typography>
 
-      <Button href="/coffees/admin/new">Create a new coffee</Button>
+      <Button href="/subscriptions/admin/new">Create a new subscription</Button>
 
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="subscription table">
@@ -40,24 +41,20 @@ export default function Coffees() {
             <TableRow>
               <TableCell>ID</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Code</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Country</TableCell>
+              <TableCell>Abo type</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {coffees.map((coffee: Coffee) => (
+            {subscriptions.map((subscription: Subscription) => (
               <TableRow
-                key={coffee.id}
+                key={subscription.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <Link to={`admin/${coffee.id}`}>{coffee.id}</Link>
+                  <Link to={`admin/${subscription.id}`}>{subscription.id}</Link>
                 </TableCell>
-                <TableCell>{coffee.status}</TableCell>
-                <TableCell>{coffee.productCode}</TableCell>
-                <TableCell>{coffee.name}</TableCell>
-                <TableCell>{coffee.country}</TableCell>
+                <TableCell>{subscription.status}</TableCell>
+                <TableCell>{resolveSubscriptionCode(subscription)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

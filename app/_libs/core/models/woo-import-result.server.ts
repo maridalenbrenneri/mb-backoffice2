@@ -3,6 +3,17 @@ import { prisma } from '~/db.server';
 import type { WooImportResult } from '@prisma/client';
 export type { WooImportResult };
 
+export async function getLastWooImportResult() {
+  return prisma.wooImportResult.findMany({
+    take: 1,
+    orderBy: [
+      {
+        createdAt: 'desc',
+      },
+    ],
+  });
+}
+
 export async function getWooImportResults() {
   return prisma.wooImportResult.findMany({
     take: 100,
