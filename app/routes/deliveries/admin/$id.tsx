@@ -1,23 +1,32 @@
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import {
   Form,
   useActionData,
   useTransition,
   useLoaderData,
-} from "@remix-run/react";
-import invariant from "tiny-invariant";
+} from '@remix-run/react';
+import invariant from 'tiny-invariant';
 
-import { Box, Button, FormControl, InputLabel, TextField, Typography, Select, MenuItem } from "@mui/material";
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  TextField,
+  Typography,
+  Select,
+  MenuItem,
+} from '@mui/material';
 
-import { getDelivery } from "~/_libs/core/models/delivery.server";
-import type { Delivery } from "~/_libs/core/models/delivery.server";
-import { upsertAction } from "./_shared";
-import type { Coffee} from "~/_libs/core/models/coffee.server";
-import { getCoffees } from "~/_libs/core/models/coffee.server";
-import { toPrettyDate } from "~/_libs/core/utils/dates";
+import { getDelivery } from '~/_libs/core/models/delivery.server';
+import type { Delivery } from '~/_libs/core/models/delivery.server';
+import { upsertAction } from './_shared';
+import type { Coffee } from '~/_libs/core/models/coffee.server';
+import { getCoffees } from '~/_libs/core/models/coffee.server';
+import { toPrettyDate } from '~/_libs/core/utils/dates';
 
-type LoaderData = { delivery: Delivery, coffees: Coffee[] };
+type LoaderData = { delivery: Delivery; coffees: Coffee[] };
 
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
@@ -42,7 +51,7 @@ export default function UpdateDelivery() {
 
   const renderCoffee = (defaultValue: number | '', coffeeNr: number) => {
     return (
-      <FormControl sx={{m: 1}}>
+      <FormControl sx={{ m: 1 }}>
         <InputLabel id={`coffee-${coffeeNr}-label`}>
           Coffee {coffeeNr}
         </InputLabel>
@@ -50,29 +59,33 @@ export default function UpdateDelivery() {
           labelId={`coffee-${coffeeNr}-label`}
           name={`coffee${coffeeNr}`}
           defaultValue={defaultValue}
-          sx={{ minWidth: 250 }}>
-            {coffees.map((coffee: Coffee) => (
-              <MenuItem value={coffee.id} key={coffee.id}>
-                {coffee.productCode} - {coffee.name}
-              </MenuItem>
-            ))}
+          sx={{ minWidth: 250 }}
+        >
+          {coffees.map((coffee: Coffee) => (
+            <MenuItem value={coffee.id} key={coffee.id}>
+              {coffee.productCode} - {coffee.name}
+            </MenuItem>
+          ))}
         </Select>
-    </FormControl>
-    )
-  }
-
+      </FormControl>
+    );
+  };
 
   return (
     <Box
       m={2}
       sx={{
-        "& .MuiTextField-root": { m: 1, minWidth: 250 },
+        '& .MuiTextField-root': { m: 1, minWidth: 250 },
       }}
     >
       <Typography variant="h2">Edit Delivery</Typography>
       <Form method="post">
         <input type="hidden" name="id" value={delivery.id} />
-        <input type="hidden" name="delivery_date" value={delivery.date.toString()} />
+        <input
+          type="hidden"
+          name="delivery_date"
+          value={delivery.date.toString()}
+        />
         <input type="hidden" name="delivery_type" value={delivery.type} />
         <FormControl>
           <TextField
@@ -89,9 +102,9 @@ export default function UpdateDelivery() {
         {renderCoffee(delivery.coffee3Id || '', 3)}
         {renderCoffee(delivery.coffee4Id || '', 4)}
 
-        <FormControl sx={{m: 1}}>
+        <FormControl sx={{ m: 1 }}>
           <Button type="submit" disabled={isUpdating}>
-            {isUpdating ? "Updating..." : "Update Delivery"}
+            {isUpdating ? 'Updating...' : 'Update Delivery'}
           </Button>
         </FormControl>
       </Form>

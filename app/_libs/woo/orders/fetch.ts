@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import type { GiftSubscriptionCreateInput } from '~/_libs/core/models/subscription.server';
+import type { GiftSubscriptionWithSubscriptionCreateInput } from '~/_libs/core/models/subscription.server';
 
 import {
   WOO_API_DEFAULT_PER_PAGE,
@@ -97,7 +97,7 @@ export async function fetchOrders(): Promise<any[]> {
 }
 
 export async function fetchGiftSubscriptionOrders(): Promise<
-  GiftSubscriptionCreateInput[]
+  GiftSubscriptionWithSubscriptionCreateInput[]
 > {
   let giftSubscriptionOrders: Array<any> = [];
   let page: number | null = 1;

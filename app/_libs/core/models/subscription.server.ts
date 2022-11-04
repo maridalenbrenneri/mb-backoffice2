@@ -21,7 +21,19 @@ export type SubscriptionUpsertInput = Pick<
   | 'customerNote'
 >;
 
-export type GiftSubscriptionUpsertInput = Pick<
+export type GiftSubscriptionUpdateInput = Pick<
+  GiftSubscription,
+  | 'id'
+  | 'recipientName'
+  | 'recipientEmail'
+  | 'recipientMobile'
+  | 'recipientStreet1'
+  | 'recipientStreet2'
+  | 'recipientPostcode'
+  | 'recipientPlace'
+>;
+
+export type GiftSubscriptionCreateInput = Pick<
   GiftSubscription,
   | 'durationMonths'
   | 'originalFirstDeliveryDate'
@@ -53,20 +65,21 @@ export type B2BSubscriptionUpsertInput = Pick<
   | 'internalNote'
 >;
 
-export type GiftSubscriptionCreateInput = {
+export type GiftSubscriptionWithSubscriptionCreateInput = {
   subscriptionInput: SubscriptionUpsertInput;
-  giftSubscriptionInput: GiftSubscriptionUpsertInput;
+  giftSubscriptionInput: GiftSubscriptionCreateInput;
 };
 
 export async function getSubscription(id: number) {
   return prisma.subscription.findUnique({
     where: { id },
-    include: { giftSubscription: true },
+    include: { giftSubscription: true, orders: true },
   });
 }
 
-export async function getSubscriptions() {
-  return prisma.subscription.findMany();
+export async function getSubscriptions(filter: any) {
+  console.log('FILTER', filter);
+  return prisma.subscription.findMany(filter);
 }
 
 export async function upsertSubscription(
@@ -97,9 +110,26 @@ export async function upsertB2BSubscription(
   });
 }
 
+export async function getGiftSubscription(id: number) {
+  return prisma.giftSubscription.findUnique({
+    where: { id },
+  });
+}
+
+export async function updateGiftSubscription(
+  subscription: GiftSubscriptionUpdateInput
+) {
+  return prisma.giftSubscription.update({
+    where: {
+      id: subscription.id,
+    },
+    data: subscription,
+  });
+}
+
 // CREATES IF NEW (NO MATCH ON woo_order_id + woo_line_item_id), ON CONFLICT DO NOTHING
 export async function createGiftSubscription(
-  inputData: GiftSubscriptionCreateInput
+  inputData: GiftSubscriptionWithSubscriptionCreateInput
 ) {
   inputData.subscriptionInput.type = SubscriptionType.PRIVATE_GIFT;
 

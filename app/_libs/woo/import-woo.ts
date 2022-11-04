@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import fetchSubscriptions from './subscriptions/fetch';
 import resolveSubscriptionData from './subscriptions/stats-data';
 import { fetchGiftSubscriptionOrders, fetchOrders } from './orders/fetch';
-import type { GiftSubscriptionCreateInput } from '../core/models/subscription.server';
+import type { GiftSubscriptionWithSubscriptionCreateInput } from '../core/models/subscription.server';
 import { createGiftSubscription } from '../core/models/subscription.server';
 import { createWooImportResult } from '../core/models/woo-import-result.server';
 
@@ -18,7 +18,7 @@ const importWooData = async () => {
   const errors: string[] = [];
 
   let orders = [];
-  let giftSubscriptions: GiftSubscriptionCreateInput[] = [];
+  let giftSubscriptions: GiftSubscriptionWithSubscriptionCreateInput[] = [];
   let subscriptionData;
 
   if (IMPORT_ORDERS) {

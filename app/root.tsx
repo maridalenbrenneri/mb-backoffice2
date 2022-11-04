@@ -1,4 +1,4 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from '@remix-run/node';
 import {
   Links,
   LiveReload,
@@ -6,24 +6,19 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "@remix-run/react";
+} from '@remix-run/react';
 
-import { Box } from "@mui/material";
+import { Box } from '@mui/material';
 
-import MbAppBar from "./components/MbAppBar";
+import MbAppBar from './components/MbAppBar';
 
 export const meta: MetaFunction = () => ({
-  charset: "utf-8",
-  title: "MB Backoffice",
-  viewport: "width=device-width,initial-scale=1",
+  charset: 'utf-8',
+  title: 'MB Backoffice',
+  viewport: 'width=device-width,initial-scale=1',
 });
 
-function Document({
-  children,
-}: {
-  children: React.ReactNode;
-  title?: string;
-}) {
+function Document({ children }: { children: React.ReactNode; title?: string }) {
   return (
     <html lang="en">
       <head>
@@ -32,8 +27,8 @@ function Document({
       </head>
       <body>
         {children}
-         <ScrollRestoration />
-         <Scripts />
+        <ScrollRestoration />
+        <Scripts />
         <LiveReload />
       </body>
     </html>

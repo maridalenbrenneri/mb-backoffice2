@@ -1,52 +1,58 @@
-import { json, redirect } from "@remix-run/node";
-import invariant from "tiny-invariant";
+import { json, redirect } from '@remix-run/node';
 
-import { upsertCoffee } from "~/_libs/core/models/coffee.server";
+import { updateGiftSubscription } from '~/_libs/core/models/subscription.server';
 
-type ActionData =
-  | {
-      name: null | string;
-      productCode: null | string;
-      country: null | string;
-    }
-  | undefined;
+// type ActionData =
+//   | {
+//       name: null | string;
+//       address1: null | string;
+//       address2: null | string;
+//       postCode: null | string;
+//       place: null | string;
+//     }
+//   | undefined;
 
-export const upsertAction = async (request: any) => {
+export const updateGiftSubscriptionAction = async (request: any) => {
   const formData = await request.formData();
 
-  const id = +formData.get("id");
-  const name = formData.get("name");
-  const productCode = formData.get("productCode");
-  const country = formData.get("country");
+  const id = +formData.get('id');
+  const recipientName = formData.get('name');
+  const recipientStreet1 = formData.get('street1');
+  const recipientStreet2 = formData.get('street2');
+  const recipientPostcode = formData.get('postCode');
+  const recipientPlace = formData.get('place');
+  const recipientEmail = formData.get('email');
+  const recipientMobile = formData.get('mobile');
 
-  console.log("Form", id);
-  console.log("Form", name);
-  console.log("Form", productCode);
-  console.log("Form", country);
+  console.log('Form', id);
+  console.log('Form', recipientName);
 
-  const errors: ActionData = {
-    name: name ? null : "Name is required",
-    productCode: productCode ? null : "Product code is required",
-    country: country ? null : "Country is required",
+  const errors = {
+    name: recipientName ? null : 'Name is required',
+    address1: recipientStreet1 ? null : 'Street1 is required',
+    postCode: recipientPostcode ? null : 'PostCode is required',
+    place: recipientPlace ? null : 'Place is required',
   };
+
   const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
   if (hasErrors) {
-    console.debug("Errors in form", errors);
-    return json<ActionData>(errors);
+    console.debug('Errors in form', errors);
+    return json<any>(errors);
   }
 
-  invariant(typeof name === "string", "name must be a string");
-  invariant(typeof productCode === "string", "productCode must be a string");
-  invariant(typeof country === "string", "country must be a string");
-
   const data = {
-    name,
-    productCode,
-    country,
-    status: "active",
+    recipientName,
+    recipientStreet1,
+    recipientStreet2,
+    recipientPostcode,
+    recipientPlace,
+    recipientEmail,
+    recipientMobile,
   };
 
-  await upsertCoffee({ ...data, id });
+  console.log('DATA', data);
 
-  return redirect("/coffees");
+  await updateGiftSubscription({ ...data, id });
+
+  return redirect('/');
 };

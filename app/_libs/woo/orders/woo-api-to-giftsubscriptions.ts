@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 
 import type {
-  GiftSubscriptionCreateInput,
+  GiftSubscriptionWithSubscriptionCreateInput,
   Subscription,
 } from '~/_libs/core/models/subscription.server';
 import {
@@ -16,7 +16,9 @@ function resolveMetadataValue(meta_data: Array<any>, key: string) {
   return !res ? null : res.value;
 }
 
-function itemToSubscription(item: any): GiftSubscriptionCreateInput {
+function itemToSubscription(
+  item: any
+): GiftSubscriptionWithSubscriptionCreateInput {
   const duration_months = +resolveMetadataValue(
     item.meta_data,
     'antall-maneder'
@@ -85,8 +87,9 @@ function itemToSubscription(item: any): GiftSubscriptionCreateInput {
 //  PICK SOME DATA FROM ORDER AND SOME FROM EACH ORDER LINE
 export default function wooApiToGiftSubscriptions(
   wooGaboOrders: any[]
-): Array<GiftSubscriptionCreateInput> {
-  const giftSubscriptionsData = new Array<GiftSubscriptionCreateInput>();
+): Array<GiftSubscriptionWithSubscriptionCreateInput> {
+  const giftSubscriptionsData =
+    new Array<GiftSubscriptionWithSubscriptionCreateInput>();
 
   for (const order of wooGaboOrders) {
     // console.debug(order);
