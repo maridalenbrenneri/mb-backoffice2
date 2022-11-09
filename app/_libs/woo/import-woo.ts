@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 
 import fetchSubscriptions from './subscriptions/fetch';
-import resolveSubscriptionData from './subscriptions/stats-data';
+import resolveSubscriptionStats from './subscriptions/stats-data';
 import { fetchGiftSubscriptionOrders, fetchOrders } from './orders/fetch';
 import type { GiftSubscriptionWithSubscriptionCreateInput } from '../core/models/subscription.server';
 import { createGiftSubscription } from '../core/models/subscription.server';
@@ -10,7 +10,7 @@ import { createWooImportResult } from '../core/models/woo-import-result.server';
 const importWooData = async () => {
   const IMPORT_ORDERS = false;
   const IMPORT_GIFT_SUBSCRIPTIONS = true;
-  const IMPORT_SUBSCRIPTIONS = false;
+  const IMPORT_SUBSCRIPTIONS = true;
 
   console.debug('START IMPORT WOO DATA');
 
@@ -19,7 +19,8 @@ const importWooData = async () => {
 
   let orders = [];
   let giftSubscriptions: GiftSubscriptionWithSubscriptionCreateInput[] = [];
-  let subscriptionData;
+  let subscriptions = [];
+  let subscriptionStats;
 
   if (IMPORT_ORDERS) {
     console.debug('FETCHING ORDERS...');
@@ -63,7 +64,6 @@ const importWooData = async () => {
   if (IMPORT_SUBSCRIPTIONS) {
     console.debug('FETCHING SUBSCRIPTIONS...');
 
-    let subscriptions = [];
     try {
       subscriptions = await fetchSubscriptions();
     } catch (e: any) {
@@ -71,7 +71,7 @@ const importWooData = async () => {
       console.warn(e);
     }
 
-    subscriptionData = resolveSubscriptionData(subscriptions);
+    subscriptionStats = resolveSubscriptionStats(subscriptions);
 
     console.debug(' => DONE', subscriptions.length);
   }
@@ -85,9 +85,9 @@ const importWooData = async () => {
     importCompleted: completeTimeStamp,
     success: !errors?.length,
     errors,
-    subscriptionData,
-    orders: orders?.length,
-    giftSubscriptions: giftSubscriptions?.length,
+    subscriptionStats,
+    orderCount: orders?.length,
+    giftSubscriptionCount: giftSubscriptions?.length,
   };
 
   await createWooImportResult({ result: JSON.stringify(result) });

@@ -19,23 +19,35 @@ export interface FikenCustomer {
   customer: boolean;
 }
 
-function mapToFikenCustomer(api: any) {
+function mapToFikenCustomer(api: any): FikenCustomer {
   return {
     contactId: api.contactId,
     customerNumber: api.customerNumber,
+    organizationNumber: api.organizationNumber,
     name: api.name,
     email: api.email,
     address: {
-      name: api.name,
-      street1: api.address.address1,
-      street2: api.address.address2,
-      place: api.address.postalPlace,
-      zipCode: api.address.postalCode,
+      address1: api.address.address1,
+      address2: api.address.address2,
+      postalPlace: api.address.postalPlace,
+      postalCode: api.address.postalCode,
       country: 'NO',
     },
     inactive: api.inactive,
     customer: api.customer,
   };
+}
+
+export async function getCustomer(customerId: number): Promise<FikenCustomer> {
+  const contacts_uri = `${fiken_uri}/contacts/${customerId}`;
+  const auth = { authorization: `Bearer ${process.env.FIKEN_API_TOKEN}` };
+
+  const response = await fetch(contacts_uri, { headers: auth });
+  const customer = await response.json();
+
+  console.log(customer);
+
+  return mapToFikenCustomer(customer);
 }
 
 export async function getCustomers(): Promise<FikenCustomer[]> {
@@ -49,7 +61,16 @@ export async function getCustomers(): Promise<FikenCustomer[]> {
 
   // TODO: FILTER ONLY CUSTOMER CONTACTS, AND ACTIVE
 
-  return customers.map((c: any) => mapToFikenCustomer(c));
+  const mapped = customers.map((c: any) => mapToFikenCustomer(c));
+  const sorted = mapped.sort((a: FikenCustomer, b: FikenCustomer) => {
+    const nameA = a.name.toUpperCase();
+    const nameB = b.name.toUpperCase();
+    if (nameA < nameB) return -1;
+    if (nameA > nameB) return 1;
+    return 0;
+  });
+
+  return sorted;
 }
 
 // private createFikenInvoiceData(order) {

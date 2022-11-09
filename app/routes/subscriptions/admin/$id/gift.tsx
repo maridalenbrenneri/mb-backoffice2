@@ -62,6 +62,16 @@ export default function UpdateGiftSubscriptionRecipient() {
           Woo customer id: {gift.wooCustomerId}
         </Box>
       </Paper>
+      <Paper>
+        <Box sx={{ m: 2, p: 1 }}>
+          Customer note: {gift.customerNote} <br></br>
+        </Box>
+      </Paper>
+      <Paper>
+        <Box sx={{ m: 2, p: 1 }}>
+          Message to recipient: {gift.messageToRecipient} <br></br>
+        </Box>
+      </Paper>
 
       <Form method="post">
         <input type="hidden" name="id" value={gift.id} />
@@ -69,7 +79,7 @@ export default function UpdateGiftSubscriptionRecipient() {
         <FormControl>
           <TextField
             name="name"
-            label="Name"
+            label="name"
             variant="outlined"
             defaultValue={gift.recipientName}
             error={errors?.recipientName}
@@ -77,20 +87,20 @@ export default function UpdateGiftSubscriptionRecipient() {
         </FormControl>
         <FormControl>
           <TextField
-            name="street1"
-            label="Street1"
+            name="address1"
+            label="Address1"
             variant="outlined"
-            defaultValue={gift.recipientStreet1}
-            error={errors?.recipientStreet1}
+            defaultValue={gift.recipientAddress1}
+            error={errors?.recipientAddress1}
           />
         </FormControl>
         <FormControl>
           <TextField
-            name="street2"
-            label="Street2"
+            name="address2"
+            label="address2"
             variant="outlined"
-            defaultValue={gift.recipientStreet2}
-            error={errors?.recipientStreet2}
+            defaultValue={gift.recipientAddress2}
+            error={errors?.recipientAddress2}
           />
         </FormControl>
         <FormControl>
@@ -98,7 +108,7 @@ export default function UpdateGiftSubscriptionRecipient() {
             name="postcode"
             label="Postcode"
             variant="outlined"
-            defaultValue={gift.recipientPostcode}
+            defaultValue={gift.recipientPostalCode}
             error={errors?.recipientPostcode}
           />
         </FormControl>
@@ -107,7 +117,7 @@ export default function UpdateGiftSubscriptionRecipient() {
             name="place"
             label="Place"
             variant="outlined"
-            defaultValue={gift.recipientPlace}
+            defaultValue={gift.recipientPostalPlace}
             error={errors?.recipientPlace}
           />
         </FormControl>

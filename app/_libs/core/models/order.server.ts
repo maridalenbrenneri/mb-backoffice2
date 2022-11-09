@@ -9,10 +9,10 @@ export type OrderUpsertData = Pick<
   | 'subscriptionId'
   | 'deliveryId'
   | 'name'
-  | 'addressStreet1'
-  | 'addressStreet2'
-  | 'addressPostcode'
-  | 'addressPlace'
+  | 'address1'
+  | 'address2'
+  | 'postalCode'
+  | 'postalPlace'
 >;
 
 export async function getOrders() {
@@ -44,10 +44,10 @@ export async function upsertOrder(order: OrderUpsertData) {
     update: order,
     create: {
       name: order.name,
-      addressStreet1: order.addressStreet1,
-      addressStreet2: order.addressStreet2,
-      addressPostcode: order.addressPostcode,
-      addressPlace: order.addressPlace,
+      address1: order.address1,
+      address2: order.address2,
+      postalCode: order.postalCode,
+      postalPlace: order.postalPlace,
       subscriptionId: order.subscriptionId,
       deliveryId: order.deliveryId,
     },

@@ -28,24 +28,24 @@ export default async function fetchSubscriptions(): Promise<any[]> {
   let subscriptionOnHold: Array<any> = [];
   let page: number | null = 1;
 
-  // do {
-  const result = (await _fetchSubscriptions(
-    settings.WOO_STATUS_ACTIVE,
-    page
-  )) as any;
-  page = result.nextPage;
-  subscriptionActive = subscriptionActive.concat(result.abos);
-  // } while (page);
+  do {
+    const result = (await _fetchSubscriptions(
+      settings.WOO_STATUS_ACTIVE,
+      page
+    )) as any;
+    page = result.nextPage;
+    subscriptionActive = subscriptionActive.concat(result.abos);
+  } while (page);
 
   page = 1;
-  // do {
-  const result2 = (await _fetchSubscriptions(
-    settings.WOO_STATUS_ON_HOLD,
-    page
-  )) as any;
-  page = result2.nextPage;
-  subscriptionOnHold = subscriptionOnHold.concat(result2.abos);
-  // } while (page);
+  do {
+    const result2 = (await _fetchSubscriptions(
+      settings.WOO_STATUS_ON_HOLD,
+      page
+    )) as any;
+    page = result2.nextPage;
+    subscriptionOnHold = subscriptionOnHold.concat(result2.abos);
+  } while (page);
 
   const allSubscriptions = subscriptionActive.concat(subscriptionOnHold);
 

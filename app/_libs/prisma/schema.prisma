@@ -63,8 +63,6 @@ enum SubscriptionFrequency {
 model Subscription {
   id Int @id @default(autoincrement())
 
-  orderDate DateTime @default(now())
-
   type   SubscriptionType
   status SubscriptionStatus
 
@@ -72,6 +70,8 @@ model Subscription {
   quantity250  Int @default(0)
   quantity500  Int @default(0)
   quantity1200 Int @default(0)
+
+  recipientName String @default("")
 
   customerNote String?
   internalNote String?
@@ -92,20 +92,22 @@ model GiftSubscription {
   originalFirstDeliveryDate   DateTime
   firstDeliveryDate           DateTime
   customerName                String
+  customerNote                String?
   messageToRecipient          String?
 
-  recipientName    String
-  recipientEmail   String?
-  recipientMobile  String?
-  recipientStreet1  String
-  recipientStreet2  String?
-  recipientPostcode String
-  recipientPlace    String
-  recipientCountry  String?
+  recipientName         String
+  recipientEmail        String?
+  recipientMobile       String?
+  recipientAddress1      String
+  recipientAddress2      String?
+  recipientPostalCode   String
+  recipientPostalPlace  String
+  recipientCountry      String?
   
   wooCustomerId      Int?
   wooOrderId         Int?
   wooOrderLineItemId String? @unique
+  wooOrderDate       DateTime?
 
   subscription      Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   subscriptionId    Int @unique
@@ -157,14 +159,14 @@ model Order {
 
   // An order always origin from a subscription
 
-  name     String
-  email    String?
-  mobile   String?
-  addressStreet1  String
-  addressStreet2  String?
-  addressPostcode String
-  addressPlace    String
-  addressCountry  String?
+  name        String
+  email       String?
+  mobile      String?
+  address1    String
+  address2    String?
+  postalCode  String
+  postalPlace    String
+  countryountry  String?
   
   orderItems OrderItem[]
 

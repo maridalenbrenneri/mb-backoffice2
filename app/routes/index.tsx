@@ -13,41 +13,81 @@ import Typography from '@mui/material/Typography';
 
 import type { WooImportResult } from '~/_libs/core/models/woo-import-result.server';
 import { getLastWooImportResult } from '~/_libs/core/models/woo-import-result.server';
+import type { Subscription } from '~/_libs/core/models/subscription.server';
+import {
+  getSubscriptions,
+  SubscriptionStatus,
+  SubscriptionType,
+} from '~/_libs/core/models/subscription.server';
+import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
+import { countBags } from '~/_libs/core/services/subscription-stats';
 
 type LoaderData = {
-  wooDatas: Awaited<ReturnType<typeof getLastWooImportResult>>;
+  wooData: Awaited<ReturnType<typeof getLastWooImportResult>>;
+  activeGiftSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
 };
 
 export const loader = async () => {
-  const wooDatas = await getLastWooImportResult();
+  const wooData = await getLastWooImportResult();
+  const activeGiftSubscriptions = await getSubscriptions({
+    where: {
+      status: SubscriptionStatus.ACTIVE,
+      type: SubscriptionType.PRIVATE_GIFT,
+    },
+    select: {
+      id: true,
+      frequency: true,
+      quantity250: true,
+    },
+  });
 
   return json<LoaderData>({
-    wooDatas,
+    wooData,
+    activeGiftSubscriptions,
   });
 };
 
-function resolveAboStats(wooData: WooImportResult[]) {
+function resolveAboStats(
+  wooData: WooImportResult[],
+  activeGiftSubscriptions: Subscription[]
+): SubscriptionStats {
+  if (!wooData?.length) {
+    console.warn('No Subscription stats from Woo was found');
+    // TODO: Handle ...
+  }
+
   const data = JSON.parse(wooData[0].result);
+  const woo = data.subscriptionStats as SubscriptionStats;
 
-  console.log(data);
+  const bagCounter = countBags(activeGiftSubscriptions, woo.bagCounter);
 
-  return data;
+  // AGGREGATE STATS (WOO DATA + MB DATA)
+  return {
+    bagCounter,
+    totalCount: woo.totalCount + activeGiftSubscriptions.length,
+    giftSubscriptionCount: activeGiftSubscriptions.length,
+    monthlyCount: woo.monthlyCount + activeGiftSubscriptions.length,
+    fortnightlyCount: woo.fortnightlyCount,
+    subscriptionCount: woo.subscriptionCount,
+  };
 }
 
 export default function Index() {
-  const { wooDatas } = useLoaderData() as unknown as LoaderData;
-  const aboStats = resolveAboStats(wooDatas);
+  const { wooData, activeGiftSubscriptions } =
+    useLoaderData() as unknown as LoaderData;
 
-  return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
-      <h1>Test stuff</h1>
-      <Box sx={{ minWidth: 120 }}>
-        <Typography variant="h3">ABO STATS</Typography>
+  const aboStats = resolveAboStats(wooData, activeGiftSubscriptions);
 
-        <p>Active, total: {aboStats.subscriptionData.activeCount}</p>
-        <p>Active, monthly: {aboStats.subscriptionData.monthlyCount}</p>
-        <p>Active, fortnightly: {aboStats.subscriptionData.activeCount}</p>
-        <p>Gift: {aboStats.giftSubscriptions}</p>
+  const renderStatsTable = (stats: SubscriptionStats) => {
+    return (
+      <>
+        <p>Active, total: {stats.totalCount}</p>
+
+        <p>Active, monthly: {stats.monthlyCount}</p>
+        <p>Active, fortnightly: {stats.fortnightlyCount}</p>
+
+        <p>Active, ABO: {stats.subscriptionCount}</p>
+        <p>Active, GABO: {stats.giftSubscriptionCount}</p>
 
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="subscription table">
@@ -68,55 +108,38 @@ export default function Index() {
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell>Monthly</TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.monthly.one}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.monthly.two}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.monthly.three}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.monthly.four}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.monthly.five}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.monthly.six}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.monthly.seven}
-                </TableCell>
+                <TableCell>{stats.bagCounter.monthly.one}</TableCell>
+                <TableCell>{stats.bagCounter.monthly.two}</TableCell>
+                <TableCell>{stats.bagCounter.monthly.three}</TableCell>
+                <TableCell>{stats.bagCounter.monthly.four}</TableCell>
+                <TableCell>{stats.bagCounter.monthly.five}</TableCell>
+                <TableCell>{stats.bagCounter.monthly.six}</TableCell>
+                <TableCell>{stats.bagCounter.monthly.seven}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Fortnightly</TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.fortnightly.one}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.fortnightly.two}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.fortnightly.three}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.fortnightly.four}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.fortnightly.five}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.fortnightly.six}
-                </TableCell>
-                <TableCell>
-                  {aboStats.subscriptionData.bagCounter.fortnightly.seven}
-                </TableCell>
+                <TableCell>{stats.bagCounter.fortnightly.one}</TableCell>
+                <TableCell>{stats.bagCounter.fortnightly.two}</TableCell>
+                <TableCell>{stats.bagCounter.fortnightly.three}</TableCell>
+                <TableCell>{stats.bagCounter.fortnightly.four}</TableCell>
+                <TableCell>{stats.bagCounter.fortnightly.five}</TableCell>
+                <TableCell>{stats.bagCounter.fortnightly.six}</TableCell>
+                <TableCell>{stats.bagCounter.fortnightly.seven}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
+      </>
+    );
+  };
+
+  return (
+    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
+      <h1>MB Dashboard</h1>
+      <Box sx={{ minWidth: 120 }}>
+        <Typography variant="h3">ABO STATS</Typography>
+        {wooData && renderStatsTable(aboStats)}
+        {!wooData && <div>Stats not available</div>}
       </Box>
     </div>
   );

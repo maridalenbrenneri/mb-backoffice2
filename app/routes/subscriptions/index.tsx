@@ -28,7 +28,10 @@ import {
 
 import type { Subscription } from '~/_libs/core/models/subscription.server';
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
-import { resolveSubscriptionCode } from '~/_libs/core/utils/gift-subscription-helper';
+import {
+  resolveCustomerName,
+  resolveSubscriptionCode,
+} from '~/_libs/core/utils/gift-subscription-helper';
 import { useEffect, useState } from 'react';
 import { CheckBox } from '@mui/icons-material';
 
@@ -123,6 +126,7 @@ export default function Subscriptions() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
+              <TableCell>Customer</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Abo type</TableCell>
             </TableRow>
@@ -136,6 +140,7 @@ export default function Subscriptions() {
                 <TableCell component="th" scope="row">
                   <Link to={`admin/${subscription.id}`}>{subscription.id}</Link>
                 </TableCell>
+                <TableCell>{subscription.customerName}</TableCell>
                 <TableCell>{subscription.status}</TableCell>
                 <TableCell>{resolveSubscriptionCode(subscription)}</TableCell>
               </TableRow>

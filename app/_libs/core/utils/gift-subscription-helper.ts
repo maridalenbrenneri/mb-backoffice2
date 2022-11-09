@@ -8,8 +8,18 @@ import { DateTime } from 'luxon';
 
 import { resolveNextDeliveryDay } from './dates';
 
+export function calculateSubscriptionWeight(subscription: Subscription) {
+  let weight = 0;
+
+  if (subscription.quantity250) weight += subscription.quantity250 * 250;
+  if (subscription.quantity500) weight += subscription.quantity250 * 500;
+  if (subscription.quantity250) weight += subscription.quantity1200 * 1200;
+
+  return weight / 1000;
+}
+
 export function resolveSubscriptionCode(subscription: Subscription) {
-  const getType = (type: SubscriptionType) => {
+  const translateType = (type: SubscriptionType) => {
     switch (type) {
       case SubscriptionType.PRIVATE_GIFT:
         return 'GABO';
@@ -22,10 +32,15 @@ export function resolveSubscriptionCode(subscription: Subscription) {
     }
   };
 
-  const type = getType(subscription.type);
+  const type = translateType(subscription.type);
   const freq =
     subscription.frequency === SubscriptionFrequency.FORTNIGHTLY ? '2' : '1';
-  const quantity = subscription.quantity250; // TODO
+
+  if (subscription.type === SubscriptionType.B2B) {
+    return `${type}${freq}-${calculateSubscriptionWeight(subscription)}kg`;
+  }
+
+  const quantity = subscription.quantity250;
 
   return `${type}${freq}-${quantity}`;
 }

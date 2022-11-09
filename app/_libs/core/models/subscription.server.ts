@@ -13,12 +13,15 @@ export { SubscriptionType, SubscriptionStatus, SubscriptionFrequency };
 export type SubscriptionUpsertInput = Pick<
   Subscription,
   | 'id'
-  | 'orderDate'
   | 'type'
+  | 'fikenContactId'
+  | 'recipientName'
   | 'status'
   | 'frequency'
   | 'quantity250'
-  | 'customerNote'
+  | 'quantity500'
+  | 'quantity1200'
+  | 'internalNote'
 >;
 
 export type GiftSubscriptionUpdateInput = Pick<
@@ -27,10 +30,10 @@ export type GiftSubscriptionUpdateInput = Pick<
   | 'recipientName'
   | 'recipientEmail'
   | 'recipientMobile'
-  | 'recipientStreet1'
-  | 'recipientStreet2'
-  | 'recipientPostcode'
-  | 'recipientPlace'
+  | 'recipientAddress1'
+  | 'recipientAddress2'
+  | 'recipientPostalCode'
+  | 'recipientPostalPlace'
 >;
 
 export type GiftSubscriptionCreateInput = Pick<
@@ -39,17 +42,19 @@ export type GiftSubscriptionCreateInput = Pick<
   | 'originalFirstDeliveryDate'
   | 'firstDeliveryDate'
   | 'customerName'
+  | 'customerNote'
   | 'messageToRecipient'
   | 'recipientName'
   | 'recipientEmail'
   | 'recipientMobile'
-  | 'recipientStreet1'
-  | 'recipientStreet2'
-  | 'recipientPostcode'
-  | 'recipientPlace'
+  | 'recipientAddress1'
+  | 'recipientAddress2'
+  | 'recipientPostalCode'
+  | 'recipientPostalPlace'
   | 'wooCustomerId'
   | 'wooOrderId'
   | 'wooOrderLineItemId'
+  | 'wooOrderDate'
 >;
 
 export type B2BSubscriptionUpsertInput = Pick<
@@ -85,30 +90,38 @@ export async function getSubscriptions(filter: any) {
 export async function upsertSubscription(
   subscription: SubscriptionUpsertInput
 ) {
-  subscription.type = SubscriptionType.PRIVATE;
-
   return prisma.subscription.upsert({
     where: {
       id: subscription.id || 0,
     },
     update: subscription,
-    create: subscription,
-  });
-}
-
-export async function upsertB2BSubscription(
-  subscription: B2BSubscriptionUpsertInput
-) {
-  subscription.type = SubscriptionType.B2B;
-
-  return prisma.subscription.upsert({
-    where: {
-      fikenContactId: subscription.fikenContactId || undefined,
+    create: {
+      type: subscription.type,
+      recipientName: subscription.recipientName,
+      fikenContactId: subscription.fikenContactId,
+      status: subscription.status,
+      frequency: subscription.frequency,
+      quantity250: subscription.quantity250,
+      quantity500: subscription.quantity500,
+      quantity1200: subscription.quantity1200,
+      internalNote: subscription.internalNote,
     },
-    update: subscription,
-    create: subscription,
   });
 }
+
+// export async function upsertB2BSubscription(
+//   subscription: B2BSubscriptionUpsertInput
+// ) {
+//   subscription.type = SubscriptionType.B2B;
+
+//   return prisma.subscription.upsert({
+//     where: {
+//       fikenContactId: subscription.fikenContactId || undefined,
+//     },
+//     update: subscription,
+//     create: subscription,
+//   });
+// }
 
 export async function getGiftSubscription(id: number) {
   return prisma.giftSubscription.findUnique({
@@ -132,8 +145,6 @@ export async function createGiftSubscription(
   inputData: GiftSubscriptionWithSubscriptionCreateInput
 ) {
   inputData.subscriptionInput.type = SubscriptionType.PRIVATE_GIFT;
-
-  console.debug('CREATE GIFT', inputData);
 
   return prisma.giftSubscription.upsert({
     where: {

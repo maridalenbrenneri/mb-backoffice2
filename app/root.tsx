@@ -6,6 +6,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useCatch,
 } from '@remix-run/react';
 
 import { Box } from '@mui/material';
@@ -46,6 +47,33 @@ export default function App() {
   );
 }
 
+export function CatchBoundary() {
+  let caught = useCatch();
+
+  switch (caught.status) {
+    case 401:
+    case 404:
+      return (
+        <Document title={`${caught.status} ${caught.statusText}`}>
+          <div style={{ margin: '50px auto', textAlign: 'center' }}>
+            <h1>
+              {caught.status} {caught.statusText}
+            </h1>
+            <p>
+              The page you are looking for was not found. Go to
+              <a href="/"> fronpage</a>.
+            </p>
+          </div>
+        </Document>
+      );
+
+    default:
+      throw new Error(
+        `Unexpected caught response with status: ${caught.status}`
+      );
+  }
+}
+
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
     <Document title="Uh-oh!">
@@ -56,21 +84,3 @@ export function ErrorBoundary({ error }: { error: Error }) {
     </Document>
   );
 }
-
-// export default function App() {
-//   return (
-//     <html lang="en">
-//       <head>
-//         <Meta />
-//         <Links />
-//       </head>
-//       <body>
-//         <MbAppBar />
-//         <Outlet />
-//         <ScrollRestoration />
-//         <Scripts />
-//         <LiveReload />
-//       </body>
-//     </html>
-//   );
-// }

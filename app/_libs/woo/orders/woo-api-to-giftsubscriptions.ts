@@ -1,9 +1,6 @@
 import { DateTime } from 'luxon';
 
-import type {
-  GiftSubscriptionWithSubscriptionCreateInput,
-  Subscription,
-} from '~/_libs/core/models/subscription.server';
+import type { GiftSubscriptionWithSubscriptionCreateInput } from '~/_libs/core/models/subscription.server';
 import {
   SubscriptionFrequency,
   SubscriptionType,
@@ -33,48 +30,48 @@ function itemToSubscription(
     startDate = DateTime.fromFormat(startDateString, 'dd.MM.yyyy');
   }
 
-  // console.log("date_created_gmt", item.date_created_gmt);
-  // console.log("startDateString", startDateString);
-  // console.log("startDate", startDate.toISODate());
-
   const statusAndDeliveryDate = resolveStatusAndFirstDeliveryDate(
     duration_months,
     startDate
   );
 
   // IF RECIPIENT EMAIL IS NOT SET, WE USE EMAIL OF THE PAYING CUSTOMER
-  const email =
+  const recipientEmail =
     resolveMetadataValue(item.meta_data, 'abo_email') || item.customer_email;
+
+  const recipientName = resolveMetadataValue(item.meta_data, 'abo_name');
 
   return {
     subscriptionInput: {
       type: SubscriptionType.PRIVATE_GIFT,
       status: statusAndDeliveryDate.status,
-      orderDate: DateTime.fromISO(item.date_created).toJSDate(),
-
       frequency: SubscriptionFrequency.MONTHLY,
       quantity250: +resolveMetadataValue(item.meta_data, 'poser'),
-
-      customerNote: item.customer_note,
+      recipientName,
+      quantity500: 0,
+      quantity1200: 0,
+      fikenContactId: null,
+      internalNote: null,
     },
     giftSubscriptionInput: {
-      // wooSubscriptionId: null,
-      // wooUpdatedAt: DateTime.fromISO(item.date_modified).toJSDate(),
       wooCustomerId: item.customer_id,
       wooOrderId: item.order_id,
       wooOrderLineItemId: `${item.order_id}-${item.id}`, // MAKE SURE THIS IS UNIQUE
+      wooOrderDate: DateTime.fromISO(item.date_created).toJSDate(),
 
       customerName: item.customer_name,
+      customerNote: item.customer_note,
+
       durationMonths: duration_months,
       originalFirstDeliveryDate: startDate.toJSDate(),
       firstDeliveryDate: statusAndDeliveryDate.firstDeliveryDate.toJSDate(),
       recipientName: resolveMetadataValue(item.meta_data, 'abo_name'),
-      recipientEmail: email,
+      recipientEmail,
       recipientMobile: resolveMetadataValue(item.meta_data, 'abo_mobile'),
-      recipientStreet1: resolveMetadataValue(item.meta_data, 'abo_address1'),
-      recipientStreet2: resolveMetadataValue(item.meta_data, 'abo_address2'),
-      recipientPostcode: resolveMetadataValue(item.meta_data, 'abo_zip'),
-      recipientPlace: resolveMetadataValue(item.meta_data, 'city'),
+      recipientAddress1: resolveMetadataValue(item.meta_data, 'abo_address1'),
+      recipientAddress2: resolveMetadataValue(item.meta_data, 'abo_address2'),
+      recipientPostalCode: resolveMetadataValue(item.meta_data, 'abo_zip'),
+      recipientPostalPlace: resolveMetadataValue(item.meta_data, 'city'),
       messageToRecipient: resolveMetadataValue(
         item.meta_data,
         'abo_msg_retriever'
@@ -83,8 +80,7 @@ function itemToSubscription(
   };
 }
 
-// THERE CAN BE MULTIPLE GIFT SUBSCRIPTIONS IN ONE ORDER
-//  PICK SOME DATA FROM ORDER AND SOME FROM EACH ORDER LINE
+// THERE CAN BE MULTIPLE GIFT SUBSCRIPTIONS IN ONE ORDER, USE SOME DATA FROM ORDER AND SOME FROM EACH ORDER LINE
 export default function wooApiToGiftSubscriptions(
   wooGaboOrders: any[]
 ): Array<GiftSubscriptionWithSubscriptionCreateInput> {
