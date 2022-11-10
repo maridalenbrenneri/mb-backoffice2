@@ -83,7 +83,6 @@ export async function getSubscription(id: number) {
 }
 
 export async function getSubscriptions(filter: any) {
-  console.log('FILTER', filter);
   return prisma.subscription.findMany(filter);
 }
 

@@ -13,22 +13,25 @@ export default function resolveSubscriptionData(
     (s) => s.status === SubscriptionStatus.ACTIVE
   );
 
-  const bagCounter = countBags(activeAbos);
-
-  const fortnightlyCount = activeAbos.filter(
-    (s) => s.frequency === SubscriptionFrequency.FORTNIGHTLY
-  ).length;
-
-  const monthlyCount = activeAbos.filter(
+  const monthly = activeAbos.filter(
     (s) => s.frequency === SubscriptionFrequency.MONTHLY
-  ).length;
+  );
+
+  const fortnightly = activeAbos.filter(
+    (s) => s.frequency === SubscriptionFrequency.FORTNIGHTLY
+  );
+
+  const bagCounterMonthly = countBags(monthly);
+  const bagCounterFortnightly = countBags(fortnightly);
 
   return {
     totalCount: activeAbos.length,
     subscriptionCount: activeAbos.length,
     giftSubscriptionCount: 0,
-    fortnightlyCount,
-    monthlyCount: monthlyCount,
-    bagCounter,
+    b2bSubscriptionCount: 0,
+    fortnightlyCount: fortnightly.length,
+    monthlyCount: monthly.length,
+    bagCounterMonthly,
+    bagCounterFortnightly,
   };
 }

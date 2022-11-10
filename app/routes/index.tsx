@@ -2,144 +2,112 @@ import { json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 
 import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
-import type { WooImportResult } from '~/_libs/core/models/woo-import-result.server';
+import { SubscriptionStatus, SubscriptionType } from '@prisma/client';
+
 import { getLastWooImportResult } from '~/_libs/core/models/woo-import-result.server';
 import type { Subscription } from '~/_libs/core/models/subscription.server';
-import {
-  getSubscriptions,
-  SubscriptionStatus,
-  SubscriptionType,
-} from '~/_libs/core/models/subscription.server';
+import { getSubscriptions } from '~/_libs/core/models/subscription.server';
+import { getDeliveries } from '~/_libs/core/models/delivery.server';
+
 import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
 import { countBags } from '~/_libs/core/services/subscription-stats';
+import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
+import RoastOverviewBox from '~/components/RoastOverviewBox';
+import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 
 type LoaderData = {
   wooData: Awaited<ReturnType<typeof getLastWooImportResult>>;
-  activeGiftSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
+  activeSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
+  deliveries: Awaited<ReturnType<typeof getDeliveries>>;
 };
 
 export const loader = async () => {
   const wooData = await getLastWooImportResult();
-  const activeGiftSubscriptions = await getSubscriptions({
+  const activeSubscriptions = await getSubscriptions({
     where: {
       status: SubscriptionStatus.ACTIVE,
-      type: SubscriptionType.PRIVATE_GIFT,
     },
     select: {
       id: true,
+      type: true,
       frequency: true,
       quantity250: true,
+      quantity500: true,
+      quantity1200: true,
     },
   });
+  const deliveries = await getDeliveries();
 
   return json<LoaderData>({
     wooData,
-    activeGiftSubscriptions,
+    activeSubscriptions,
+    deliveries,
   });
 };
 
 function resolveAboStats(
-  wooData: WooImportResult[],
-  activeGiftSubscriptions: Subscription[]
+  woo: SubscriptionStats,
+  activeSubscriptions: Subscription[]
 ): SubscriptionStats {
-  if (!wooData?.length) {
-    console.warn('No Subscription stats from Woo was found');
-    // TODO: Handle ...
-  }
+  // AGGREGATE GIFT AND B2B SUBSCRIPTIONS TO WOO SUBSCRIPTION BAG COUNT
+  const bagCounterMonthly = countBags(
+    activeSubscriptions,
+    woo.bagCounterMonthly
+  );
+  const bagCounterFortnightly = woo.bagCounterFortnightly;
 
-  const data = JSON.parse(wooData[0].result);
-  const woo = data.subscriptionStats as SubscriptionStats;
+  const gifts = activeSubscriptions.filter(
+    (s) => s.type === SubscriptionType.PRIVATE_GIFT
+  );
 
-  const bagCounter = countBags(activeGiftSubscriptions, woo.bagCounter);
+  const B2Bs = activeSubscriptions.filter(
+    (s) => s.type === SubscriptionType.B2B
+  );
 
-  // AGGREGATE STATS (WOO DATA + MB DATA)
   return {
-    bagCounter,
-    totalCount: woo.totalCount + activeGiftSubscriptions.length,
-    giftSubscriptionCount: activeGiftSubscriptions.length,
-    monthlyCount: woo.monthlyCount + activeGiftSubscriptions.length,
+    bagCounterMonthly,
+    bagCounterFortnightly,
+    totalCount: woo.totalCount + gifts.length,
+    giftSubscriptionCount: gifts.length,
+    monthlyCount: woo.monthlyCount + gifts.length,
     fortnightlyCount: woo.fortnightlyCount,
     subscriptionCount: woo.subscriptionCount,
+    b2bSubscriptionCount: B2Bs.length,
   };
 }
 
 export default function Index() {
-  const { wooData, activeGiftSubscriptions } =
+  const { wooData, activeSubscriptions, deliveries } =
     useLoaderData() as unknown as LoaderData;
 
-  const aboStats = resolveAboStats(wooData, activeGiftSubscriptions);
-
-  const renderStatsTable = (stats: SubscriptionStats) => {
+  if (!wooData?.length) {
     return (
-      <>
-        <p>Active, total: {stats.totalCount}</p>
-
-        <p>Active, monthly: {stats.monthlyCount}</p>
-        <p>Active, fortnightly: {stats.fortnightlyCount}</p>
-
-        <p>Active, ABO: {stats.subscriptionCount}</p>
-        <p>Active, GABO: {stats.giftSubscriptionCount}</p>
-
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="subscription table">
-            <TableHead>
-              <TableRow>
-                <TableCell></TableCell>
-                <TableCell>1</TableCell>
-                <TableCell>2</TableCell>
-                <TableCell>3</TableCell>
-                <TableCell>4</TableCell>
-                <TableCell>5</TableCell>
-                <TableCell>6</TableCell>
-                <TableCell>7</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell>Monthly</TableCell>
-                <TableCell>{stats.bagCounter.monthly.one}</TableCell>
-                <TableCell>{stats.bagCounter.monthly.two}</TableCell>
-                <TableCell>{stats.bagCounter.monthly.three}</TableCell>
-                <TableCell>{stats.bagCounter.monthly.four}</TableCell>
-                <TableCell>{stats.bagCounter.monthly.five}</TableCell>
-                <TableCell>{stats.bagCounter.monthly.six}</TableCell>
-                <TableCell>{stats.bagCounter.monthly.seven}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Fortnightly</TableCell>
-                <TableCell>{stats.bagCounter.fortnightly.one}</TableCell>
-                <TableCell>{stats.bagCounter.fortnightly.two}</TableCell>
-                <TableCell>{stats.bagCounter.fortnightly.three}</TableCell>
-                <TableCell>{stats.bagCounter.fortnightly.four}</TableCell>
-                <TableCell>{stats.bagCounter.fortnightly.five}</TableCell>
-                <TableCell>{stats.bagCounter.fortnightly.six}</TableCell>
-                <TableCell>{stats.bagCounter.fortnightly.seven}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </>
+      <Box>Couldn't load dashboard. No imported data from Woo was found </Box>
     );
-  };
+  }
+
+  const wooImportResult = JSON.parse(wooData[0].result);
+  const wooSubscriptionStats =
+    wooImportResult.subscriptionStats as SubscriptionStats;
+
+  const aboStats = resolveAboStats(wooSubscriptionStats, activeSubscriptions);
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
       <h1>MB Dashboard</h1>
-      <Box sx={{ minWidth: 120 }}>
-        <Typography variant="h3">ABO STATS</Typography>
-        {wooData && renderStatsTable(aboStats)}
-        {!wooData && <div>Stats not available</div>}
+      <Box sx={{ minWidth: 120, my: 4 }}>
+        <Typography variant="h3">Roast overview</Typography>
+        <RoastOverviewBox stats={aboStats} delivery={deliveries[0]} />
+      </Box>
+      <Box sx={{ minWidth: 120, my: 4 }}>
+        <Typography variant="h3">Subscription overview</Typography>
+        <SubscriptionStatsBox stats={aboStats} />
+      </Box>
+      <Box sx={{ my: 8 }}>
+        Data from Woo last imported{' '}
+        {toPrettyDateTime(wooImportResult.importStarted)}
       </Box>
     </div>
   );

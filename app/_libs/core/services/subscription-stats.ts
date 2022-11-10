@@ -1,7 +1,7 @@
 import type { Subscription } from '@prisma/client';
 import { SubscriptionFrequency } from '@prisma/client';
 
-export interface Counter {
+export interface BagCounterItem {
   one: number;
   two: number;
   three: number;
@@ -12,49 +12,56 @@ export interface Counter {
 }
 
 export interface BagCounter {
-  fortnightly: Counter;
-  monthly: Counter;
+  _250: BagCounterItem;
+  _500: BagCounterItem;
+  _1200: BagCounterItem;
 }
 
 export interface SubscriptionStats {
   totalCount: number;
   giftSubscriptionCount: number;
+  b2bSubscriptionCount: number;
   subscriptionCount: number;
   monthlyCount: number;
   fortnightlyCount: number;
-  bagCounter: BagCounter;
+  bagCounterMonthly: BagCounter;
+  bagCounterFortnightly: BagCounter;
+
+  // WIP: bagCounterMonthlyMiddleOfMonth: BagCounter; HANDLE B2B ON LILL-ABO
 }
 
 function resolveBagCount(
+  bagSize: number,
   subscriptions: Subscription[],
-  frequency: SubscriptionFrequency,
-  bagCount: number
+  quantity: number
 ) {
-  return subscriptions.filter(
-    (s) => s.frequency === frequency && s.quantity250 === bagCount
-  ).length;
+  if (bagSize === 250)
+    return subscriptions.filter((s) => s.quantity250 === quantity).length;
+  else if (bagSize === 500)
+    return subscriptions.filter((s) => s.quantity500 === quantity).length;
+  else if (bagSize === 1200)
+    return subscriptions.filter((s) => s.quantity1200 === quantity).length;
+
+  throw new Error('Invalid bag size');
+}
+
+function initBagCounterItem(): BagCounterItem {
+  return {
+    one: 0,
+    two: 0,
+    three: 0,
+    four: 0,
+    five: 0,
+    six: 0,
+    seven: 0,
+  };
 }
 
 function initBagCounter(): BagCounter {
   return {
-    fortnightly: {
-      one: 0,
-      two: 0,
-      three: 0,
-      four: 0,
-      five: 0,
-      six: 0,
-      seven: 0,
-    },
-    monthly: {
-      one: 0,
-      two: 0,
-      three: 0,
-      four: 0,
-      five: 0,
-      six: 0,
-      seven: 0,
-    },
+    _250: initBagCounterItem(),
+    _500: initBagCounterItem(),
+    _1200: initBagCounterItem(),
   };
 }
 
@@ -64,77 +71,29 @@ export function countBags(
 ) {
   bagCounter = bagCounter || initBagCounter();
 
-  bagCounter.monthly.one += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.MONTHLY,
-    1
-  );
-  bagCounter.monthly.two += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.MONTHLY,
-    2
-  );
-  bagCounter.monthly.three += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.MONTHLY,
-    3
-  );
-  bagCounter.monthly.four += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.MONTHLY,
-    4
-  );
-  bagCounter.monthly.five += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.MONTHLY,
-    5
-  );
-  bagCounter.monthly.six += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.MONTHLY,
-    6
-  );
-  bagCounter.monthly.seven += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.MONTHLY,
-    7
-  );
+  bagCounter._250.one += resolveBagCount(250, subscriptions, 1);
+  bagCounter._250.two += resolveBagCount(250, subscriptions, 2);
+  bagCounter._250.three += resolveBagCount(250, subscriptions, 3);
+  bagCounter._250.four += resolveBagCount(250, subscriptions, 4);
+  bagCounter._250.five += resolveBagCount(250, subscriptions, 5);
+  bagCounter._250.six += resolveBagCount(250, subscriptions, 6);
+  bagCounter._250.seven += resolveBagCount(250, subscriptions, 7);
 
-  bagCounter.fortnightly.one += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.FORTNIGHTLY,
-    1
-  );
-  bagCounter.fortnightly.two += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.FORTNIGHTLY,
-    2
-  );
-  bagCounter.fortnightly.three += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.FORTNIGHTLY,
-    3
-  );
-  bagCounter.fortnightly.four += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.FORTNIGHTLY,
-    4
-  );
-  bagCounter.fortnightly.five += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.FORTNIGHTLY,
-    5
-  );
-  bagCounter.fortnightly.six += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.FORTNIGHTLY,
-    6
-  );
-  bagCounter.fortnightly.seven += resolveBagCount(
-    subscriptions,
-    SubscriptionFrequency.FORTNIGHTLY,
-    7
-  );
+  bagCounter._500.one += resolveBagCount(500, subscriptions, 1);
+  bagCounter._500.two += resolveBagCount(500, subscriptions, 2);
+  bagCounter._500.three += resolveBagCount(500, subscriptions, 3);
+  bagCounter._500.four += resolveBagCount(500, subscriptions, 4);
+  bagCounter._500.five += resolveBagCount(500, subscriptions, 5);
+  bagCounter._500.six += resolveBagCount(500, subscriptions, 6);
+  bagCounter._500.seven += resolveBagCount(500, subscriptions, 7);
+
+  bagCounter._1200.one += resolveBagCount(1200, subscriptions, 1);
+  bagCounter._1200.two += resolveBagCount(1200, subscriptions, 2);
+  bagCounter._1200.three += resolveBagCount(1200, subscriptions, 3);
+  bagCounter._1200.four += resolveBagCount(1200, subscriptions, 4);
+  bagCounter._1200.five += resolveBagCount(1200, subscriptions, 5);
+  bagCounter._1200.six += resolveBagCount(1200, subscriptions, 6);
+  bagCounter._1200.seven += resolveBagCount(1200, subscriptions, 7);
 
   return bagCounter;
 }
