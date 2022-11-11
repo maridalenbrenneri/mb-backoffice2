@@ -40,9 +40,6 @@ function buildFilter(search: URLSearchParams) {
   const getTypeFilter = search.get('type');
   const getStatusFilter = search.get('status');
 
-  console.log('getTypeFilter', getTypeFilter);
-  console.log('getStatusFilter', getStatusFilter);
-
   if (getStatusFilter && getStatusFilter !== '_all') {
     filter.where.status = getStatusFilter;
   }
@@ -50,6 +47,10 @@ function buildFilter(search: URLSearchParams) {
   if (getTypeFilter && getTypeFilter !== '_all') {
     filter.where.type = getTypeFilter;
   }
+
+  filter.orderBy = {
+    id: 'desc',
+  };
 
   return filter;
 }
@@ -60,7 +61,7 @@ export const loader = async ({ request }) => {
 
   const filter = buildFilter(search);
 
-  console.log('loader', filter);
+  console.log('subscriptions filter', filter);
 
   const subscriptions = await getSubscriptions(filter);
 
@@ -78,12 +79,6 @@ export default function Subscriptions() {
     console.log('ON CHANGE');
     // submit DOES NOT WORK, WHY??
     submit(event.currentTarget, { replace: true });
-  };
-
-  const nestedRouteFromType = (type: SubscriptionType) => {
-    if (type === SubscriptionType.PRIVATE_GIFT) return '/gift';
-    if (type === SubscriptionType.B2B) return '/b2b';
-    return '';
   };
 
   return (
@@ -127,7 +122,7 @@ export default function Subscriptions() {
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
-              <TableCell>Customer</TableCell>
+              <TableCell>Recipient</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Abo type</TableCell>
             </TableRow>
@@ -139,15 +134,9 @@ export default function Subscriptions() {
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <Link
-                    to={`admin/${subscription.id}${nestedRouteFromType(
-                      subscription.type
-                    )}`}
-                  >
-                    {subscription.id}
-                  </Link>
+                  <Link to={`admin/${subscription.id}`}>{subscription.id}</Link>
                 </TableCell>
-                <TableCell>{subscription.customerName}</TableCell>
+                <TableCell>{subscription.recipientName}</TableCell>
                 <TableCell>{subscription.status}</TableCell>
                 <TableCell>{resolveSubscriptionCode(subscription)}</TableCell>
               </TableRow>

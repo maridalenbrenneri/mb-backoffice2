@@ -120,6 +120,11 @@ fly deploy
 
 Everything is based on a subscription, either a private imported from Woo, a gift subscription or a B2B subscription.
 
-For Gift and B2B with status ACTIVE are re-curring orders created automatically. Gifts on STOR-ABO, B2B on 3rd tuesday.
+For Gift and B2B with status ACTIVE is re-curring orders created automatically. Gifts on STOR-ABO, B2B on 3rd tuesday.
 
 There's no LILL-ABO. Monthly and fortnighly is supperted.
+
+# TODOs
+
+- Filtering Fiken contacts (only customers)
+- Cargonizer info (limit, printer, etc.)

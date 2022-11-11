@@ -1,3 +1,5 @@
+import { Link } from '@remix-run/react';
+
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -22,7 +24,7 @@ export default function RoastOverviewBox(props: {
   const notSetLabel = '[Not set]';
 
   if (!stats) {
-    return <Box>Data not available</Box>;
+    return <Box>Data not available :(</Box>;
   }
 
   // INCLUDE WOO ABO DATA IF DELIVERY TYPE IS STOR-ABO
@@ -37,13 +39,20 @@ export default function RoastOverviewBox(props: {
 
   const overview = getRoastOverview(stats.bagCounterMonthly);
 
+  if (!delivery)
+    return (
+      <Box>
+        No deliveries found, please add one{' '}
+        <Link to={`/delivieres/`}>here</Link>.
+      </Box>
+    );
+
   return (
     <Box>
       <p>
         Delivery day: {toPrettyDate(delivery.date)} {delivery.type}
       </p>
       <p>Total weight, kg: {overview.totalKg}</p>
-
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="roast overview table">
           <TableHead>
@@ -58,7 +67,7 @@ export default function RoastOverviewBox(props: {
           <TableBody>
             <TableRow>
               <TableCell>
-                Coffee 1 - {delivery.coffee1.productCode || notSetLabel}
+                Coffee 1 - {delivery.coffee1?.productCode || notSetLabel}
               </TableCell>
               <TableCell>{overview.coffee1kg}</TableCell>
               <TableCell>{overview._250.coffee1}</TableCell>
@@ -67,7 +76,7 @@ export default function RoastOverviewBox(props: {
             </TableRow>
             <TableRow>
               <TableCell>
-                Coffee 2 - {delivery.coffee2.productCode || notSetLabel}
+                Coffee 2 - {delivery.coffee2?.productCode || notSetLabel}
               </TableCell>
               <TableCell>{overview.coffee2kg}</TableCell>
               <TableCell>{overview._250.coffee2}</TableCell>
@@ -76,7 +85,7 @@ export default function RoastOverviewBox(props: {
             </TableRow>
             <TableRow>
               <TableCell>
-                Coffee 3 - {delivery.coffee3.productCode || notSetLabel}
+                Coffee 3 - {delivery.coffee3?.productCode || notSetLabel}
               </TableCell>
               <TableCell>{overview.coffee3kg}</TableCell>
               <TableCell>{overview._250.coffee3}</TableCell>
@@ -85,7 +94,7 @@ export default function RoastOverviewBox(props: {
             </TableRow>
             <TableRow>
               <TableCell>
-                Coffee 4 - {delivery.coffee4.productCode || notSetLabel}
+                Coffee 4 - {delivery.coffee4?.productCode || notSetLabel}
               </TableCell>
               <TableCell>{overview.coffee4kg}</TableCell>
               <TableCell>{overview._250.coffee4}</TableCell>
@@ -95,6 +104,7 @@ export default function RoastOverviewBox(props: {
           </TableBody>
         </Table>
       </TableContainer>
+      <Link to={`deliveries/admin/${delivery.id}`}>Edit coffees</Link>
     </Box>
   );
 }

@@ -25,15 +25,18 @@ import { upsertAction } from './_shared';
 import type { Coffee } from '~/_libs/core/models/coffee.server';
 import { getCoffees } from '~/_libs/core/models/coffee.server';
 import { toPrettyDate } from '~/_libs/core/utils/dates';
+import Orders from '~/components/Orders';
 
 type LoaderData = { delivery: Delivery; coffees: Coffee[] };
 
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
+
   const delivery = await getDelivery(+params.id);
   invariant(delivery, `Delivery not found: ${params.id}`);
 
   const coffees = await getCoffees();
+  invariant(coffees, `Coffees not found`);
 
   return json({ delivery, coffees });
 };
@@ -108,6 +111,10 @@ export default function UpdateDelivery() {
           </Button>
         </FormControl>
       </Form>
+
+      <Box my={2}>
+        <Orders orders={delivery.orders} />
+      </Box>
     </Box>
   );
 }

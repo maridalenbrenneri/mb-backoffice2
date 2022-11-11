@@ -6,12 +6,20 @@ export interface DeliveryDate {
   type: string;
 }
 
-export function toPrettyDate(date: DateTime | Date) {
+export function toPrettyDate(date: DateTime | Date | undefined | null) {
+  if (!date) return null;
   return DateTime.fromISO(date.toString()).toFormat('dd.MM.yyyy');
 }
 
-export function toPrettyDateTime(date: DateTime | Date) {
-  return DateTime.fromISO(date.toString()).toFormat('dd.MM.yyyy HH:mm:ss');
+export function toPrettyDateTime(
+  date: DateTime | Date | undefined | null,
+  includeSeconds = false
+) {
+  if (!date) return null;
+  const seconds = includeSeconds ? ':ss' : '';
+  return DateTime.fromISO(date.toString()).toFormat(
+    `dd.MM.yyyy HH:mm${seconds}`
+  );
 }
 
 // export function toPrettyDateJS(date: Date) {

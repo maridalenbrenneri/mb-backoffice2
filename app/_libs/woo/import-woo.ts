@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import fetchSubscriptions from './subscriptions/fetch';
 import resolveSubscriptionStats from './subscriptions/stats-data';
 import { fetchGiftSubscriptionOrders, fetchOrders } from './orders/fetch';
-import type { GiftSubscriptionWithSubscriptionCreateInput } from '../core/models/subscription.server';
+import type { GiftSubscriptionCreateInput } from '../core/models/subscription.server';
 import { createGiftSubscription } from '../core/models/subscription.server';
 import { createWooImportResult } from '../core/models/woo-import-result.server';
 
@@ -18,7 +18,7 @@ const importWooData = async () => {
   const errors: string[] = [];
 
   let orders = [];
-  let giftSubscriptions: GiftSubscriptionWithSubscriptionCreateInput[] = [];
+  let giftSubscriptions: GiftSubscriptionCreateInput[] = [];
   let subscriptions = [];
   let subscriptionStats;
 
@@ -27,17 +27,18 @@ const importWooData = async () => {
 
     try {
       orders = await fetchOrders();
-    } catch (e: any) {
-      errors.push(e.message);
-      console.warn(e);
+    } catch (err) {
+      errors.push(err.message);
+      console.warn(err.message);
     }
-    console.debug(' => DONE');
+
+    console.debug(`=> DONE (${orders.length} fetched)`);
 
     console.debug('UPSERTING ORDERS...');
 
     // TODO ...
 
-    console.debug(' => DONE', orders.length);
+    console.debug(' => DONE');
   }
 
   if (IMPORT_GIFT_SUBSCRIPTIONS) {
@@ -45,12 +46,12 @@ const importWooData = async () => {
 
     try {
       giftSubscriptions = await fetchGiftSubscriptionOrders();
-    } catch (e: any) {
-      errors.push(e.message);
-      console.warn(e);
+    } catch (eerr) {
+      errors.push(err.message);
+      console.warn(err.message);
     }
 
-    console.debug(' => DONE', giftSubscriptions.length);
+    console.debug(`=> DONE (${giftSubscriptions.length} fetched)`);
 
     console.debug('UPSERTING GIFT SUBSCRIPTIONS...');
 
@@ -66,14 +67,14 @@ const importWooData = async () => {
 
     try {
       subscriptions = await fetchSubscriptions();
-    } catch (e: any) {
-      errors.push(e.message);
-      console.warn(e);
+    } catch (err) {
+      errors.push(err.message);
+      console.warn(err.message);
     }
 
     subscriptionStats = resolveSubscriptionStats(subscriptions);
 
-    console.debug(' => DONE', subscriptions.length);
+    console.debug(`=> DONE (${subscriptions.length} fetched)`);
   }
 
   const completeTimeStamp = DateTime.now().toISO();

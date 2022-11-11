@@ -1,10 +1,8 @@
 import { DateTime } from 'luxon';
 
-import type { GiftSubscriptionWithSubscriptionCreateInput } from '~/_libs/core/models/subscription.server';
-import {
-  SubscriptionFrequency,
-  SubscriptionType,
-} from '~/_libs/core/models/subscription.server';
+import type { GiftSubscriptionCreateInput } from '@prisma/client';
+import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
+
 import { resolveStatusAndFirstDeliveryDate } from '~/_libs/core/utils/gift-subscription-helper';
 import { WOO_GABO_PRODUCT_ID } from '../settings';
 
@@ -13,9 +11,7 @@ function resolveMetadataValue(meta_data: Array<any>, key: string) {
   return !res ? null : res.value;
 }
 
-function itemToSubscription(
-  item: any
-): GiftSubscriptionWithSubscriptionCreateInput {
+function itemToSubscription(item: any): GiftSubscriptionCreateInput {
   const duration_months = +resolveMetadataValue(
     item.meta_data,
     'antall-maneder'
@@ -39,53 +35,44 @@ function itemToSubscription(
   const recipientEmail =
     resolveMetadataValue(item.meta_data, 'abo_email') || item.customer_email;
 
-  const recipientName = resolveMetadataValue(item.meta_data, 'abo_name');
-
   return {
-    subscriptionInput: {
-      type: SubscriptionType.PRIVATE_GIFT,
-      status: statusAndDeliveryDate.status,
-      frequency: SubscriptionFrequency.MONTHLY,
-      quantity250: +resolveMetadataValue(item.meta_data, 'poser'),
-      recipientName,
-      quantity500: 0,
-      quantity1200: 0,
-      fikenContactId: null,
-      internalNote: null,
-    },
-    giftSubscriptionInput: {
-      wooCustomerId: item.customer_id,
-      wooOrderId: item.order_id,
-      wooOrderLineItemId: `${item.order_id}-${item.id}`, // MAKE SURE THIS IS UNIQUE
-      wooOrderDate: DateTime.fromISO(item.date_created).toJSDate(),
+    type: SubscriptionType.PRIVATE_GIFT,
+    status: statusAndDeliveryDate.status,
+    frequency: SubscriptionFrequency.MONTHLY,
+    quantity250: +resolveMetadataValue(item.meta_data, 'poser'),
 
-      customerName: item.customer_name,
-      customerNote: item.customer_note,
+    gift_wooCustomerName: item.customer_name,
+    gift_wooOrderId: item.order_id,
+    gift_wooOrderLineItemId: `${item.order_id}-${item.id}`, // MAKE SURE THIS IS UNIQUE
+    gift_durationMonths: duration_months,
+    gift_firstDeliveryDate: statusAndDeliveryDate.firstDeliveryDate.toJSDate(),
+    gift_messageToRecipient: resolveMetadataValue(
+      item.meta_data,
+      'abo_msg_retriever'
+    ),
 
-      durationMonths: duration_months,
-      originalFirstDeliveryDate: startDate.toJSDate(),
-      firstDeliveryDate: statusAndDeliveryDate.firstDeliveryDate.toJSDate(),
-      recipientName: resolveMetadataValue(item.meta_data, 'abo_name'),
-      recipientEmail,
-      recipientMobile: resolveMetadataValue(item.meta_data, 'abo_mobile'),
-      recipientAddress1: resolveMetadataValue(item.meta_data, 'abo_address1'),
-      recipientAddress2: resolveMetadataValue(item.meta_data, 'abo_address2'),
-      recipientPostalCode: resolveMetadataValue(item.meta_data, 'abo_zip'),
-      recipientPostalPlace: resolveMetadataValue(item.meta_data, 'city'),
-      messageToRecipient: resolveMetadataValue(
-        item.meta_data,
-        'abo_msg_retriever'
-      ),
-    },
+    customerNote: item.customer_note,
+
+    recipientName: resolveMetadataValue(item.meta_data, 'abo_name'),
+    recipientEmail,
+    recipientMobile: resolveMetadataValue(item.meta_data, 'abo_mobile'),
+    recipientAddress1: resolveMetadataValue(item.meta_data, 'abo_address1'),
+    recipientAddress2: resolveMetadataValue(item.meta_data, 'abo_address2'),
+    recipientPostalCode: resolveMetadataValue(item.meta_data, 'abo_zip'),
+    recipientPostalPlace: resolveMetadataValue(item.meta_data, 'city'),
+
+    quantity500: 0,
+    quantity1200: 0,
+    fikenContactId: null,
+    internalNote: null,
   };
 }
 
 // THERE CAN BE MULTIPLE GIFT SUBSCRIPTIONS IN ONE ORDER, USE SOME DATA FROM ORDER AND SOME FROM EACH ORDER LINE
 export default function wooApiToGiftSubscriptions(
   wooGaboOrders: any[]
-): Array<GiftSubscriptionWithSubscriptionCreateInput> {
-  const giftSubscriptionsData =
-    new Array<GiftSubscriptionWithSubscriptionCreateInput>();
+): Array<GiftSubscriptionCreateInput> {
+  const giftSubscriptionsData = new Array<GiftSubscriptionCreateInput>();
 
   for (const order of wooGaboOrders) {
     // console.debug(order);

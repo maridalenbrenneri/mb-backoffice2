@@ -11,7 +11,7 @@ import {
 
 import { Box } from '@mui/material';
 
-import MbAppBar from './components/MbAppBar';
+import MainMenu from './components/MainMenu';
 
 export const meta: MetaFunction = () => ({
   charset: 'utf-8',
@@ -39,7 +39,7 @@ function Document({ children }: { children: React.ReactNode; title?: string }) {
 export default function App() {
   return (
     <Document>
-      <MbAppBar />
+      <MainMenu />
       <Box m={2}>
         <Outlet />
       </Box>

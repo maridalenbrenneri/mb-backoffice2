@@ -8,9 +8,9 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Drawer, List, ListItem, ListItemText } from '@mui/material';
+import { Divider, Drawer, List, ListItem, ListItemText } from '@mui/material';
 
-export default function MbAppBar() {
+export default function MainMenu() {
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
   return (
@@ -36,6 +36,12 @@ export default function MbAppBar() {
                 <ListItemText primary="Dashboard" />
               </ListItem>
 
+              <Divider />
+
+              <ListItem button component={Link} to={'/orders'}>
+                <ListItemText primary="Orders" />
+              </ListItem>
+
               <ListItem button component={Link} to={'/subscriptions'}>
                 <ListItemText primary="Subscriptions" />
               </ListItem>
@@ -48,8 +54,14 @@ export default function MbAppBar() {
                 <ListItemText primary="Deliveries" />
               </ListItem>
 
+              <Divider />
+
+              <ListItem button component={Link} to={'/b2b'}>
+                <ListItemText primary="Fiken Customers" />
+              </ListItem>
+
               <ListItem button component={Link} to={'/woo-import-result'}>
-                <ListItemText primary="Woo Import" />
+                <ListItemText primary="Woo Import Data" />
               </ListItem>
             </List>
           </Drawer>

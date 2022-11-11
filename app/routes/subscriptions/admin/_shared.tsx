@@ -9,9 +9,9 @@ import {
 } from '@prisma/client';
 
 import { upsertSubscription } from '~/_libs/core/models/subscription.server';
-import { updateGiftSubscription } from '~/_libs/core/models/subscription.server';
 import { isUnsignedInt } from '~/_libs/core/utils/numbers';
 import type { FikenCustomer } from '~/_libs/fiken';
+import { upsertOrder } from '~/_libs/core/models/order.server';
 
 type ActionData =
   | {
@@ -109,18 +109,92 @@ export const upsertAction = async (request: any) => {
 
   const id = +formData.get('id');
   const fikenContactId = +formData.get('fikenContactId');
+
   const type = formData.get('type');
   const status = formData.get('status');
+
   const frequency = formData.get('frequency');
   const quantity250 = +formData.get('quantity250');
   const quantity500 = +formData.get('quantity500');
   const quantity1200 = +formData.get('quantity1200');
+
   const internalNote = formData.get('internalNote');
 
-  console.log('Form', id);
-  console.log('Form', status);
-  console.log('Form', quantity250);
-  console.log('Form', fikenContactId);
+  const recipientName = formData.get('name');
+  const recipientAddress1 = formData.get('address1');
+  const recipientAddress2 = formData.get('address2');
+  const recipientPostalCode = formData.get('postalCode');
+  const recipientPostalPlace = formData.get('postalPlace');
+  const recipientEmail = formData.get('email');
+  const recipientMobile = formData.get('mobile');
+
+  const errors = {
+    status: status ? null : 'Status is required',
+    type: type ? null : 'Type is required',
+    quantity250: isUnsignedInt(quantity250)
+      ? null
+      : 'Must be a number greater or equal to zero',
+    quantity500: isUnsignedInt(quantity500)
+      ? null
+      : 'Must be a number greater or equal to zero',
+    quantity1200: isUnsignedInt(quantity1200)
+      ? null
+      : 'Must be a number greater or equal to zero',
+    name: recipientName ? null : 'Name is required',
+    address1: recipientAddress1 ? null : 'Address1 is required',
+    postalCode: recipientPostalCode ? null : 'Post code is required',
+    postalPlace: recipientPostalPlace ? null : 'Place is required',
+  };
+
+  if (Object.values(errors).some((errorMessage) => errorMessage)) {
+    console.error('Errors in form', errors);
+    return json<ActionData>(errors);
+  }
+
+  const data = {
+    fikenContactId: fikenContactId || null,
+    type,
+    status,
+    frequency,
+    quantity250,
+    quantity500,
+    quantity1200,
+    internalNote,
+    recipientName,
+    recipientAddress1,
+    recipientAddress2,
+    recipientPostalCode,
+    recipientPostalPlace,
+    recipientEmail,
+    recipientMobile,
+  };
+
+  await upsertSubscription({ ...data, id });
+
+  return redirect('/subscriptions');
+};
+
+export const upsertOrderAction = async (request: any) => {
+  const formData = await request.formData();
+
+  const id = +formData.get('id');
+  const subscriptionId = +formData.get('subscriptionId');
+  const deliveryId = +formData.get('deliveryId');
+  const type = +formData.get('orderType');
+  const status = formData.get('status');
+
+  const name = formData.get('name');
+  const address1 = formData.get('address1');
+  const address2 = formData.get('address2');
+  const postalCode = formData.get('postalCode');
+  const postalPlace = formData.get('postalPlace');
+  const email = formData.get('email');
+  const mobile = formData.get('mobile');
+
+  const quantity250 = +formData.get('quantity250');
+  const quantity500 = +formData.get('quantity500');
+  const quantity1200 = +formData.get('quantity1200');
+  const internalNote = formData.get('internalNote');
 
   const errors = {
     quantity250: isUnsignedInt(quantity250)
@@ -140,64 +214,24 @@ export const upsertAction = async (request: any) => {
   }
 
   const data = {
-    fikenContactId: fikenContactId || null,
-    recipientName: fikenContactId + '', // TODO: How to get name from Form?
+    subscriptionId,
+    deliveryId,
     type,
     status,
-    frequency,
     quantity250,
     quantity500,
     quantity1200,
     internalNote,
+    name,
+    address1,
+    address2,
+    postalCode,
+    postalPlace,
+    email,
+    mobile,
   };
 
-  await upsertSubscription({ ...data, id });
+  await upsertOrder({ ...data, id });
 
   return redirect('/subscriptions');
-};
-
-// GIFT SUBSCRIPTION
-export const updateGiftSubscriptionAction = async (request: any) => {
-  const formData = await request.formData();
-
-  const id = +formData.get('id');
-  const recipientName = formData.get('name');
-  const recipientAddress1 = formData.get('address1');
-  const recipientAddress2 = formData.get('address2');
-  const recipientPostalCode = formData.get('postalCode');
-  const recipientPostalPlace = formData.get('postalPlace');
-  const recipientEmail = formData.get('email');
-  const recipientMobile = formData.get('mobile');
-
-  console.log('Form', id);
-  console.log('Form', recipientName);
-
-  const errors = {
-    name: recipientName ? null : 'Name is required',
-    address1: recipientAddress1 ? null : 'Address1 is required',
-    postalCode: recipientPostalCode ? null : 'Post code is required',
-    postalPlace: recipientPostalPlace ? null : 'Place is required',
-  };
-
-  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
-  if (hasErrors) {
-    console.debug('Errors in form', errors);
-    return json<any>(errors);
-  }
-
-  const data = {
-    recipientName,
-    recipientAddress1,
-    recipientAddress2,
-    recipientPostalCode,
-    recipientPostalPlace,
-    recipientEmail,
-    recipientMobile,
-  };
-
-  console.log('DATA', data);
-
-  await updateGiftSubscription({ ...data, id });
-
-  return redirect('/');
 };

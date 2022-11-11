@@ -1,6 +1,7 @@
 import { prisma } from '~/db.server';
 
 import type { Order } from '@prisma/client';
+import { OrderType, OrderStatus } from '@prisma/client';
 
 export type { Order };
 export type OrderUpsertData = Pick<
@@ -13,6 +14,11 @@ export type OrderUpsertData = Pick<
   | 'address2'
   | 'postalCode'
   | 'postalPlace'
+  | 'email'
+  | 'mobile'
+  | 'quantity250'
+  | 'quantity500'
+  | 'quantity1200'
 >;
 
 export async function getOrders() {
@@ -23,7 +29,7 @@ export async function getOrders() {
     orderBy: {
       createdAt: 'desc',
     },
-    take: 10,
+    take: 30,
   });
 }
 
@@ -36,20 +42,27 @@ export async function getOrder(id: number) {
   });
 }
 
-export async function upsertOrder(order: OrderUpsertData) {
+export async function upsertOrder(input: OrderUpsertData) {
   return prisma.order.upsert({
     where: {
-      id: order.id || 0,
+      id: input.id || 0,
     },
-    update: order,
+    update: input,
     create: {
-      name: order.name,
-      address1: order.address1,
-      address2: order.address2,
-      postalCode: order.postalCode,
-      postalPlace: order.postalPlace,
-      subscriptionId: order.subscriptionId,
-      deliveryId: order.deliveryId,
+      type: OrderType.RECURRING,
+      status: OrderStatus.ACTIVE,
+      name: input.name,
+      address1: input.address1,
+      address2: input.address2,
+      postalCode: input.postalCode,
+      postalPlace: input.postalPlace,
+      email: input.email,
+      mobile: input.mobile,
+      subscriptionId: input.subscriptionId,
+      deliveryId: input.deliveryId,
+      quantity250: input.quantity250,
+      quantity500: input.quantity500,
+      quantity1200: input.quantity1200,
     },
   });
 }
