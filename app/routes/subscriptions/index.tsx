@@ -2,8 +2,6 @@ import { json } from '@remix-run/node';
 import {
   Form,
   Link,
-  Outlet,
-  useFetcher,
   useLoaderData,
   useSearchParams,
   useSubmit,
@@ -26,14 +24,11 @@ import {
   TableFooter,
 } from '@mui/material';
 
-import type { Subscription } from '~/_libs/core/models/subscription.server';
+import type { Subscription } from '@prisma/client';
+import { SubscriptionType } from '@prisma/client';
+
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
-import {
-  resolveCustomerName,
-  resolveSubscriptionCode,
-} from '~/_libs/core/utils/gift-subscription-helper';
-import { useEffect, useState } from 'react';
-import { CheckBox } from '@mui/icons-material';
+import { resolveSubscriptionCode } from '~/_libs/core/utils/gift-subscription-helper';
 
 type LoaderData = {
   subscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
@@ -79,11 +74,17 @@ export default function Subscriptions() {
   const [params] = useSearchParams();
   const submit = useSubmit();
 
-  function handleChange(event: any) {
+  const handleChange = (event: any) => {
     console.log('ON CHANGE');
     // submit DOES NOT WORK, WHY??
     submit(event.currentTarget, { replace: true });
-  }
+  };
+
+  const nestedRouteFromType = (type: SubscriptionType) => {
+    if (type === SubscriptionType.PRIVATE_GIFT) return '/gift';
+    if (type === SubscriptionType.B2B) return '/b2b';
+    return '';
+  };
 
   return (
     <main>
@@ -138,7 +139,13 @@ export default function Subscriptions() {
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <Link to={`admin/${subscription.id}`}>{subscription.id}</Link>
+                  <Link
+                    to={`admin/${subscription.id}${nestedRouteFromType(
+                      subscription.type
+                    )}`}
+                  >
+                    {subscription.id}
+                  </Link>
                 </TableCell>
                 <TableCell>{subscription.customerName}</TableCell>
                 <TableCell>{subscription.status}</TableCell>

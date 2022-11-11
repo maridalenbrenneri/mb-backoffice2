@@ -43,9 +43,13 @@ export default function UpdateGiftSubscriptionRecipient() {
 
   const { gift } = useLoaderData() as unknown as LoaderData;
 
+  if (!gift) {
+    return <Box sx={{ my: 4 }}>Not a gift subscription.</Box>;
+  }
+
   return (
-    <>
-      <Typography variant="h3">Gift subscription</Typography>
+    <Box sx={{ my: 4 }}>
+      <Typography variant="h2">Gift subscription</Typography>
 
       <Paper>
         <Box sx={{ m: 2, p: 1 }}>
@@ -54,6 +58,7 @@ export default function UpdateGiftSubscriptionRecipient() {
         </Box>
       </Paper>
       <Paper>
+        <Typography variant="h4">Data from Woo order</Typography>
         <Box sx={{ m: 2, p: 1 }}>
           Customer: {gift.customerName} <br></br>
           Requested start date: {toPrettyDate(gift.originalFirstDeliveryDate)}
@@ -61,17 +66,15 @@ export default function UpdateGiftSubscriptionRecipient() {
           Woo order id: {gift.wooOrderId} <br></br>
           Woo customer id: {gift.wooCustomerId}
         </Box>
-      </Paper>
-      <Paper>
         <Box sx={{ m: 2, p: 1 }}>
           Customer note: {gift.customerNote} <br></br>
         </Box>
-      </Paper>
-      <Paper>
         <Box sx={{ m: 2, p: 1 }}>
           Message to recipient: {gift.messageToRecipient} <br></br>
         </Box>
       </Paper>
+
+      <Typography variant="h4">Recipent</Typography>
 
       <Form method="post">
         <input type="hidden" name="id" value={gift.id} />
@@ -146,7 +149,7 @@ export default function UpdateGiftSubscriptionRecipient() {
           </Button>
         </FormControl>
       </Form>
-    </>
+    </Box>
   );
 }
 
