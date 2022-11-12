@@ -14,6 +14,7 @@ export async function getDeliveries() {
       coffee2: true,
       coffee3: true,
       coffee4: true,
+      orders: true,
     },
     orderBy: {
       date: 'desc',

@@ -11,7 +11,14 @@ import {
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
-import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  FormControl,
+  Grid,
+  TextField,
+  Typography,
+} from '@mui/material';
 
 import {
   renderFrequency,
@@ -67,141 +74,156 @@ export default function UpdateSubscription() {
         '& .MuiTextField-root': { m: 1, minWidth: 250 },
       }}
     >
-      <Typography variant="h2">Subscription</Typography>
-      <p>Recipient: {subscription.recipientName}</p>
+      <Grid container spacing={2}>
+        <Grid item md={12}>
+          <Typography variant="h1">Subscription</Typography>
+        </Grid>
+        <Grid item md={9}>
+          <Form method="post">
+            <input type="hidden" name="id" value={subscription.id} />
+            <input type="hidden" name="type" value={subscription.type} />
+            <input
+              type="hidden"
+              name="fikenContactId"
+              value={subscription.fikenContactId || undefined}
+            />
 
-      <Form method="post">
-        <input type="hidden" name="id" value={subscription.id} />
-        <input type="hidden" name="type" value={subscription.type} />
-        <input
-          type="hidden"
-          name="fikenContactId"
-          value={subscription.fikenContactId || undefined}
-        />
+            <Box my={2}>
+              {renderTypes(subscription.type)}
+              {renderStatus(subscription.status)}
+              {renderFrequency(subscription.frequency)}
+            </Box>
+            <Box>
+              <FormControl>
+                <TextField
+                  name="quantity250"
+                  label="Quantity, 250g"
+                  variant="outlined"
+                  defaultValue={subscription.quantity250}
+                  error={errors?.quantity250}
+                />
+              </FormControl>
+              <FormControl>
+                <TextField
+                  name="quantity500"
+                  label="Quantity, 500g"
+                  variant="outlined"
+                  defaultValue={subscription.quantity500}
+                  error={errors?.quantity500}
+                />
+              </FormControl>
+              <FormControl>
+                <TextField
+                  name="quantity1200"
+                  label="Quantity, 1,2kg"
+                  variant="outlined"
+                  defaultValue={subscription.quantity1200}
+                  error={errors?.quantity1200}
+                />
+              </FormControl>
+            </Box>
 
-        {renderTypes(subscription.type)}
-        {renderStatus(subscription.status)}
-        {renderFrequency(subscription.frequency)}
+            <Box my={2}>
+              <div>
+                <FormControl>
+                  <TextField
+                    name="name"
+                    label="Name"
+                    variant="outlined"
+                    defaultValue={subscription.recipientName}
+                    error={errors?.recipientName}
+                  />
+                </FormControl>
+              </div>
+              <div>
+                <FormControl>
+                  <TextField
+                    name="address1"
+                    label="Address1"
+                    variant="outlined"
+                    defaultValue={subscription.recipientAddress1}
+                    error={errors?.recipientAddress1}
+                  />
+                </FormControl>
+                <FormControl>
+                  <TextField
+                    name="address2"
+                    label="Address2"
+                    variant="outlined"
+                    defaultValue={subscription.recipientAddress2}
+                    error={errors?.recipientAddress2}
+                  />
+                </FormControl>
+              </div>
+              <div>
+                <FormControl>
+                  <TextField
+                    name="postalCode"
+                    label="Postal code"
+                    variant="outlined"
+                    defaultValue={subscription.recipientPostalCode}
+                    error={errors?.recipientPostcode}
+                  />
+                </FormControl>
+                <FormControl>
+                  <TextField
+                    name="postalPlace"
+                    label="Place"
+                    variant="outlined"
+                    defaultValue={subscription.recipientPostalPlace}
+                    error={errors?.recipientPlace}
+                  />
+                </FormControl>
+              </div>
+              <div>
+                <FormControl>
+                  <TextField
+                    name="email"
+                    label="Email"
+                    variant="outlined"
+                    defaultValue={subscription.recipientEmail}
+                    error={errors?.recipientEmail}
+                  />
+                </FormControl>
+                <FormControl>
+                  <TextField
+                    name="mobile"
+                    label="Mobile"
+                    variant="outlined"
+                    defaultValue={subscription.recipientMobile}
+                    error={errors?.recipientMobile}
+                  />
+                </FormControl>
+              </div>
+            </Box>
 
-        <FormControl>
-          <TextField
-            name="quantity250"
-            label="Quantity, 250g"
-            variant="outlined"
-            defaultValue={subscription.quantity250}
-            error={errors?.quantity250}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="quantity500"
-            label="Quantity, 500g"
-            variant="outlined"
-            defaultValue={subscription.quantity500}
-            error={errors?.quantity500}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="quantity1200"
-            label="Quantity, 1,2kg"
-            variant="outlined"
-            defaultValue={subscription.quantity1200}
-            error={errors?.quantity1200}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="internalNote"
-            label="Note"
-            variant="outlined"
-            multiline
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="name"
-            label="Name"
-            variant="outlined"
-            defaultValue={subscription.recipientName}
-            error={errors?.recipientName}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="address1"
-            label="Address1"
-            variant="outlined"
-            defaultValue={subscription.recipientAddress1}
-            error={errors?.recipientAddress1}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="address2"
-            label="Address2"
-            variant="outlined"
-            defaultValue={subscription.recipientAddress2}
-            error={errors?.recipientAddress2}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="postalCode"
-            label="Postal code"
-            variant="outlined"
-            defaultValue={subscription.recipientPostalCode}
-            error={errors?.recipientPostcode}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="postalPlace"
-            label="Place"
-            variant="outlined"
-            defaultValue={subscription.recipientPostalPlace}
-            error={errors?.recipientPlace}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="email"
-            label="Email"
-            variant="outlined"
-            defaultValue={subscription.recipientEmail}
-            error={errors?.recipientEmail}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="mobile"
-            label="Mobile"
-            variant="outlined"
-            defaultValue={subscription.recipientMobile}
-            error={errors?.recipientMobile}
-          />
-        </FormControl>
-
-        <FormControl sx={{ m: 1 }}>
-          <Button type="submit" disabled={isUpdating}>
-            {isUpdating ? 'Updating...' : 'Update Subscription'}
-          </Button>
-        </FormControl>
-      </Form>
-
-      <Box m={2}>
-        <GiftSubscriptionWooData subscription={subscription} />
-      </Box>
-
-      <Box m={2}>
-        <Link to={`new-order`}>Create order</Link>
-      </Box>
-
-      {/* <CreateOrder subscription={subscription} deliveries={deliveries} /> */}
-
-      <Outlet />
-
-      <Orders orders={subscription.orders} />
+            <div>
+              <TextField
+                name="internalNote"
+                label="Note"
+                variant="outlined"
+                multiline
+              />
+            </div>
+            <div>
+              <FormControl sx={{ m: 1 }}>
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? 'Updating...' : 'Update Subscription'}
+                </Button>
+              </FormControl>
+            </div>
+          </Form>
+        </Grid>
+        <Grid item md={3}>
+          <GiftSubscriptionWooData subscription={subscription} />
+        </Grid>
+        <Grid item md={12}>
+          <Outlet />
+        </Grid>
+        <Grid item md={12}>
+          <Orders orders={subscription.orders} />
+        </Grid>
+      </Grid>
     </Box>
   );
 }

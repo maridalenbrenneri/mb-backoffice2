@@ -11,16 +11,15 @@ export default function GiftSubscriptionWooData(props: {
   const { subscription } = props;
 
   if (subscription.type !== SubscriptionType.PRIVATE_GIFT) {
-    return <Box sx={{ my: 4 }}>Not a gift subscription.</Box>;
+    return null;
   }
 
   return (
     <Paper sx={{ p: 1 }}>
-      <Typography variant="h5">
-        Data from Woo Gift Subscription Order
-      </Typography>
+      <Typography variant="subtitle1">Woo GABO data</Typography>
       <Box sx={{ m: 2 }}>
-        First delivery: {toPrettyDate(subscription.gift_firstDeliveryDate)}
+        <Typography variant="subtitle2">First delivery: </Typography>
+        {toPrettyDate(subscription.gift_firstDeliveryDate)}
         <br></br>
         Deliveries: {subscription.gift_durationMonths} <br></br>
         Customer: {subscription.gift_wooCustomerName} <br></br>

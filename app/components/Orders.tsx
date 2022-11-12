@@ -12,7 +12,7 @@ import Box from '@mui/material/Box';
 
 import type { Order } from '@prisma/client';
 
-import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 
 export default function Orders(props: { orders: Order[] }) {
   const { orders } = props;
@@ -30,6 +30,7 @@ export default function Orders(props: { orders: Order[] }) {
               <TableCell>ID</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Order date</TableCell>
+              <TableCell>Delivery</TableCell>
               <TableCell>Quantity 250</TableCell>
               <TableCell>Quantity 500</TableCell>
               <TableCell>Quantity 1200</TableCell>
@@ -46,6 +47,11 @@ export default function Orders(props: { orders: Order[] }) {
                 </TableCell>
                 <TableCell>{order.status}</TableCell>
                 <TableCell>{toPrettyDateTime(order.createdAt)}</TableCell>
+                <TableCell>
+                  <Link to={`/deliveries/admin/${order.delivery?.id}`}>
+                    {toPrettyDate(order.delivery?.date)}
+                  </Link>
+                </TableCell>
                 <TableCell>{order.quantity250}</TableCell>
                 <TableCell>{order.quantity500}</TableCell>
                 <TableCell>{order.quantity1200}</TableCell>

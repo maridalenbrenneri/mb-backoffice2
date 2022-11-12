@@ -60,6 +60,9 @@ export async function getSubscription(id: number) {
     where: { id },
     include: {
       orders: {
+        include: {
+          delivery: true,
+        },
         orderBy: {
           createdAt: 'desc',
         },

@@ -8,13 +8,26 @@ import {
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
-import { Box, Button, Typography, FormControl, TextField } from '@mui/material';
+import {
+  Box,
+  Button,
+  Typography,
+  FormControl,
+  TextField,
+  InputLabel,
+  Select,
+  MenuItem,
+} from '@mui/material';
 
+import type { Delivery } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 
 import { upsertAction } from '../../../orders/admin/_shared';
 import { getSubscription } from '~/_libs/core/models/subscription.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
+import { useEffect, useState } from 'react';
+import { toPrettyDate } from '~/_libs/core/utils/dates';
+import { resolveSubscriptionCode } from '~/_libs/core/utils/gift-subscription-helper';
 
 type LoaderData = {
   subscription: Awaited<ReturnType<typeof getSubscription>>;
@@ -42,11 +55,20 @@ export default function NewOrder() {
   const errors = useActionData();
   const transition = useTransition();
   const isCreating = Boolean(transition.submission);
+  const [delivery, setDelivery] = useState<Delivery>();
+
+  useEffect(() => {
+    setDelivery(deliveries[0]);
+  }, [deliveries]);
+
+  if (!delivery) return null;
 
   if (!subscription)
     throw new Error('Subscription is null, this should never happen');
 
-  const selectedDeliveryId = deliveries[0].id;
+  const handleChange = (e: any) => {
+    setDelivery(deliveries.find((c) => c.id === e.target.value) as Delivery);
+  };
 
   return (
     <Box
@@ -55,9 +77,13 @@ export default function NewOrder() {
       }}
     >
       <Typography variant="h2">Create New Order</Typography>
+      <p>
+        Subscription: {subscription.id} |{' '}
+        {resolveSubscriptionCode(subscription)} | {subscription.recipientName}
+      </p>
       <Form method="post">
         <input type="hidden" name="subscriptionId" value={subscription.id} />
-        <input type="hidden" name="deliveryId" value={selectedDeliveryId} />
+        <input type="hidden" name="deliveryId" value={delivery.id} />
         <input type="hidden" name="status" value={OrderStatus.ACTIVE} />
 
         <input
@@ -97,6 +123,23 @@ export default function NewOrder() {
           value={subscription.recipientEmail || undefined}
         />
 
+        <FormControl sx={{ m: 1 }}>
+          <InputLabel id={`delivery-label`}>Delivery day</InputLabel>
+          <Select
+            labelId={`delivery-label`}
+            name={`deliveryId`}
+            defaultValue={delivery?.id || 0}
+            onChange={handleChange}
+            sx={{ minWidth: 250 }}
+          >
+            {deliveries.map((d) => (
+              <MenuItem value={d.id} key={d.id}>
+                {toPrettyDate(d.date)} - {d.type}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         <FormControl>
           <TextField
             name="quantity250"
@@ -124,11 +167,13 @@ export default function NewOrder() {
             error={errors?.quantity1200}
           />
         </FormControl>
-        <FormControl sx={{ m: 1 }}>
-          <Button type="submit" disabled={isCreating}>
-            {isCreating ? 'Creating...' : 'Create Order'}
-          </Button>
-        </FormControl>
+        <div>
+          <FormControl sx={{ m: 1 }}>
+            <Button type="submit" disabled={isCreating}>
+              {isCreating ? 'Creating...' : 'Create Order'}
+            </Button>
+          </FormControl>
+        </div>
       </Form>
     </Box>
   );

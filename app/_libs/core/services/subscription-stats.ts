@@ -64,6 +64,10 @@ function initBagCounter(): BagCounter {
   };
 }
 
+export function emptyBagCounter(): BagCounter {
+  return initBagCounter();
+}
+
 export function countBags(
   subscriptions: Subscription[],
   bagCounter?: BagCounter | undefined | null

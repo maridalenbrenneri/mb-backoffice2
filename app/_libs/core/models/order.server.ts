@@ -25,6 +25,7 @@ export async function getOrders() {
   return prisma.order.findMany({
     include: {
       orderItems: true,
+      delivery: true,
     },
     orderBy: {
       createdAt: 'desc',
@@ -38,6 +39,7 @@ export async function getOrder(id: number) {
     where: { id },
     include: {
       orderItems: true,
+      delivery: true,
     },
   });
 }

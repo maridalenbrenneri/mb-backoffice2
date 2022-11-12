@@ -58,6 +58,8 @@ function resolveAboStats(
   );
   const bagCounterFortnightly = woo.bagCounterFortnightly;
 
+  // TODO: ADD MONTHLY WITH 3rd WEEK DELIVERY AS OWN bagCounter
+
   const gifts = activeSubscriptions.filter(
     (s) => s.type === SubscriptionType.PRIVATE_GIFT
   );
@@ -99,7 +101,7 @@ export default function Index() {
       <h1>MB Dashboard</h1>
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h3">Roast overview</Typography>
-        <RoastOverviewBox stats={aboStats} delivery={deliveries[0]} />
+        <RoastOverviewBox stats={aboStats} deliveries={deliveries} />
       </Box>
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h3">Subscription overview</Typography>
