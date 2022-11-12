@@ -27,11 +27,11 @@ function mapToFikenCustomer(api: any): FikenCustomer {
     name: api.name,
     email: api.email,
     address: {
-      address1: api.address.address1,
-      address2: api.address.address2,
-      postalPlace: api.address.postalPlace,
-      postalCode: api.address.postalCode,
-      country: 'NO',
+      address1: api.address.streetAddress,
+      address2: api.address.streetAddressLine2,
+      postalPlace: api.address.city,
+      postalCode: api.address.postCode,
+      country: api.address.country,
     },
     inactive: api.inactive,
     customer: api.customer,
@@ -45,13 +45,13 @@ export async function getCustomer(customerId: number): Promise<FikenCustomer> {
   const response = await fetch(contacts_uri, { headers: auth });
   const customer = await response.json();
 
-  console.log(customer);
+  // console.log(customer);
 
   return mapToFikenCustomer(customer);
 }
 
 export async function getCustomers(): Promise<FikenCustomer[]> {
-  const contacts_uri = `${fiken_uri}/contacts?sortBy=name%20asc&pageSize=100`;
+  const contacts_uri = `${fiken_uri}/contacts?customer=true&sortBy=name%20asc&pageSize=100`;
   const auth = { authorization: `Bearer ${process.env.FIKEN_API_TOKEN}` };
 
   const response = await fetch(contacts_uri, { headers: auth });

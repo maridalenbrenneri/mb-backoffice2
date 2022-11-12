@@ -128,3 +128,4 @@ There's no LILL-ABO. Monthly and fortnighly is supperted.
 
 - Filtering Fiken contacts (only customers)
 - Cargonizer info (limit, printer, etc.)
+- Settings

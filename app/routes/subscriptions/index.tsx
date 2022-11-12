@@ -25,10 +25,10 @@ import {
 } from '@mui/material';
 
 import type { Subscription } from '@prisma/client';
-import { SubscriptionType } from '@prisma/client';
 
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { resolveSubscriptionCode } from '~/_libs/core/utils/gift-subscription-helper';
+import { useState } from 'react';
 
 type LoaderData = {
   subscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
@@ -74,24 +74,44 @@ export default function Subscriptions() {
   const { subscriptions } = useLoaderData() as unknown as LoaderData;
   const [params] = useSearchParams();
   const submit = useSubmit();
+  const [status, setStatus] = useState(params.get('status') || '_all');
+  const [type, setType] = useState(params.get('type') || '_all');
 
-  const handleChange = (event: any) => {
-    console.log('ON CHANGE');
-    // submit DOES NOT WORK, WHY??
-    submit(event.currentTarget, { replace: true });
+  const doSubmit = (data: any) => {
+    submit(data, { replace: true });
+  };
+
+  const handleSelectType = (e: any) => {
+    setType(e.target.value);
+    doSubmit({
+      status,
+      type: e.target.value,
+    });
+  };
+
+  const handleSelectStatus = (e: any) => {
+    setStatus(e.target.value);
+    doSubmit({
+      status: e.target.value,
+      type,
+    });
   };
 
   return (
     <main>
       <Typography variant="h2">Subscriptions</Typography>
       <Button href="/subscriptions/admin/new">Create a new subscription</Button>
-      <Form method="get" onChange={handleChange}>
+      <Form method="get">
+        <label>
+          <input type="checkbox" name="darkMode" value="on" /> Dark Mode
+        </label>
         <FormControl sx={{ m: 1 }}>
           <InputLabel id={`subscription-type`}>Type</InputLabel>
           <Select
             labelId={`subscription-type`}
             name={`type`}
-            defaultValue={params.get('type') || '_all'}
+            defaultValue={type}
+            onChange={handleSelectType}
             sx={{ minWidth: 250 }}
           >
             <MenuItem value={'_all'}>All</MenuItem>
@@ -104,7 +124,8 @@ export default function Subscriptions() {
           <Select
             labelId={`subscription-status`}
             name={`status`}
-            defaultValue={params.get('status') || '_all'}
+            defaultValue={status}
+            onChange={handleSelectStatus}
             sx={{ minWidth: 250 }}
           >
             <MenuItem value={'_all'}>All</MenuItem>

@@ -10,7 +10,6 @@ import {
 
 import { upsertSubscription } from '~/_libs/core/models/subscription.server';
 import { isUnsignedInt } from '~/_libs/core/utils/numbers';
-import type { FikenCustomer } from '~/_libs/fiken';
 import { upsertOrder } from '~/_libs/core/models/order.server';
 
 type ActionData =
@@ -20,26 +19,6 @@ type ActionData =
       quantity1200: null | string;
     }
   | undefined;
-
-export const renderCustomers = (customers: FikenCustomer[]) => {
-  return (
-    <FormControl sx={{ m: 1 }}>
-      <InputLabel id={`customer-label`}>Customer</InputLabel>
-      <Select
-        labelId={`customer-label`}
-        name={`contactId`}
-        defaultValue={customers[0].contactId}
-        sx={{ minWidth: 250 }}
-      >
-        {customers.map((customer) => (
-          <MenuItem value={customer.contactId} key={customer.contactId}>
-            {customer.name}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-};
 
 export const renderTypes = (type: SubscriptionType = SubscriptionType.B2B) => {
   return (
@@ -142,7 +121,7 @@ export const upsertAction = async (request: any) => {
       : 'Must be a number greater or equal to zero',
     name: recipientName ? null : 'Name is required',
     address1: recipientAddress1 ? null : 'Address1 is required',
-    postalCode: recipientPostalCode ? null : 'Post code is required',
+    postalCode: recipientPostalCode ? null : 'Postal code is required',
     postalPlace: recipientPostalPlace ? null : 'Place is required',
   };
 
