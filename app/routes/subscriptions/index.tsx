@@ -102,9 +102,6 @@ export default function Subscriptions() {
       <Typography variant="h2">Subscriptions</Typography>
       <Button href="/subscriptions/admin/new">Create a new subscription</Button>
       <Form method="get">
-        <label>
-          <input type="checkbox" name="darkMode" value="on" /> Dark Mode
-        </label>
         <FormControl sx={{ m: 1 }}>
           <InputLabel id={`subscription-type`}>Type</InputLabel>
           <Select
@@ -135,7 +132,6 @@ export default function Subscriptions() {
             <MenuItem value={'COMPLETED'}>Completed</MenuItem>
           </Select>
         </FormControl>
-        <Button type="submit">Filter</Button>
       </Form>
 
       <TableContainer component={Paper}>
