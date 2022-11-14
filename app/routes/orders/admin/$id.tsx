@@ -8,11 +8,21 @@ import {
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
-import { Box, Button, FormControl, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+} from '@mui/material';
 
 import { getOrder } from '~/_libs/core/models/order.server';
 import type { Order } from '~/_libs/core/models/order.server';
 import { upsertAction } from './_shared';
+import { OrderStatus } from '@prisma/client';
 
 type LoaderData = { order: Order };
 
@@ -43,10 +53,39 @@ export default function UpdateOrder() {
         '& .MuiTextField-root': { m: 1, minWidth: 250 },
       }}
     >
-      <Typography variant="h2">Edit Order</Typography>
+      <Typography variant="h2">Order</Typography>
       <Form method="post">
         <input type="hidden" name="id" value={order.id} />
+        <input
+          type="hidden"
+          name="subscriptionId"
+          value={order.subscriptionId}
+        />
+        <input type="hidden" name="deliveryId" value={order.deliveryId} />
 
+        <FormControl sx={{ m: 1 }}>
+          <InputLabel id={`status-label`}>Type</InputLabel>
+          <Select
+            labelId="status-label"
+            name="status"
+            defaultValue={order.status}
+            sx={{ minWidth: 250 }}
+          >
+            <MenuItem value={OrderStatus.ACTIVE}>{OrderStatus.ACTIVE}</MenuItem>
+            <MenuItem value={OrderStatus.ON_HOLD}>
+              {OrderStatus.ON_HOLD}
+            </MenuItem>
+            <MenuItem value={OrderStatus.COMPLETED}>
+              {OrderStatus.COMPLETED}
+            </MenuItem>
+            <MenuItem value={OrderStatus.CANCELLED}>
+              {OrderStatus.CANCELLED}
+            </MenuItem>
+            <MenuItem value={OrderStatus.DELETED}>
+              {OrderStatus.DELETED}
+            </MenuItem>
+          </Select>
+        </FormControl>
         <FormControl>
           <TextField
             name="quantity250"
@@ -142,11 +181,13 @@ export default function UpdateOrder() {
             error={errors?.mobile}
           />
         </FormControl>
-        <FormControl sx={{ m: 1 }}>
-          <Button type="submit" disabled={isUpdating}>
-            {isUpdating ? 'Updating...' : 'Update Order'}
-          </Button>
-        </FormControl>
+        <div>
+          <FormControl sx={{ m: 1 }}>
+            <Button type="submit" disabled={isUpdating}>
+              {isUpdating ? 'Updating...' : 'Update Order'}
+            </Button>
+          </FormControl>
+        </div>
       </Form>
     </Box>
   );

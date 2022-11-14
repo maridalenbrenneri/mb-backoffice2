@@ -24,10 +24,17 @@ model Password {
   userId String @unique
 }
 
+enum CoffeeStatus {
+  ACTIVE    
+  SOLD_OUT   
+  ORDERED 
+  DELETED
+}
+
 model Coffee {
   id Int @id @default(autoincrement())
 
-  status      String
+  status      CoffeeStatus
   productCode String
   name        String
   country     String
@@ -155,6 +162,8 @@ model Order {
   id      Int @id @default(autoincrement())
   status  OrderStatus
   type    OrderType
+
+  wooOrderId  Int?
 
   name        String
   email       String?

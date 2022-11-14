@@ -9,7 +9,7 @@ import {
   useCatch,
 } from '@remix-run/react';
 
-import { Box } from '@mui/material';
+import { Box, ThemeProvider, CssBaseline } from '@mui/material';
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -17,6 +17,7 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
 import MainMenu from './components/MainMenu';
+import { theme } from './style/theme';
 
 export const meta: MetaFunction = () => ({
   charset: 'utf-8',
@@ -32,6 +33,7 @@ function Document({ children }: { children: React.ReactNode; title?: string }) {
         <Links />
       </head>
       <body>
+        <CssBaseline />
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -43,12 +45,14 @@ function Document({ children }: { children: React.ReactNode; title?: string }) {
 
 export default function App() {
   return (
-    <Document>
-      <MainMenu />
-      <Box m={2}>
-        <Outlet />
-      </Box>
-    </Document>
+    <ThemeProvider theme={theme}>
+      <Document>
+        <MainMenu />
+        <Box m={2}>
+          <Outlet />
+        </Box>
+      </Document>
+    </ThemeProvider>
   );
 }
 

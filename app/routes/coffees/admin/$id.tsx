@@ -1,25 +1,38 @@
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import {
   Form,
   useActionData,
   useTransition,
   useLoaderData,
-} from "@remix-run/react";
-import invariant from "tiny-invariant";
+} from '@remix-run/react';
+import invariant from 'tiny-invariant';
 
-import { Box, Button, FormControl, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+} from '@mui/material';
 
-import { getCoffee } from "~/_libs/core/models/coffee.server";
-import type { Coffee } from "~/_libs/core/models/coffee.server";
-import { upsertAction } from "./_shared";
+import type { Coffee } from '@prisma/client';
+import { CoffeeStatus } from '@prisma/client';
+
+import { getCoffee } from '~/_libs/core/models/coffee.server';
+import { upsertAction } from './_shared';
 
 type LoaderData = { coffee: Coffee };
 
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
+
   const coffee = await getCoffee(+params.id);
   invariant(coffee, `Coffee not found: ${params.id}`);
+
   return json({ coffee });
 };
 
@@ -38,7 +51,7 @@ export default function UpdateCoffee() {
     <Box
       m={2}
       sx={{
-        "& .MuiTextField-root": { m: 1, minWidth: 250 },
+        '& .MuiTextField-root': { m: 1, minWidth: 250 },
       }}
     >
       <Typography variant="h2">Edit Coffee</Typography>
@@ -72,11 +85,35 @@ export default function UpdateCoffee() {
             error={errors?.country}
           />
         </FormControl>
-        <FormControl sx={{m: 1}}>
-          <Button type="submit" disabled={isUpdating}>
-            {isUpdating ? "Updating..." : "Update Coffee"}
-          </Button>
+        <FormControl sx={{ m: 1 }}>
+          <InputLabel id={`status-label`}>Type</InputLabel>
+          <Select
+            labelId={`status-label`}
+            name="status"
+            defaultValue={coffee.status}
+            sx={{ minWidth: 250 }}
+          >
+            <MenuItem value={CoffeeStatus.ACTIVE}>
+              {CoffeeStatus.ACTIVE}
+            </MenuItem>
+            <MenuItem value={CoffeeStatus.SOLD_OUT}>
+              {CoffeeStatus.SOLD_OUT}
+            </MenuItem>
+            <MenuItem value={CoffeeStatus.IN_ORDER}>
+              {CoffeeStatus.IN_ORDER}
+            </MenuItem>
+            <MenuItem value={CoffeeStatus.DELETED}>
+              {CoffeeStatus.DELETED}
+            </MenuItem>
+          </Select>
         </FormControl>
+        <div>
+          <FormControl sx={{ m: 1 }}>
+            <Button type="submit" disabled={isUpdating}>
+              {isUpdating ? 'Updating...' : 'Update Coffee'}
+            </Button>
+          </FormControl>
+        </div>
       </Form>
     </Box>
   );
