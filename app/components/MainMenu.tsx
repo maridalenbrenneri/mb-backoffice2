@@ -32,35 +32,70 @@ export default function MainMenu() {
 
           <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
             <List>
-              <ListItem button component={Link} to={'/'}>
+              <ListItem
+                button
+                component={Link}
+                to={'/'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
                 <ListItemText primary="Dashboard" />
               </ListItem>
 
               <Divider />
 
-              <ListItem button component={Link} to={'/orders'}>
+              <ListItem
+                button
+                component={Link}
+                to={'/orders'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
                 <ListItemText primary="Orders" />
               </ListItem>
 
-              <ListItem button component={Link} to={'/subscriptions'}>
+              <ListItem
+                button
+                component={Link}
+                to={'/subscriptions'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
                 <ListItemText primary="Subscriptions" />
               </ListItem>
 
-              <ListItem button component={Link} to={'/coffees'}>
+              <ListItem
+                button
+                component={Link}
+                to={'/coffees'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
                 <ListItemText primary="Coffees" />
               </ListItem>
 
-              <ListItem button component={Link} to={'/deliveries'}>
+              <ListItem
+                button
+                component={Link}
+                to={'/deliveries'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
                 <ListItemText primary="Deliveries" />
               </ListItem>
 
               <Divider />
 
-              <ListItem button component={Link} to={'/b2b'}>
+              <ListItem
+                button
+                component={Link}
+                to={'/b2b'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
                 <ListItemText primary="Fiken Customers" />
               </ListItem>
 
-              <ListItem button component={Link} to={'/woo-import-result'}>
+              <ListItem
+                button
+                component={Link}
+                to={'/woo-import-result'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
                 <ListItemText primary="Woo Import Data" />
               </ListItem>
             </List>
