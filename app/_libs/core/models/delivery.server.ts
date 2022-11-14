@@ -1,14 +1,15 @@
 import { prisma } from '~/db.server';
 
 import type { Delivery } from '@prisma/client';
+import { DEFAULT_TAKE_ROWS, MAX_TAKE_ROWS } from '../settings';
 export type { Delivery };
 export type DeliveryUpsertInput = Pick<
   Delivery,
   'id' | 'date' | 'type' | 'coffee1Id' | 'coffee2Id' | 'coffee3Id' | 'coffee4Id'
 >;
 
-export async function getDeliveries() {
-  return prisma.delivery.findMany({
+export async function getDeliveries(filter?: any) {
+  filter = filter || {
     include: {
       coffee1: true,
       coffee2: true,
@@ -16,11 +17,15 @@ export async function getDeliveries() {
       coffee4: true,
       orders: true,
     },
-    orderBy: {
-      date: 'desc',
-    },
-    take: 10,
-  });
+  };
+
+  // ADD DEFAULT FILTER VALUES IF NOT OVERIDDEN IN FILTE INPUT
+  if (!filter.orderBy) filter.orderBy = { updatedAt: 'desc' };
+  if (!filter.take || filter.take > MAX_TAKE_ROWS)
+    filter.take = DEFAULT_TAKE_ROWS;
+  // TODO: Always exclude DELETED
+
+  return prisma.delivery.findMany(filter);
 }
 
 export async function getDelivery(id: number) {

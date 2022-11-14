@@ -25,10 +25,14 @@ import {
 } from '@mui/material';
 
 import type { Subscription } from '@prisma/client';
+import { SubscriptionStatus, SubscriptionType } from '@prisma/client';
 
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { resolveSubscriptionCode } from '~/_libs/core/utils/gift-subscription-helper';
 import { useState } from 'react';
+
+const defaultStatus = SubscriptionStatus.ACTIVE;
+const defaultType = '_all';
 
 type LoaderData = {
   subscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
@@ -37,16 +41,11 @@ type LoaderData = {
 function buildFilter(search: URLSearchParams) {
   const filter: any = { where: {} };
 
-  const getTypeFilter = search.get('type');
-  const getStatusFilter = search.get('status');
+  const getStatusFilter = search.get('status') || defaultStatus;
+  if (getStatusFilter !== '_all') filter.where.status = getStatusFilter;
 
-  if (getStatusFilter && getStatusFilter !== '_all') {
-    filter.where.status = getStatusFilter;
-  }
-
-  if (getTypeFilter && getTypeFilter !== '_all') {
-    filter.where.type = getTypeFilter;
-  }
+  const getTypeFilter = search.get('type') || defaultType;
+  if (getTypeFilter !== '_all') filter.where.type = getTypeFilter;
 
   filter.orderBy = {
     id: 'desc',
@@ -61,8 +60,6 @@ export const loader = async ({ request }) => {
 
   const filter = buildFilter(search);
 
-  console.log('subscriptions filter', filter);
-
   const subscriptions = await getSubscriptions(filter);
 
   return json<LoaderData>({
@@ -74,8 +71,8 @@ export default function Subscriptions() {
   const { subscriptions } = useLoaderData() as unknown as LoaderData;
   const [params] = useSearchParams();
   const submit = useSubmit();
-  const [status, setStatus] = useState(params.get('status') || '_all');
-  const [type, setType] = useState(params.get('type') || '_all');
+  const [status, setStatus] = useState(params.get('status') || defaultStatus);
+  const [type, setType] = useState(params.get('type') || defaultType);
 
   const doSubmit = (data: any) => {
     submit(data, { replace: true });
@@ -112,8 +109,8 @@ export default function Subscriptions() {
             sx={{ minWidth: 250 }}
           >
             <MenuItem value={'_all'}>All</MenuItem>
-            <MenuItem value={'B2B'}>B2B</MenuItem>
-            <MenuItem value={'PRIVATE_GIFT'}>GABO</MenuItem>
+            <MenuItem value={SubscriptionType.B2B}>B2B</MenuItem>
+            <MenuItem value={SubscriptionType.PRIVATE_GIFT}>GABO</MenuItem>
           </Select>
         </FormControl>
         <FormControl sx={{ m: 1 }}>
@@ -126,10 +123,10 @@ export default function Subscriptions() {
             sx={{ minWidth: 250 }}
           >
             <MenuItem value={'_all'}>All</MenuItem>
-            <MenuItem value={'ACTIVE'}>Active</MenuItem>
-            <MenuItem value={'PASSIVE'}>Passive</MenuItem>
-            <MenuItem value={'CANCELLED'}>Cancelled</MenuItem>
-            <MenuItem value={'COMPLETED'}>Completed</MenuItem>
+            <MenuItem value={SubscriptionStatus.ACTIVE}>Active</MenuItem>
+            <MenuItem value={SubscriptionStatus.PASSIVE}>Passive</MenuItem>
+            <MenuItem value={SubscriptionStatus.CANCELLED}>Cancelled</MenuItem>
+            <MenuItem value={SubscriptionStatus.COMPLETED}>Completed</MenuItem>
           </Select>
         </FormControl>
       </Form>

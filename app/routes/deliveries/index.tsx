@@ -19,8 +19,20 @@ type LoaderData = {
   deliveries: Awaited<ReturnType<typeof getDeliveries>>;
 };
 
-export const loader = async () => {
-  const deliveries = await getDeliveries();
+function buildFilter(search: URLSearchParams) {
+  const filter: any = { where: {} };
+
+  return filter;
+}
+
+export const loader = async ({ request }) => {
+  const url = new URL(request.url);
+  const search = new URLSearchParams(url.search);
+
+  const filter = buildFilter(search);
+
+  const deliveries = await getDeliveries(filter);
+
   return json<LoaderData>({
     deliveries,
   });

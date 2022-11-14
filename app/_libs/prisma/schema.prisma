@@ -27,7 +27,8 @@ model Password {
 enum CoffeeStatus {
   ACTIVE    
   SOLD_OUT   
-  ORDERED 
+  IN_STOCK
+  ORDERED
   DELETED
 }
 

@@ -2,6 +2,7 @@ import { prisma } from '~/db.server';
 
 import type { Order } from '@prisma/client';
 import { OrderType, OrderStatus } from '@prisma/client';
+import { DEFAULT_TAKE_ROWS, MAX_TAKE_ROWS } from '../settings';
 
 export type { Order };
 export type OrderUpsertData = Pick<
@@ -21,17 +22,21 @@ export type OrderUpsertData = Pick<
   | 'quantity1200'
 >;
 
-export async function getOrders() {
-  return prisma.order.findMany({
+export async function getOrders(filter?: any) {
+  filter = filter || {
     include: {
       orderItems: true,
       delivery: true,
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    take: 30,
-  });
+  };
+
+  // ADD DEFAULT FILTER VALUES IF NOT OVERIDDEN IN FILTE INPUT
+  if (!filter.orderBy) filter.orderBy = { updatedAt: 'desc' };
+  if (!filter.take || filter.take > MAX_TAKE_ROWS)
+    filter.take = DEFAULT_TAKE_ROWS;
+  // TODO: Always exclude DELETED
+
+  return prisma.order.findMany(filter);
 }
 
 export async function getOrder(id: number) {

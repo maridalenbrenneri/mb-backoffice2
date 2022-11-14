@@ -1,11 +1,19 @@
-import type { ActionFunction } from "@remix-run/node";
-import { Form, useActionData, useTransition } from "@remix-run/react";
+import type { ActionFunction } from '@remix-run/node';
+import { Form, useActionData, useTransition } from '@remix-run/react';
 
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
-import { upsertAction } from "./_shared";
-import { Button, FormControl, TextField } from "@mui/material";
+import { upsertAction } from './_shared';
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from '@mui/material';
+import { CoffeeStatus } from '@prisma/client';
 
 export const action: ActionFunction = async ({ request }) => {
   return await upsertAction(request);
@@ -17,13 +25,28 @@ export default function NewCoffee() {
   const isCreating = Boolean(transition.submission);
 
   return (
-    <Box 
+    <Box
       m={2}
       sx={{
-      "& .MuiTextField-root": { m: 1, minWidth: 250 },
-    }}>
+        '& .MuiTextField-root': { m: 1, minWidth: 250 },
+      }}
+    >
       <Typography variant="h2">Create New Coffee</Typography>
       <Form method="post">
+        <FormControl sx={{ m: 1 }}>
+          <InputLabel id={`status-label`}>Type</InputLabel>
+          <Select
+            labelId={`status-label`}
+            name="status"
+            defaultValue={CoffeeStatus.ACTIVE}
+            sx={{ minWidth: 250 }}
+          >
+            <MenuItem value={CoffeeStatus.ACTIVE}>Active</MenuItem>
+            <MenuItem value={CoffeeStatus.IN_STOCK}>In stock</MenuItem>
+            <MenuItem value={CoffeeStatus.ORDERED}>Ordered</MenuItem>
+          </Select>
+        </FormControl>
+
         <FormControl>
           <TextField
             name="name"
@@ -48,11 +71,14 @@ export default function NewCoffee() {
             error={errors?.country}
           />
         </FormControl>
-        <FormControl sx={{m: 1}}>
-          <Button type="submit" disabled={isCreating}>
-            {isCreating ? "Creating..." : "Create Coffee"}
-          </Button>
-        </FormControl>
+
+        <div>
+          <FormControl sx={{ m: 1 }}>
+            <Button type="submit" disabled={isCreating}>
+              {isCreating ? 'Creating...' : 'Create Coffee'}
+            </Button>
+          </FormControl>
+        </div>
       </Form>
     </Box>
   );

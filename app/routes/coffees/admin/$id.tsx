@@ -93,18 +93,11 @@ export default function UpdateCoffee() {
             defaultValue={coffee.status}
             sx={{ minWidth: 250 }}
           >
-            <MenuItem value={CoffeeStatus.ACTIVE}>
-              {CoffeeStatus.ACTIVE}
-            </MenuItem>
-            <MenuItem value={CoffeeStatus.SOLD_OUT}>
-              {CoffeeStatus.SOLD_OUT}
-            </MenuItem>
-            <MenuItem value={CoffeeStatus.IN_ORDER}>
-              {CoffeeStatus.IN_ORDER}
-            </MenuItem>
-            <MenuItem value={CoffeeStatus.DELETED}>
-              {CoffeeStatus.DELETED}
-            </MenuItem>
+            <MenuItem value={CoffeeStatus.ACTIVE}>Active</MenuItem>
+            <MenuItem value={CoffeeStatus.SOLD_OUT}>Sold out</MenuItem>
+            <MenuItem value={CoffeeStatus.IN_STOCK}>In stock</MenuItem>
+            <MenuItem value={CoffeeStatus.ORDERED}>Ordered</MenuItem>
+            <MenuItem value={CoffeeStatus.DELETED}>DELETED</MenuItem>
           </Select>
         </FormControl>
         <div>

@@ -16,7 +16,7 @@ export async function getLastWooImportResult() {
 
 export async function getWooImportResults() {
   return prisma.wooImportResult.findMany({
-    take: 100,
+    take: 10,
     orderBy: [
       {
         createdAt: 'desc',

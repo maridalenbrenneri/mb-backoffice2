@@ -1,5 +1,11 @@
 import { json } from '@remix-run/node';
-import { Link, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  Link,
+  useLoaderData,
+  useSearchParams,
+  useSubmit,
+} from '@remix-run/react';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -9,17 +15,42 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { Button } from '@mui/material';
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
 
 import type { Coffee } from '~/_libs/core/models/coffee.server';
 import { getCoffees } from '~/_libs/core/models/coffee.server';
+import { CoffeeStatus } from '@prisma/client';
+import { useState } from 'react';
+
+const defaultStatus = CoffeeStatus.ACTIVE;
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getCoffees>>;
 };
 
-export const loader = async () => {
-  const coffees = await getCoffees();
+function buildFilter(search: URLSearchParams) {
+  const filter: any = { where: {} };
+
+  const getStatusFilter = search.get('status') || defaultStatus;
+
+  if (getStatusFilter !== '_all') filter.where.status = getStatusFilter;
+
+  return filter;
+}
+
+export const loader = async ({ request }) => {
+  const url = new URL(request.url);
+  const search = new URLSearchParams(url.search);
+
+  const filter = buildFilter(search);
+
+  const coffees = await getCoffees(filter);
   return json<LoaderData>({
     coffees,
   });
@@ -27,12 +58,44 @@ export const loader = async () => {
 
 export default function Coffees() {
   const { coffees } = useLoaderData() as unknown as LoaderData;
+  const [params] = useSearchParams();
+  const submit = useSubmit();
+  const [status, setStatus] = useState(params.get('status') || defaultStatus);
+
+  const doSubmit = (data: any) => {
+    submit(data, { replace: true });
+  };
+
+  const handleSelectStatus = (e: any) => {
+    setStatus(e.target.value);
+    doSubmit({
+      status: e.target.value,
+    });
+  };
 
   return (
     <main>
-      <Typography variant="h2">Coffees</Typography>
+      <Typography variant="h1">Coffees</Typography>
 
       <Button href="/coffees/admin/new">Create a new coffee</Button>
+
+      <Form method="get">
+        <FormControl sx={{ m: 1 }}>
+          <InputLabel id={`order-status`}>Status</InputLabel>
+          <Select
+            labelId={`order-status`}
+            name={`status`}
+            defaultValue={status}
+            onChange={handleSelectStatus}
+            sx={{ minWidth: 250 }}
+          >
+            <MenuItem value={'_all'}>All</MenuItem>
+            <MenuItem value={CoffeeStatus.ACTIVE}>Active</MenuItem>
+            <MenuItem value={CoffeeStatus.SOLD_OUT}>Sold out</MenuItem>
+            <MenuItem value={CoffeeStatus.IN_ORDER}>In order</MenuItem>
+          </Select>
+        </FormControl>
+      </Form>
 
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="subscription table">
