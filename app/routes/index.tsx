@@ -16,11 +16,14 @@ import { countBags } from '~/_libs/core/services/subscription-stats';
 import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
 import RoastOverviewBox from '~/components/RoastOverviewBox';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { getCargonizerProfile } from '~/_libs/cargonizer';
+import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 
 type LoaderData = {
   wooData: Awaited<ReturnType<typeof getLastWooImportResult>>;
   activeSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   deliveries: Awaited<ReturnType<typeof getDeliveries>>;
+  cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
 export const loader = async () => {
@@ -39,11 +42,13 @@ export const loader = async () => {
     },
   });
   const deliveries = await getDeliveries();
+  const cargonizerProfile = await getCargonizerProfile();
 
   return json<LoaderData>({
     wooData,
     activeSubscriptions,
     deliveries,
+    cargonizerProfile,
   });
 };
 
@@ -81,7 +86,7 @@ function resolveAboStats(
 }
 
 export default function Index() {
-  const { wooData, activeSubscriptions, deliveries } =
+  const { wooData, activeSubscriptions, deliveries, cargonizerProfile } =
     useLoaderData() as unknown as LoaderData;
 
   if (!wooData?.length) {
@@ -111,6 +116,10 @@ export default function Index() {
         Data from Woo last imported{' '}
         {toPrettyDateTime(wooImportResult.importStarted)}
       </Box>
+
+      <div>
+        <CargonizerProfileBox profile={cargonizerProfile} />
+      </div>
     </div>
   );
 }
