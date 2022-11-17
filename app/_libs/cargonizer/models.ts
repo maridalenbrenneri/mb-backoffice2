@@ -13,11 +13,18 @@ export interface CargonizerConsignment {
     email: string;
     mobile: string;
     name: string;
-    street1: string;
-    street2: string;
-    zipCode: string;
-    place: string;
+    address1: string;
+    address2: string;
+    postcode: string;
+    city: string;
     country: string;
-    contactPerson: string;
   };
+}
+
+export interface SendOrderResult {
+  orderId: number;
+  consignmentId?: number | undefined;
+  trackingUrl?: string | undefined;
+  printResult?: string | undefined;
+  errors: string[];
 }

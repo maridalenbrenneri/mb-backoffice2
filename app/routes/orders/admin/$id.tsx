@@ -21,7 +21,7 @@ import {
 
 import { getOrder } from '~/_libs/core/models/order.server';
 import type { Order } from '~/_libs/core/models/order.server';
-import { upsertAction } from './_shared';
+import { upsertAction, sendOrderAction } from './_shared';
 import { OrderStatus } from '@prisma/client';
 
 type LoaderData = { order: Order };
@@ -36,7 +36,13 @@ export const loader: LoaderFunction = async ({ params }) => {
 };
 
 export const action: ActionFunction = async ({ request }) => {
-  return await upsertAction(request);
+  const formData = await request.formData();
+  const { _action, ...values } = Object.fromEntries(formData);
+
+  if (_action === 'send-order') return await sendOrderAction(values);
+  else if (_action === 'update') return await upsertAction(values);
+
+  return null;
 };
 
 export default function UpdateOrder() {
@@ -54,6 +60,13 @@ export default function UpdateOrder() {
       }}
     >
       <Typography variant="h2">Order</Typography>
+      <Form method="post">
+        <input type="hidden" name="id" value={order.id} />
+        <Button type="submit" name="_action" value="send-order">
+          Send Order
+        </Button>
+      </Form>
+
       <Form method="post">
         <input type="hidden" name="id" value={order.id} />
         <input
@@ -183,7 +196,12 @@ export default function UpdateOrder() {
         </FormControl>
         <div>
           <FormControl sx={{ m: 1 }}>
-            <Button type="submit" disabled={isUpdating}>
+            <Button
+              type="submit"
+              disabled={isUpdating}
+              name="_action"
+              value="update"
+            >
               {isUpdating ? 'Updating...' : 'Update Order'}
             </Button>
           </FormControl>

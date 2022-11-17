@@ -1,5 +1,7 @@
 import type { Delivery, Order, Subscription } from '@prisma/client';
 import { SubscriptionType, OrderType } from '@prisma/client';
+import { sendConsignment } from '~/_libs/cargonizer';
+import { getOrder } from '../models/order.server';
 
 export async function createOrder(order: Order) {}
 
@@ -39,4 +41,20 @@ export async function createRecurringOrder(
     subscriptionId: subscription.id,
     deliveryId: delivery.id,
   };
+}
+
+export async function sendOrder(orderId: number) {
+  const order = await getOrder(orderId);
+
+  if (!order) {
+    console.warn(
+      `[order-service] The order requested to be sent was not found, order id: ${orderId}`
+    );
+    return;
+  }
+
+  return await sendConsignment({
+    order,
+    print: true,
+  });
 }
