@@ -1,13 +1,14 @@
-import * as settings from "../settings";
+import { WOO_ABO_PRODUCT_ID } from '~/_libs/core/settings';
+import * as constants from '../constants';
 
 const resolveOrderStatus = (
   wooStatus: string,
   paymentMethod: string
 ): string => {
   // Vipps orders have woo status ON_HOLD, MB treats as PROCESSING
-  const isVipps = paymentMethod === "Vipps";
-  if (isVipps && wooStatus === settings.WOO_STATUS_ON_HOLD)
-    return settings.WOO_STATUS_PROCESSING;
+  const isVipps = paymentMethod === 'Vipps';
+  if (isVipps && wooStatus === constants.WOO_STATUS_ON_HOLD)
+    return constants.WOO_STATUS_PROCESSING;
 
   return wooStatus;
 };
@@ -18,7 +19,7 @@ const resolveAboType = (line_items: any[]) => {
   const productId = line_items[0].product_id;
   const variationId = line_items[0].variation_id;
 
-  if (productId !== settings.WOO_ABO_PRODUCT_ID) return null;
+  if (productId !== WOO_ABO_PRODUCT_ID) return null;
 
   return variationId;
 };
@@ -78,7 +79,7 @@ const wooApiToOrder = (wooApiOrder: any): any => {
     shippingEmail: wooApiOrder.billing?.email,
     shippingPhone: wooApiOrder.billing?.phone,
     customerNote: wooApiOrder.customer_note,
-    specialRequest: "", // TODO: Resolve from parent subscription
+    specialRequest: '', // TODO: Resolve from parent subscription
     items,
     wooId: wooApiOrder.id,
     wooStatus: wooApiOrder.status,

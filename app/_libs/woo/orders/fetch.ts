@@ -1,13 +1,13 @@
 import { DateTime } from 'luxon';
-import type { GiftSubscriptionWithSubscriptionCreateInput } from '~/_libs/core/models/subscription.server';
 
+import type { GiftSubscriptionCreateInput } from '~/_libs/core/models/subscription.server';
+import { WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
 import {
   WOO_API_DEFAULT_PER_PAGE,
   WOO_API_BASE_URL,
-  WOO_GABO_PRODUCT_ID,
   // WOO_STATUS_ON_HOLD,
   // WOO_STATUS_PROCESSING,
-} from '../settings';
+} from '../constants';
 import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
 // import wooApiToOrder from './woo-api-to-order';
 
@@ -97,16 +97,16 @@ export async function fetchOrders(): Promise<any[]> {
 }
 
 export async function fetchGiftSubscriptionOrders(): Promise<
-  GiftSubscriptionWithSubscriptionCreateInput[]
+  GiftSubscriptionCreateInput[]
 > {
   let giftSubscriptionOrders: Array<any> = [];
   let page: number | null = 1;
 
-  // do {
-  const result = (await _fetchGiftSubscriptionOrders(page)) as any;
-  page = result.nextPage;
-  giftSubscriptionOrders = giftSubscriptionOrders.concat(result.orders);
-  // } while (page);
+  do {
+    const result = (await _fetchGiftSubscriptionOrders(page)) as any;
+    page = result.nextPage;
+    giftSubscriptionOrders = giftSubscriptionOrders.concat(result.orders);
+  } while (page);
 
   return wooApiToGiftSubscriptions(giftSubscriptionOrders);
 }

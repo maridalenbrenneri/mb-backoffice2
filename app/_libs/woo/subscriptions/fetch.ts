@@ -1,8 +1,8 @@
-import * as settings from '../settings';
+import * as constants from '../constants';
 import wooApiToSubscription from './woo-api-to-subscription';
 
 async function _fetchSubscriptions(status: string, page: number = 1) {
-  const url = `${settings.WOO_SUBSCRIPTION_API_BASE_URL}subscriptions?page=${page}&per_page=${settings.WOO_API_DEFAULT_PER_PAGE}&${process.env.WOO_SECRET_PARAM}&status=${status}`;
+  const url = `${constants.WOO_SUBSCRIPTION_API_BASE_URL}subscriptions?page=${page}&per_page=${constants.WOO_API_DEFAULT_PER_PAGE}&${process.env.WOO_SECRET_PARAM}&status=${status}`;
 
   const response = await fetch(url);
   const data = await response.json();
@@ -30,7 +30,7 @@ export default async function fetchSubscriptions(): Promise<any[]> {
 
   do {
     const result = (await _fetchSubscriptions(
-      settings.WOO_STATUS_ACTIVE,
+      constants.WOO_STATUS_ACTIVE,
       page
     )) as any;
     page = result.nextPage;
@@ -40,7 +40,7 @@ export default async function fetchSubscriptions(): Promise<any[]> {
   page = 1;
   do {
     const result2 = (await _fetchSubscriptions(
-      settings.WOO_STATUS_ON_HOLD,
+      constants.WOO_STATUS_ON_HOLD,
       page
     )) as any;
     page = result2.nextPage;

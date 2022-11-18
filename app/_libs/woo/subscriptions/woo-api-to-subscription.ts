@@ -2,9 +2,9 @@ import {
   WOO_STATUS_ACTIVE,
   WOO_STATUS_CANCELLED,
   WOO_STATUS_ON_HOLD,
-} from '../settings';
+} from '../constants';
 
-import * as settings from '../settings';
+import * as settings from '../../core/settings';
 
 import { SubscriptionFrequency } from '~/_libs/core/models/subscription.server';
 

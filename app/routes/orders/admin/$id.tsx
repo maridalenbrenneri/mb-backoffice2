@@ -19,10 +19,11 @@ import {
   Typography,
 } from '@mui/material';
 
+import { OrderStatus } from '@prisma/client';
+
 import { getOrder } from '~/_libs/core/models/order.server';
 import type { Order } from '~/_libs/core/models/order.server';
 import { upsertAction, sendOrderAction } from './_shared';
-import { OrderStatus } from '@prisma/client';
 
 type LoaderData = { order: Order };
 

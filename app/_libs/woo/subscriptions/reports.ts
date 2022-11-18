@@ -1,6 +1,5 @@
-// ABO90 PRICES
+import { DateTime } from 'luxon';
 
-import { DateTime } from "luxon";
 import {
   WOO_ABO_PRODUCT_VARIATION_1_1,
   WOO_ABO_PRODUCT_VARIATION_1_2,
@@ -16,7 +15,7 @@ import {
   WOO_ABO_PRODUCT_VARIATION_6_2,
   WOO_ABO_PRODUCT_VARIATION_7_1,
   WOO_ABO_PRODUCT_VARIATION_7_2,
-} from "../settings";
+} from '../../core/settings';
 
 function resolveType(price: number, wooSubscriptions: any[]) {
   let total = 0;
@@ -143,16 +142,16 @@ function resolveType(price: number, wooSubscriptions: any[]) {
 }
 
 async function writeToCsv(emails: string[]) {
-  const fs = require("fs");
+  const fs = require('fs');
 
   const filename = `emails_abos_with_discount_${DateTime.now().toFormat(
-    "yyyy-MM-dd_HHmmss"
+    'yyyy-MM-dd_HHmmss'
   )}.csv`;
 
-  await fs.appendFileSync(filename, "EMAILS\n");
+  await fs.appendFileSync(filename, 'EMAILS\n');
 
   for (const e of emails) {
-    await fs.appendFileSync(filename, e + "\n");
+    await fs.appendFileSync(filename, e + '\n');
   }
 
   // fs.writeFileSync(
@@ -178,8 +177,8 @@ export async function report_getInfoForDiscountSubscriptions(
   // const emails = [...abo90s.emails, ...abo100s.emails, ...abo110s.emails];
   // writeToCsv(emails);
 
-  console.log("ABO NOK 90.00: ", abo90s);
-  console.log("ABO NOK 100.00: ", abo100s);
-  console.log("ABO NOK 110.00: ", abo110s);
-  console.log("ABO NOK 120.00", abo120s);
+  console.log('ABO NOK 90.00: ', abo90s);
+  console.log('ABO NOK 100.00: ', abo100s);
+  console.log('ABO NOK 110.00: ', abo110s);
+  console.log('ABO NOK 120.00', abo120s);
 }

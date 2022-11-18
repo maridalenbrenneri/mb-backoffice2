@@ -1,23 +1,27 @@
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
+import type { Order } from '@prisma/client';
+import { SubscriptionType } from '@prisma/client';
+
 import type {
   CargonizerConsignment,
   SendConsignmentInput,
   SendOrderResult,
 } from './models';
-import * as settings from './settings';
+import * as settings from '../core/settings';
+import {
+  calculateWeight,
+  generateReference,
+} from '../core/services/order-service';
 
-const WEIGHT_NORMAL_BAG = 250;
-const WEIGHT_PACKAGING = 150;
+const api_key = process.env.CARGONIZER_API_KEY;
+const sender_id = settings.CARGONIZER_SENDER_ID;
+const transport_agreement = settings.CARGONIZER_TRANSPORT_AGREEMENT;
 
-const api_key = process.env.CARGONIZER_API_KEY as string;
-const sender_id = process.env.CARGONIZER_SENDER_ID as string;
-const transport_agreement = process.env.CARGONIZER_TRANSPORT_AGREEMENT;
-
-const consignment_url = `${process.env.CARGONIZER_API_URL}//consignments.xml`;
-const service_partners_url = `${process.env.CARGONIZER_API_URL}/service_partners.xml`;
-const profile_url = `${process.env.CARGONIZER_API_URL}/profile.xml`;
-const print_url = `${process.env.CARGONIZER_API_URL}/consignments/label_direct.xml`;
+const consignment_url = `${settings.CARGONIZER_API_URL}//consignments.xml`;
+const service_partners_url = `${settings.CARGONIZER_API_URL}/service_partners.xml`;
+const profile_url = `${settings.CARGONIZER_API_URL}/profile.xml`;
+const print_url = `${settings.CARGONIZER_API_URL}/consignments/label_direct.xml`;
 
 const shipping_type_standard_private = 1;
 const shipping_type_standard_business = 2;
@@ -49,29 +53,64 @@ export const sendConsignment = async (
 ): Promise<SendOrderResult> => {
   const order = input.order;
 
-  if (!order) {
-    throw new Error('Order was null');
+  if (!order) throw new Error('Order was null');
+
+  // console.debug('ORDER', order.orderItems);
+
+  const consignmentCreate = mapToCargonizerConsignment(order);
+
+  const servicePartner = await requestServicePartners(
+    consignmentCreate.customer.country,
+    consignmentCreate.customer.postcode
+  );
+  if (servicePartner.error) {
+    return {
+      orderId: input.order.id,
+      error: servicePartner.error,
+    };
   }
 
-  let reference = '';
-  let weight = 0;
+  const xml = await createConsignmentXml(consignmentCreate, servicePartner);
 
-  console.log('ORDER', order.orderItems);
+  console.debug('CONSIGNMENT XML TO BE SENT TO CARGONIZER', xml);
 
-  // TODO: Create "resolveReferenceForOrder" function
-  for (const item of order.orderItems) {
-    reference = `${reference} ${item.quantity}${item.mbProductCode}`;
-    weight += WEIGHT_NORMAL_BAG * item.quantity;
+  const consignment = await requestConsignment(xml);
+  if (consignment.error) {
+    return {
+      orderId: input.order.id,
+      error: consignment.error,
+    };
   }
 
-  if (order.quantity250) {
-    reference = `${reference} ${order.quantity250}${'TEST'}`;
+  let error: string | undefined = undefined;
+  let printResult;
+
+  if (input.print) {
+    printResult = await printLabel(consignment.id);
+    if (printResult.error) {
+      error = printResult.error;
+    }
   }
 
-  weight += WEIGHT_PACKAGING;
+  return {
+    orderId: input.order.id,
+    consignmentId: consignment.id,
+    trackingUrl: consignment['tracking-url'],
+    printResult: input.print ? printResult?.result : 'Not requested',
+    error,
+  };
+};
 
-  const consignmentCreate: CargonizerConsignment = {
-    shippingType: shipping_type_standard_business, // TODO: Resolve from order if private or b2b
+function mapToCargonizerConsignment(order: Order) {
+  const reference = generateReference(order);
+  const weight = calculateWeight(order);
+  const shippingType =
+    order.subscription.type === SubscriptionType.B2B
+      ? shipping_type_standard_business
+      : shipping_type_standard_private;
+
+  return {
+    shippingType,
     reference,
     weight,
     customer: {
@@ -85,43 +124,22 @@ export const sendConsignment = async (
       country: 'NO',
     },
   };
+}
 
-  console.debug('SENDING ORDER TO CARGONIZER', consignmentCreate);
+function throwIfAnyError(errors: any) {
+  // CARGONIZER SOMETIMES RETURN AN ARRAY AND SOMETIMES ONE OBJECT IN "errors"
 
-  const xml = await createConsignmentXml(consignmentCreate);
+  if (!errors) return;
 
-  console.debug('XML', xml);
+  const isArray = Array.isArray(errors);
 
-  const errors: string[] = [];
+  if (isArray && !errors.length) return;
+  if (!isArray && !errors.error) return;
 
-  const consignment = await requestConsignment(xml);
-  if (consignment.error) {
-    errors.push(consignment.error);
-  }
+  const errorMsg = isArray && errors.length ? errors.join(' | ') : errors.error;
 
-  let printResult;
-  if (input.print) {
-    printResult = await printLabel(consignment.id);
-    if (printResult.error) {
-      errors.push(consignment.error);
-    }
-  }
-
-  if (errors.length) {
-    return {
-      orderId: input.order.id,
-      errors,
-    };
-  }
-
-  return {
-    orderId: input.order.id,
-    consignmentId: consignment.id,
-    trackingUrl: consignment['tracking-url'],
-    printResult: input.print ? printResult?.result : 'Not requested',
-    errors: [],
-  };
-};
+  throw new Error(errorMsg);
+}
 
 async function printLabel(consignmentId: number) {
   let url = `${print_url}?printer_id=${settings.CARGONIZER_PRINTER_ID}&consignment_ids[${consignmentId}]=`;
@@ -133,26 +151,23 @@ async function printLabel(consignmentId: number) {
 
     console.debug('PRINT RESULT', json);
 
-    if (json.errors) {
-      throw new Error(JSON.stringify(json.errors));
-    }
+    throwIfAnyError(json.errors);
 
-    return { result: JSON.stringify(json) }; // TODO: WHAT TO RETURN?
+    // TODO: IS THERE A RESULT WE CAN USE ON SUCCESS? TEST/CHANGE WHEN PRINT ACTUALLY WORKS...
+    return { result: 'Success' };
   } catch (err) {
     console.warn(
       '[Cargonizer] Error when printing Cargonizer label',
       err.message
     );
     return {
+      result: 'Failed',
       error: err.message,
     };
   }
 }
 
-async function requestConsignment(
-  consignmentXml: string,
-  print: boolean = true
-) {
+async function requestConsignment(consignmentXml: string) {
   try {
     const response = await fetch(consignment_url, {
       method: 'post',
@@ -166,12 +181,7 @@ async function requestConsignment(
     const xml = await response.text();
     const data = new XMLParser().parse(xml);
 
-    const errors = data.consignments.consignment.errors?.error;
-    if (errors) {
-      throw new Error(
-        `Status: ${response.status} Errors: ${JSON.stringify(errors)}`
-      );
-    }
+    throwIfAnyError(data.consignments.consignment.errors);
 
     return data.consignments.consignment;
   } catch (err) {
@@ -182,10 +192,6 @@ async function requestConsignment(
   }
 }
 
-function isUsingSandbox(): boolean {
-  return !!process.env.CARGONIZER_API_URL?.includes('sandbox');
-}
-
 async function requestServicePartners(country: string, postcode: string) {
   const url = `${service_partners_url}?country=${country}&postcode=${postcode}`;
 
@@ -194,11 +200,7 @@ async function requestServicePartners(country: string, postcode: string) {
     const xml = await response.text();
     const json = new XMLParser().parse(xml);
 
-    if (json.errors) {
-      throw new Error(
-        `Status: ${response.status} Errors: ${JSON.stringify(json.errors)}`
-      );
-    }
+    throwIfAnyError(json.errors);
 
     const partner = json.results['service-partners']['service-partner'][0];
 
@@ -223,17 +225,13 @@ async function requestServicePartners(country: string, postcode: string) {
   }
 }
 
-async function createConsignmentXml(consignment: CargonizerConsignment) {
+async function createConsignmentXml(
+  consignment: CargonizerConsignment,
+  servicePartner: any
+) {
   const weightInKg = consignment.weight / 1000;
 
-  const service_partner = await requestServicePartners(
-    'NO',
-    consignment.customer.postcode
-  );
-
   const mapShippingTypeToProduct = (shippingType: number): string => {
-    if (isUsingSandbox()) return 'bring2_format_big';
-
     if (shippingType === shipping_type_standard_business)
       return settings.CARGONIZER_PRODUCT_BUSINESS;
 
@@ -255,7 +253,7 @@ async function createConsignmentXml(consignment: CargonizerConsignment) {
         product: product,
         parts: {
           consignee: consignment.customer,
-          service_partner,
+          service_partner: servicePartner,
         },
         items: {
           item: {

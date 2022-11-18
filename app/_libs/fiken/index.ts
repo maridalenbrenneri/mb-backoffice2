@@ -1,6 +1,6 @@
-import { FIKEN_API_BASE_URI, FIKEN_COMPANY_SLUG } from './settings';
+import { FIKEN_API_URL, FIKEN_COMPANY_SLUG } from '../core/settings';
 
-const fiken_uri = `${FIKEN_API_BASE_URI}/companies/${FIKEN_COMPANY_SLUG}`;
+const fiken_uri = `${FIKEN_API_URL}/companies/${FIKEN_COMPANY_SLUG}`;
 
 export interface FikenCustomer {
   contactId: number;

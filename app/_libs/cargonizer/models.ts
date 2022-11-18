@@ -26,5 +26,5 @@ export interface SendOrderResult {
   consignmentId?: number | undefined;
   trackingUrl?: string | undefined;
   printResult?: string | undefined;
-  errors: string[];
+  error: string | undefined;
 }
