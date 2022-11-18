@@ -15,9 +15,10 @@ import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats
 import { countBags } from '~/_libs/core/services/subscription-stats';
 import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
 import RoastOverviewBox from '~/components/RoastOverviewBox';
-import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { getCargonizerProfile } from '~/_libs/cargonizer';
 import CargonizerProfileBox from '~/components/CargonizerProfileBox';
+import WooImportInfoBox from '~/components/WooImportInfoBox';
+import { Grid, Paper } from '@mui/material';
 
 type LoaderData = {
   wooData: Awaited<ReturnType<typeof getLastWooImportResult>>;
@@ -112,14 +113,19 @@ export default function Index() {
         <Typography variant="h3">Subscription overview</Typography>
         <SubscriptionStatsBox stats={aboStats} />
       </Box>
-      <Box sx={{ my: 8 }}>
-        Data from Woo last imported{' '}
-        {toPrettyDateTime(wooImportResult.importStarted)}
-      </Box>
 
-      <div>
-        <CargonizerProfileBox profile={cargonizerProfile} />
-      </div>
+      <Grid container spacing={2}>
+        <Grid item md={4} xl={3}>
+          <Paper sx={{ p: 1 }}>
+            <WooImportInfoBox wooImportResult={wooImportResult} />
+          </Paper>
+        </Grid>
+        <Grid item md={4} xl={3}>
+          <Paper sx={{ p: 1 }}>
+            <CargonizerProfileBox profile={cargonizerProfile} />
+          </Paper>
+        </Grid>
+      </Grid>
     </div>
   );
 }

@@ -1,10 +1,13 @@
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 
-export default function DataLabel(props: { label: string; data: string }) {
+export default function DataLabel(props: {
+  label: string;
+  data: string | number;
+}) {
   const { label, data } = props;
 
   return (
-    <Box sx={{ m: 1 }}>
+    <Box sx={{ m: 0.25 }}>
       <small>
         <strong>{label}</strong>
       </small>

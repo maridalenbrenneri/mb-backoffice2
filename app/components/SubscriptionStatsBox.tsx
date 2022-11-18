@@ -8,6 +8,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
 import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
+import DataLabel from './DataLabel';
 
 export default function SubscriptionStatsBox(props: {
   stats: SubscriptionStats;
@@ -20,15 +21,14 @@ export default function SubscriptionStatsBox(props: {
 
   return (
     <Box>
-      <p>Active, total: {stats.totalCount}</p>
-
-      <p>Active, monthly: {stats.monthlyCount}</p>
-      <p>Active, fortnightly: {stats.fortnightlyCount}</p>
-
-      <p>Active, ABO: {stats.subscriptionCount}</p>
-      <p>Active, GABO: {stats.giftSubscriptionCount}</p>
-
-      <p>Active, B2B: {stats.b2bSubscriptionCount}</p>
+      <Box sx={{ m: 2 }}>
+        <DataLabel label="Total" data={stats.totalCount} />
+        <DataLabel label="Monthly:" data={stats.monthlyCount} />
+        <DataLabel label="Fortnightly" data={stats.fortnightlyCount} />
+        <DataLabel label="ABO" data={stats.subscriptionCount} />
+        <DataLabel label="GABO" data={stats.giftSubscriptionCount} />
+        <DataLabel label="B2B" data={stats.b2bSubscriptionCount} />
+      </Box>
 
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="subscription table">

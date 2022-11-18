@@ -8,6 +8,7 @@ export interface DeliveryDate {
 
 export function toPrettyDate(date: DateTime | Date | undefined | null) {
   if (!date) return null;
+
   return DateTime.fromISO(date.toString()).toFormat('dd.MM.yyyy');
 }
 
@@ -16,15 +17,13 @@ export function toPrettyDateTime(
   includeSeconds = false
 ) {
   if (!date) return null;
+
   const seconds = includeSeconds ? ':ss' : '';
+
   return DateTime.fromISO(date.toString()).toFormat(
     `dd.MM.yyyy HH:mm${seconds}`
   );
 }
-
-// export function toPrettyDateJS(date: Date) {
-//   return toPrettyDate(DateTime.fromISO(date.toString()));
-// }
 
 // RESOLVE NEXT STOR-ABO
 export function resolveNextDeliveryDay(date?: DateTime) {
@@ -67,7 +66,7 @@ function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
   };
 }
 
-// Return next five delivery dates (tuesdays)
+// Return next five delivery dates (Tuesdays)
 export function getNextDeliveryDates(): DeliveryDate[] {
   return [
     getDate(7, 1),
