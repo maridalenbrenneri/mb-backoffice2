@@ -3,8 +3,8 @@ import { DateTime } from 'luxon';
 import type { GiftSubscriptionCreateInput } from '@prisma/client';
 import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 
-import { resolveStatusAndFirstDeliveryDate } from '~/_libs/core/utils/gift-subscription-helper';
 import { WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
+import { resolveStatusAndFirstDeliveryDate } from '~/_libs/core/services/subscription-service';
 
 function resolveMetadataValue(meta_data: Array<any>, key: string) {
   const res = meta_data.find((data) => data.key === key);

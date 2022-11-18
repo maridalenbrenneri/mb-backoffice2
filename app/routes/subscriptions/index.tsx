@@ -6,6 +6,7 @@ import {
   useSearchParams,
   useSubmit,
 } from '@remix-run/react';
+import { useState } from 'react';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -28,8 +29,7 @@ import type { Subscription } from '@prisma/client';
 import { SubscriptionStatus, SubscriptionType } from '@prisma/client';
 
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
-import { resolveSubscriptionCode } from '~/_libs/core/utils/gift-subscription-helper';
-import { useState } from 'react';
+import { resolveSubscriptionCode } from '~/_libs/core/services/subscription-service';
 
 const defaultStatus = SubscriptionStatus.ACTIVE;
 const defaultType = '_all';

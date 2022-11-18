@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
@@ -25,9 +26,8 @@ import { OrderStatus } from '@prisma/client';
 import { upsertAction } from '../../../orders/admin/_shared';
 import { getSubscription } from '~/_libs/core/models/subscription.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
-import { useEffect, useState } from 'react';
 import { toPrettyDate } from '~/_libs/core/utils/dates';
-import { resolveSubscriptionCode } from '~/_libs/core/utils/gift-subscription-helper';
+import { resolveSubscriptionCode } from '~/_libs/core/services/subscription-service';
 
 type LoaderData = {
   subscription: Awaited<ReturnType<typeof getSubscription>>;

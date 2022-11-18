@@ -1,14 +1,15 @@
+import { DateTime } from 'luxon';
+
 import type { Subscription } from '@prisma/client';
 import {
   SubscriptionFrequency,
   SubscriptionStatus,
   SubscriptionType,
 } from '@prisma/client';
-import { DateTime } from 'luxon';
 
-import { resolveNextDeliveryDay } from './dates';
+import { resolveNextDeliveryDay } from '../utils/dates';
 
-export function calculateSubscriptionWeight(subscription: Subscription) {
+function calculateSubscriptionWeight(subscription: Subscription) {
   let weight = 0;
 
   if (subscription.quantity250) weight += subscription.quantity250 * 250;
