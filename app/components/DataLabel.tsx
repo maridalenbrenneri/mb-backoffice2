@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 
 export default function DataLabel(props: {
   label: string;
-  data: string | number;
+  data: string | number | null;
 }) {
   const { label, data } = props;
 
@@ -11,7 +11,7 @@ export default function DataLabel(props: {
       <small>
         <strong>{label}</strong>
       </small>
-      : {data}
+      : {data || ''}
     </Box>
   );
 }

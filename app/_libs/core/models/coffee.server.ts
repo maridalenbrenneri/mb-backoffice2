@@ -1,7 +1,10 @@
 import { prisma } from '~/db.server';
 
 import type { Coffee } from '@prisma/client';
+import { CoffeeStatus } from '@prisma/client';
+
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
+
 export type { Coffee };
 
 export async function getCoffees(filter?: any) {
@@ -12,6 +15,15 @@ export async function getCoffees(filter?: any) {
   if (!filter.take || filter.take > TAKE_MAX_ROWS)
     filter.take = TAKE_DEFAULT_ROWS;
   // TODO: Always exclude DELETED
+
+  return prisma.coffee.findMany(filter);
+}
+
+export async function getActiveCoffees() {
+  const filter = {
+    where: { status: CoffeeStatus.ACTIVE },
+    take: TAKE_DEFAULT_ROWS,
+  };
 
   return prisma.coffee.findMany(filter);
 }

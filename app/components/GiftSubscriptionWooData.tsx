@@ -4,6 +4,7 @@ import type { Subscription } from '@prisma/client';
 import { SubscriptionType } from '@prisma/client';
 
 import { toPrettyDate } from '~/_libs/core/utils/dates';
+import DataLabel from './DataLabel';
 
 export default function GiftSubscriptionWooData(props: {
   subscription: Subscription;
@@ -16,17 +17,25 @@ export default function GiftSubscriptionWooData(props: {
 
   return (
     <Paper sx={{ p: 1 }}>
-      <Typography variant="subtitle1">Woo GABO data</Typography>
       <Box sx={{ m: 2 }}>
-        <Typography variant="subtitle2">First delivery: </Typography>
-        {toPrettyDate(subscription.gift_firstDeliveryDate)}
-        <br></br>
-        Deliveries: {subscription.gift_durationMonths} <br></br>
-        Customer: {subscription.gift_wooCustomerName} <br></br>
-        Woo order id: {subscription.gift_wooOrderId} <br></br>
-        Customer note: {subscription.customerNote}
-        <br></br>
-        Message to recipient: {subscription.gift_messageToRecipient}
+        <Typography variant="subtitle1">Woo GABO data</Typography>
+        <Box sx={{ m: 1 }}>
+          <DataLabel
+            label="First delivery"
+            data={toPrettyDate(subscription.gift_firstDeliveryDate)}
+          />
+          <DataLabel label="Deliveries" data={subscription.deliveries} />
+          <DataLabel
+            label="Customer"
+            data={subscription.gift_wooCustomerName}
+          />
+          <DataLabel label="Woo order id" data={subscription.gift_wooOrderId} />
+          <DataLabel label="Customer note" data={subscription.customerNote} />
+          <DataLabel
+            label="Message to recipient"
+            data={subscription.gift_messageToRecipient}
+          />
+        </Box>
       </Box>
     </Paper>
   );

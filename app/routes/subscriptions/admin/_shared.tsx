@@ -210,7 +210,7 @@ export const upsertOrderAction = async (request: any) => {
     mobile,
   };
 
-  await upsertOrder({ ...data, id });
+  await upsertOrder(id, data);
 
   return redirect('/subscriptions');
 };

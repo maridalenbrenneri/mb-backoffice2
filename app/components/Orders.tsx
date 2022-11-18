@@ -7,7 +7,6 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
 import type { Order } from '@prisma/client';
@@ -21,14 +20,13 @@ export default function Orders(props: { orders: Order[] }) {
 
   return (
     <Box>
-      <Typography variant="h2">Orders</Typography>
-
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="orders table">
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Type</TableCell>
               <TableCell>Order date</TableCell>
               <TableCell>Delivery</TableCell>
               <TableCell>Quantity 250</TableCell>
@@ -46,6 +44,7 @@ export default function Orders(props: { orders: Order[] }) {
                   <Link to={`/orders/admin/${order.id}`}>{order.id}</Link>
                 </TableCell>
                 <TableCell>{order.status}</TableCell>
+                <TableCell>{order.type}</TableCell>
                 <TableCell>{toPrettyDateTime(order.createdAt)}</TableCell>
                 <TableCell>
                   <Link to={`/deliveries/admin/${order.delivery?.id}`}>
