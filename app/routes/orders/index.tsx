@@ -21,7 +21,7 @@ import { OrderStatus } from '@prisma/client';
 
 import { getOrders } from '~/_libs/core/models/order.server';
 import { useState } from 'react';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 const defaultStatus = OrderStatus.ACTIVE;
 
@@ -70,51 +70,56 @@ export default function Orders() {
 
   return (
     <main>
-      <Typography variant="h2">Orders</Typography>
+      <Typography variant="h1">Orders</Typography>
 
-      <Form method="get">
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`order-status`}>Status</InputLabel>
-          <Select
-            labelId={`order-status`}
-            name={`status`}
-            defaultValue={status}
-            onChange={handleSelectStatus}
-            sx={{ minWidth: 250 }}
-          >
-            <MenuItem value={'_all'}>All</MenuItem>
-            <MenuItem value={OrderStatus.ACTIVE}>Active</MenuItem>
-            <MenuItem value={OrderStatus.CANCELLED}>Cancelled</MenuItem>
-            <MenuItem value={OrderStatus.COMPLETED}>Completed</MenuItem>
-          </Select>
-        </FormControl>
-      </Form>
+      <Box sx={{ m: 2 }}>
+        <Form method="get">
+          <FormControl sx={{ m: 1 }}>
+            <InputLabel id={`order-status`}>Status</InputLabel>
+            <Select
+              labelId={`order-status`}
+              name={`status`}
+              defaultValue={status}
+              onChange={handleSelectStatus}
+              sx={{ minWidth: 250 }}
+            >
+              {Object.keys(OrderStatus).map((status: any) => (
+                <MenuItem value={status} key={status}>
+                  {status}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Form>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="subscription table">
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Name</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {orders.map((order: Order) => (
-              <TableRow
-                key={order.id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  <Link to={`admin/${order.id}`}>{order.id}</Link>
-                </TableCell>
-                <TableCell>{order.status}</TableCell>
-                <TableCell>{order.name}</TableCell>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="subscription table">
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Name</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {orders.map((order: Order) => (
+                <TableRow
+                  key={order.id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    <Link to={`admin/${order.id}`}>{order.id}</Link>
+                  </TableCell>
+                  <TableCell>{order.status}</TableCell>
+                  <TableCell>{order.type}</TableCell>
+                  <TableCell>{order.name}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
     </main>
   );
 }

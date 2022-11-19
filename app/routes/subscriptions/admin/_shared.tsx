@@ -10,7 +10,6 @@ import {
 
 import { upsertSubscription } from '~/_libs/core/models/subscription.server';
 import { isUnsignedInt } from '~/_libs/core/utils/numbers';
-import { upsertOrder } from '~/_libs/core/models/order.server';
 
 type ActionData =
   | {
@@ -30,10 +29,11 @@ export const renderTypes = (type: SubscriptionType = SubscriptionType.B2B) => {
         sx={{ minWidth: 250 }}
         disabled
       >
-        <MenuItem value={SubscriptionType.B2B}>{SubscriptionType.B2B}</MenuItem>
-        <MenuItem value={SubscriptionType.PRIVATE_GIFT}>
-          {SubscriptionType.PRIVATE_GIFT}
-        </MenuItem>
+        {Object.keys(SubscriptionType).map((type: any) => (
+          <MenuItem value={type} key={type}>
+            {type}
+          </MenuItem>
+        ))}
       </Select>
     </FormControl>
   );
@@ -150,67 +150,68 @@ export const upsertAction = async (request: any) => {
 
   await upsertSubscription({ ...data, id });
 
+  // return redirect(`/subscriptions/admin/${id}`);
   return redirect('/subscriptions');
 };
 
-export const upsertOrderAction = async (request: any) => {
-  const formData = await request.formData();
+// export const upsertOrderAction = async (request: any) => {
+//   const formData = await request.formData();
 
-  const id = +formData.get('id');
-  const subscriptionId = +formData.get('subscriptionId');
-  const deliveryId = +formData.get('deliveryId');
-  const type = +formData.get('orderType');
-  const status = formData.get('status');
+//   const id = +formData.get('id');
+//   const subscriptionId = +formData.get('subscriptionId');
+//   const deliveryId = +formData.get('deliveryId');
+//   const type = formData.get('orderType');
+//   const status = formData.get('status');
 
-  const name = formData.get('name');
-  const address1 = formData.get('address1');
-  const address2 = formData.get('address2');
-  const postalCode = formData.get('postalCode');
-  const postalPlace = formData.get('postalPlace');
-  const email = formData.get('email');
-  const mobile = formData.get('mobile');
+//   const name = formData.get('name');
+//   const address1 = formData.get('address1');
+//   const address2 = formData.get('address2');
+//   const postalCode = formData.get('postalCode');
+//   const postalPlace = formData.get('postalPlace');
+//   const email = formData.get('email');
+//   const mobile = formData.get('mobile');
 
-  const quantity250 = +formData.get('quantity250');
-  const quantity500 = +formData.get('quantity500');
-  const quantity1200 = +formData.get('quantity1200');
-  const internalNote = formData.get('internalNote');
+//   const quantity250 = +formData.get('quantity250');
+//   const quantity500 = +formData.get('quantity500');
+//   const quantity1200 = +formData.get('quantity1200');
+//   const internalNote = formData.get('internalNote');
 
-  const errors = {
-    quantity250: isUnsignedInt(quantity250)
-      ? null
-      : 'Must be a number greater or equal to zero',
-    quantity500: isUnsignedInt(quantity500)
-      ? null
-      : 'Must be a number greater or equal to zero',
-    quantity1200: isUnsignedInt(quantity1200)
-      ? null
-      : 'Must be a number greater or equal to zero',
-  };
-  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
-  if (hasErrors) {
-    console.error('Errors in form', errors);
-    return json<ActionData>(errors);
-  }
+//   const errors = {
+//     quantity250: isUnsignedInt(quantity250)
+//       ? null
+//       : 'Must be a number greater or equal to zero',
+//     quantity500: isUnsignedInt(quantity500)
+//       ? null
+//       : 'Must be a number greater or equal to zero',
+//     quantity1200: isUnsignedInt(quantity1200)
+//       ? null
+//       : 'Must be a number greater or equal to zero',
+//   };
+//   const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
+//   if (hasErrors) {
+//     console.error('Errors in form', errors);
+//     return json<ActionData>(errors);
+//   }
 
-  const data = {
-    subscriptionId,
-    deliveryId,
-    type,
-    status,
-    quantity250,
-    quantity500,
-    quantity1200,
-    internalNote,
-    name,
-    address1,
-    address2,
-    postalCode,
-    postalPlace,
-    email,
-    mobile,
-  };
+//   const data = {
+//     subscriptionId,
+//     deliveryId,
+//     type,
+//     status,
+//     quantity250,
+//     quantity500,
+//     quantity1200,
+//     internalNote,
+//     name,
+//     address1,
+//     address2,
+//     postalCode,
+//     postalPlace,
+//     email,
+//     mobile,
+//   };
 
-  await upsertOrder(id, data);
+//   await upsertOrder(id, data);
 
-  return redirect('/subscriptions');
-};
+//   return redirect('/subscriptions');
+// };

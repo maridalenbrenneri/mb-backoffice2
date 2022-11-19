@@ -13,6 +13,7 @@ import {
   Box,
   Button,
   FormControl,
+  Grid,
   InputLabel,
   MenuItem,
   Paper,
@@ -26,6 +27,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 import type { OrderItem } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
@@ -34,6 +36,7 @@ import { getOrder } from '~/_libs/core/models/order.server';
 import { upsertAction, sendOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
 import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
+import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
@@ -77,22 +80,39 @@ export default function UpdateOrder() {
         '& .MuiTextField-root': { m: 1, minWidth: 250 },
       }}
     >
-      <Typography variant="h2">Order</Typography>
-      <Box sx={{ m: 2 }}>
-        <Box sx={{ m: 1 }}>
-          <DataLabel
-            label="Subscription"
-            data={`${order.subscriptionId} - ${order.subscription.recipientName}`}
-          />
-        </Box>
-      </Box>
+      <Typography variant="h1">Order Details</Typography>
 
-      <Form method="post">
-        <input type="hidden" name="id" value={order.id} />
-        <Button type="submit" name="_action" value="send-order">
-          Ship Order
-        </Button>
-      </Form>
+      <Grid container>
+        <Grid item>
+          <Box sx={{ m: 2 }}>
+            <DataLabel
+              label="Subscription"
+              data={`${order.subscription.recipientName}`}
+              dataLinkUrl={`/subscriptions/admin/${order.subscriptionId}`}
+            />
+            <DataLabel
+              label="Created At"
+              data={toPrettyDateTime(order.createdAt, true)}
+            />
+          </Box>
+        </Grid>
+        <Grid item>
+          <Box sx={{ m: 2 }}>
+            <Form method="post">
+              <input type="hidden" name="id" value={order.id} />
+              <Button
+                sx={{ height: 50 }}
+                type="submit"
+                name="_action"
+                value="send-order"
+                variant="contained"
+              >
+                <LocalShippingIcon sx={{ mx: 1 }} /> Ship Order
+              </Button>
+            </Form>
+          </Box>
+        </Grid>
+      </Grid>
 
       <Form method="post">
         <input type="hidden" name="id" value={order.id} />
@@ -102,6 +122,7 @@ export default function UpdateOrder() {
           value={order.subscriptionId}
         />
         <input type="hidden" name="deliveryId" value={order.deliveryId} />
+        <input type="hidden" name="type" value={order.type} />
 
         <FormControl sx={{ m: 1 }}>
           <InputLabel id={`status-label`}>Status</InputLabel>
@@ -111,19 +132,11 @@ export default function UpdateOrder() {
             defaultValue={order.status}
             sx={{ minWidth: 250 }}
           >
-            <MenuItem value={OrderStatus.ACTIVE}>{OrderStatus.ACTIVE}</MenuItem>
-            <MenuItem value={OrderStatus.ON_HOLD}>
-              {OrderStatus.ON_HOLD}
-            </MenuItem>
-            <MenuItem value={OrderStatus.COMPLETED}>
-              {OrderStatus.COMPLETED}
-            </MenuItem>
-            <MenuItem value={OrderStatus.CANCELLED}>
-              {OrderStatus.CANCELLED}
-            </MenuItem>
-            <MenuItem value={OrderStatus.DELETED}>
-              {OrderStatus.DELETED}
-            </MenuItem>
+            {Object.keys(OrderStatus).map((status: any) => (
+              <MenuItem value={status} key={status}>
+                {status}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <FormControl sx={{ m: 1 }}>
@@ -135,12 +148,11 @@ export default function UpdateOrder() {
             sx={{ minWidth: 250 }}
             disabled={true}
           >
-            <MenuItem value={OrderType.NON_RECURRING}>
-              {OrderType.NON_RECURRING}
-            </MenuItem>
-            <MenuItem value={OrderType.RECURRING}>
-              {OrderType.RECURRING}
-            </MenuItem>
+            {Object.keys(OrderType).map((type: any) => (
+              <MenuItem value={type} key={type}>
+                {type}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <div>
@@ -219,36 +231,38 @@ export default function UpdateOrder() {
             />
           </FormControl>
         </div>
-        <div>
-          <Typography variant="h3">Coffee</Typography>
-          <FormControl>
-            <TextField
-              name="quantity250"
-              label="Quantity 250"
-              variant="outlined"
-              defaultValue={order.quantity250}
-              error={errors?.quantity250}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              name="quantity500"
-              label="Quantity 500"
-              variant="outlined"
-              defaultValue={order.quantity500}
-              error={errors?.quantity500}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              name="quantity1200"
-              label="Quantity 1200"
-              variant="outlined"
-              defaultValue={order.quantity1200}
-              error={errors?.quantity1200}
-            />
-          </FormControl>
-        </div>
+        {order.type !== OrderType.CUSTOMIZED && (
+          <div>
+            <Typography variant="h3">Coffee</Typography>
+            <FormControl>
+              <TextField
+                name="quantity250"
+                label="Quantity 250"
+                variant="outlined"
+                defaultValue={order.quantity250}
+                error={errors?.quantity250}
+              />
+            </FormControl>
+            <FormControl>
+              <TextField
+                name="quantity500"
+                label="Quantity 500"
+                variant="outlined"
+                defaultValue={order.quantity500}
+                error={errors?.quantity500}
+              />
+            </FormControl>
+            <FormControl>
+              <TextField
+                name="quantity1200"
+                label="Quantity 1200"
+                variant="outlined"
+                defaultValue={order.quantity1200}
+                error={errors?.quantity1200}
+              />
+            </FormControl>
+          </div>
+        )}
         <div>
           <FormControl sx={{ m: 1 }}>
             <Button
@@ -264,36 +278,38 @@ export default function UpdateOrder() {
         </div>
       </Form>
 
-      <Box my={2}>
-        <Typography variant="h3">Items</Typography>
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>Coffee</TableCell>
-                <TableCell>Size</TableCell>
-                <TableCell>Quantity</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {order.orderItems.map((item: OrderItem) => (
-                <TableRow
-                  key={item.id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell>{item.coffeeId}</TableCell>
-                  <TableCell>{item.variation}</TableCell>
-                  <TableCell>{item.quantity}</TableCell>
+      {order.type === OrderType.CUSTOMIZED && (
+        <Box my={2}>
+          <Typography variant="h3">Items</Typography>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Coffee</TableCell>
+                  <TableCell>Size</TableCell>
+                  <TableCell>Quantity</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+              </TableHead>
+              <TableBody>
+                {order.orderItems.map((item: OrderItem) => (
+                  <TableRow
+                    key={item.id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell>{item.coffeeId}</TableCell>
+                    <TableCell>{item.variation}</TableCell>
+                    <TableCell>{item.quantity}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-      <Box m={2}>
-        <Outlet />
-      </Box>
+          <Box m={2}>
+            <Outlet />
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }

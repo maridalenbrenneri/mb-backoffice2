@@ -9,7 +9,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 
 import type { Delivery } from '~/_libs/core/models/delivery.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
@@ -20,7 +20,19 @@ type LoaderData = {
 };
 
 function buildFilter(search: URLSearchParams) {
-  const filter: any = { where: {} };
+  const filter: any = {
+    where: {},
+    include: {
+      coffee1: true,
+      coffee2: true,
+      coffee3: true,
+      coffee4: true,
+      orders: true,
+    },
+    orderBy: {
+      date: 'desc',
+    },
+  };
 
   return filter;
 }
@@ -43,9 +55,13 @@ export default function Deliveries() {
 
   return (
     <main>
-      <Typography variant="h2">Deliveries</Typography>
+      <Typography variant="h1">Deliveries</Typography>
 
-      <Button href="/deliveries/admin/new">Create New Delivery</Button>
+      <Box sx={{ m: 2 }}>
+        <Button href="/deliveries/admin/new" variant="contained">
+          Create New Delivery
+        </Button>
+      </Box>
 
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="subscription table">

@@ -17,6 +17,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import {
+  Box,
   Button,
   FormControl,
   InputLabel,
@@ -96,73 +97,87 @@ export default function Subscriptions() {
 
   return (
     <main>
-      <Typography variant="h2">Subscriptions</Typography>
-      <Button href="/subscriptions/admin/new">Create a new subscription</Button>
-      <Form method="get">
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`subscription-type`}>Type</InputLabel>
-          <Select
-            labelId={`subscription-type`}
-            name={`type`}
-            defaultValue={type}
-            onChange={handleSelectType}
-            sx={{ minWidth: 250 }}
-          >
-            <MenuItem value={'_all'}>All</MenuItem>
-            <MenuItem value={SubscriptionType.B2B}>B2B</MenuItem>
-            <MenuItem value={SubscriptionType.PRIVATE_GIFT}>GABO</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`subscription-status`}>Status</InputLabel>
-          <Select
-            labelId={`subscription-status`}
-            name={`status`}
-            defaultValue={status}
-            onChange={handleSelectStatus}
-            sx={{ minWidth: 250 }}
-          >
-            <MenuItem value={'_all'}>All</MenuItem>
-            <MenuItem value={SubscriptionStatus.ACTIVE}>Active</MenuItem>
-            <MenuItem value={SubscriptionStatus.PASSIVE}>Passive</MenuItem>
-            <MenuItem value={SubscriptionStatus.CANCELLED}>Cancelled</MenuItem>
-            <MenuItem value={SubscriptionStatus.COMPLETED}>Completed</MenuItem>
-          </Select>
-        </FormControl>
-      </Form>
+      <Typography variant="h1">Subscriptions</Typography>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="subscription table">
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Recipient</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Abo type</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {subscriptions.map((subscription: Subscription) => (
-              <TableRow
-                key={subscription.id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  <Link to={`admin/${subscription.id}`}>{subscription.id}</Link>
-                </TableCell>
-                <TableCell>{subscription.recipientName}</TableCell>
-                <TableCell>{subscription.status}</TableCell>
-                <TableCell>{resolveSubscriptionCode(subscription)}</TableCell>
+      <Box sx={{ m: 2 }}>
+        <Button href="/subscriptions/admin/new" variant="contained">
+          Create a new subscription
+        </Button>
+      </Box>
+
+      <Box sx={{ m: 2 }}>
+        <Form method="get">
+          <FormControl sx={{ m: 1 }}>
+            <InputLabel id={`subscription-type`}>Type</InputLabel>
+            <Select
+              labelId={`subscription-type`}
+              name={`type`}
+              defaultValue={type}
+              onChange={handleSelectType}
+              sx={{ minWidth: 250 }}
+            >
+              <MenuItem value={'_all'}>All</MenuItem>
+              <MenuItem value={SubscriptionType.B2B}>B2B</MenuItem>
+              <MenuItem value={SubscriptionType.PRIVATE_GIFT}>GABO</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ m: 1 }}>
+            <InputLabel id={`subscription-status`}>Status</InputLabel>
+            <Select
+              labelId={`subscription-status`}
+              name={`status`}
+              defaultValue={status}
+              onChange={handleSelectStatus}
+              sx={{ minWidth: 250 }}
+            >
+              <MenuItem value={'_all'}>All</MenuItem>
+              <MenuItem value={SubscriptionStatus.ACTIVE}>Active</MenuItem>
+              <MenuItem value={SubscriptionStatus.PASSIVE}>Passive</MenuItem>
+              <MenuItem value={SubscriptionStatus.CANCELLED}>
+                Cancelled
+              </MenuItem>
+              <MenuItem value={SubscriptionStatus.COMPLETED}>
+                Completed
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </Form>
+
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="subscription table">
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Recipient</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Abo type</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TableCell>{subscriptions.length} subscriptions</TableCell>
-            </TableRow>
-          </TableFooter>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {subscriptions.map((subscription: Subscription) => (
+                <TableRow
+                  key={subscription.id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    <Link to={`admin/${subscription.id}`}>
+                      {subscription.id}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{subscription.recipientName}</TableCell>
+                  <TableCell>{subscription.status}</TableCell>
+                  <TableCell>{resolveSubscriptionCode(subscription)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell>{subscriptions.length} subscriptions</TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </TableContainer>
+      </Box>
     </main>
   );
 }

@@ -103,8 +103,7 @@ export default function Index() {
   const aboStats = resolveAboStats(wooSubscriptionStats, activeSubscriptions);
 
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
-      <h1>MB Dashboard</h1>
+    <main>
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h3">Roast overview</Typography>
         <RoastOverviewBox stats={aboStats} deliveries={deliveries} />
@@ -126,6 +125,6 @@ export default function Index() {
           </Paper>
         </Grid>
       </Grid>
-    </div>
+    </main>
   );
 }

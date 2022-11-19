@@ -108,8 +108,15 @@ model Subscription {
   updatedAt DateTime @updatedAt
 }
 
+enum DeliveryStatus {
+  ACTIVE 
+  DELETED
+}
+
 model Delivery {
   id Int @id @default(autoincrement())
+
+  status DeliveryStatus @default(ACTIVE)
 
   date DateTime
   type String
@@ -143,6 +150,7 @@ enum OrderStatus {
 enum OrderType {
   RECURRING 
   NON_RECURRING
+  CUSTOMIZED
 }
 
 model OrderItem {

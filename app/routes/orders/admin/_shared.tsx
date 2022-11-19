@@ -1,9 +1,9 @@
 import { json, redirect } from '@remix-run/node';
 
-import type { OrderUpsertInput } from '~/_libs/core/models/order.server';
+import type { OrderUpsertData } from '~/_libs/core/models/order.server';
 import { upsertOrderItem } from '~/_libs/core/models/order.server';
 import { upsertOrder } from '~/_libs/core/models/order.server';
-import { sendOrder } from '~/_libs/core/services/order-service';
+import { shipOrder } from '~/_libs/core/services/order-service';
 import { isUnsignedInt } from '~/_libs/core/utils/numbers';
 
 type ActionData =
@@ -11,6 +11,7 @@ type ActionData =
       subscriptionId: null | string;
       deliveryId: null | string;
       status: null | string;
+      type: null | string;
       quantity250: null | string;
       quantity500: null | string;
       quantity1200: null | string;
@@ -31,6 +32,7 @@ export const upsertAction = async (values: any) => {
     subscriptionId: values.subscriptionId ? null : 'Subscription is required',
     deliveryId: values.deliveryId ? null : 'Delivery is required',
     status: values.status ? null : 'Status is required',
+    type: values.type ? null : 'Type is required',
     quantity250: isUnsignedInt(values.quantity250)
       ? null
       : 'Must be a number greater or equal to zero',
@@ -60,7 +62,7 @@ export const upsertAction = async (values: any) => {
     quantity250: +values.quantity250,
     quantity500: +values.quantity500,
     quantity1200: +values.quantity1200,
-  } as OrderUpsertInput;
+  } as OrderUpsertData;
 
   await upsertOrder(+values.id, data);
 
@@ -95,7 +97,7 @@ export const upsertOrderItemAction = async (values: any) => {
 };
 
 export const sendOrderAction = async (values: any) => {
-  const result = await sendOrder(+values.id);
+  const result = await shipOrder(+values.id);
   console.debug('sendOrder RESULT', result);
   return null;
 };

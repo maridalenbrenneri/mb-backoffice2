@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import type { WooImportResult } from '~/_libs/core/models/woo-import-result.server';
 import { getWooImportResults } from '~/_libs/core/models/woo-import-result.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { Box } from '@mui/material';
 
 type LoaderData = {
   results: Awaited<ReturnType<typeof getWooImportResults>>;
@@ -31,34 +32,36 @@ export default function ImportResult() {
 
   return (
     <main>
-      <Typography variant="h2">Woo Import</Typography>
+      <Typography variant="h1">Woo Import</Typography>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="subscription table">
-          <TableHead>
-            <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell>Result</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {results.map((result: WooImportResult) => (
-              <TableRow
-                key={result.id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell>{toPrettyDateTime(result.createdAt)}</TableCell>
-                <TableCell>
-                  <JSONPretty
-                    id="json-pretty"
-                    data={result.result}
-                  ></JSONPretty>
-                </TableCell>
+      <Box sx={{ m: 2 }}>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="subscription table">
+            <TableHead>
+              <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Result</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {results.map((result: WooImportResult) => (
+                <TableRow
+                  key={result.id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell>{toPrettyDateTime(result.createdAt)}</TableCell>
+                  <TableCell>
+                    <JSONPretty
+                      id="json-pretty"
+                      data={result.result}
+                    ></JSONPretty>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
     </main>
   );
 }

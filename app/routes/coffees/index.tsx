@@ -16,6 +16,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import {
+  Box,
   Button,
   FormControl,
   InputLabel,
@@ -77,7 +78,11 @@ export default function Coffees() {
     <main>
       <Typography variant="h1">Coffees</Typography>
 
-      <Button href="/coffees/admin/new">Create a new coffee</Button>
+      <Box sx={{ m: 2 }}>
+        <Button href="/coffees/admin/new" variant="contained">
+          Create a new coffee
+        </Button>
+      </Box>
 
       <Form method="get">
         <FormControl sx={{ m: 1 }}>

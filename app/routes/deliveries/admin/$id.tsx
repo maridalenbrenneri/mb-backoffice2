@@ -19,7 +19,7 @@ import {
   MenuItem,
 } from '@mui/material';
 
-import { getDelivery } from '~/_libs/core/models/delivery.server';
+import { getDeliveryById } from '~/_libs/core/models/delivery.server';
 import type { Delivery } from '~/_libs/core/models/delivery.server';
 import { upsertAction } from './_shared';
 import type { Coffee } from '~/_libs/core/models/coffee.server';
@@ -32,7 +32,7 @@ type LoaderData = { delivery: Delivery; coffees: Coffee[] };
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
 
-  const delivery = await getDelivery(+params.id);
+  const delivery = await getDeliveryById(+params.id);
   invariant(delivery, `Delivery not found: ${params.id}`);
 
   const coffees = await getCoffees();
@@ -75,46 +75,56 @@ export default function UpdateDelivery() {
   };
 
   return (
-    <Box
-      m={2}
-      sx={{
-        '& .MuiTextField-root': { m: 1, minWidth: 250 },
-      }}
-    >
-      <Typography variant="h2">Edit Delivery</Typography>
-      <Form method="post">
-        <input type="hidden" name="id" value={delivery.id} />
-        <input
-          type="hidden"
-          name="delivery_date"
-          value={delivery.date.toString()}
-        />
-        <input type="hidden" name="delivery_type" value={delivery.type} />
-        <FormControl>
-          <TextField
-            label="Date"
-            variant="outlined"
-            defaultValue={`${toPrettyDate(delivery.date)} - ${delivery.type}`}
-            error={errors?.date}
-            disabled={true}
-          />
-        </FormControl>
+    <main>
+      <Box m={2}>
+        <Typography variant="h1">Delivery Details</Typography>
 
-        {renderCoffee(delivery.coffee1Id || '', 1)}
-        {renderCoffee(delivery.coffee2Id || '', 2)}
-        {renderCoffee(delivery.coffee3Id || '', 3)}
-        {renderCoffee(delivery.coffee4Id || '', 4)}
+        <Box
+          m={2}
+          sx={{
+            '& .MuiTextField-root': { m: 1, minWidth: 250 },
+          }}
+        >
+          <Form method="post">
+            <input type="hidden" name="id" value={delivery.id} />
+            <input
+              type="hidden"
+              name="delivery_date"
+              value={delivery.date.toString()}
+            />
+            <input type="hidden" name="delivery_type" value={delivery.type} />
+            <FormControl>
+              <TextField
+                label="Date"
+                variant="outlined"
+                defaultValue={`${toPrettyDate(delivery.date)} - ${
+                  delivery.type
+                }`}
+                error={errors?.date}
+                disabled={true}
+              />
+            </FormControl>
 
-        <FormControl sx={{ m: 1 }}>
-          <Button type="submit" disabled={isUpdating}>
-            {isUpdating ? 'Updating...' : 'Update Delivery'}
-          </Button>
-        </FormControl>
-      </Form>
+            {renderCoffee(delivery.coffee1Id || '', 1)}
+            {renderCoffee(delivery.coffee2Id || '', 2)}
+            {renderCoffee(delivery.coffee3Id || '', 3)}
+            {renderCoffee(delivery.coffee4Id || '', 4)}
 
-      <Box my={2}>
-        <Orders orders={delivery.orders} />
+            <div>
+              <FormControl sx={{ m: 1 }}>
+                <Button type="submit" disabled={isUpdating} variant="contained">
+                  {isUpdating ? 'Updating...' : 'Update Delivery'}
+                </Button>
+              </FormControl>
+            </div>
+          </Form>
+        </Box>
+
+        <Box my={2}>
+          <Typography variant="h2">Orders</Typography>
+          <Orders orders={delivery.orders} />
+        </Box>
       </Box>
-    </Box>
+    </main>
   );
 }

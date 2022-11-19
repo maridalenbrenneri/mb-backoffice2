@@ -5,7 +5,7 @@ import { OrderType, OrderStatus } from '@prisma/client';
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 
 export type { Order };
-export type OrderUpsertInput = Pick<
+export type OrderUpsertData = Pick<
   Order,
   | 'subscriptionId'
   | 'deliveryId'
@@ -23,7 +23,7 @@ export type OrderUpsertInput = Pick<
   | 'quantity1200'
 >;
 
-export type OrderItemUpsertInput = Pick<
+export type OrderItemUpsertData = Pick<
   OrderItem,
   'id' | 'orderId' | 'coffeeId' | 'variation' | 'quantity'
 >;
@@ -56,45 +56,45 @@ export async function getOrder(id: number) {
   });
 }
 
-export async function upsertOrder(id: number | null, input: OrderUpsertInput) {
+export async function upsertOrder(id: number | null, data: OrderUpsertData) {
   return prisma.order.upsert({
     where: {
       id: id || 0,
     },
-    update: input,
+    update: data,
     create: {
-      type: OrderType.RECURRING,
-      status: OrderStatus.ACTIVE,
-      subscriptionId: input.subscriptionId,
-      deliveryId: input.deliveryId,
-      name: input.name,
-      address1: input.address1,
-      address2: input.address2,
-      postalCode: input.postalCode,
-      postalPlace: input.postalPlace,
-      email: input.email,
-      mobile: input.mobile,
-      quantity250: input.quantity250,
-      quantity500: input.quantity500,
-      quantity1200: input.quantity1200,
+      type: data.type,
+      status: data.status,
+      subscriptionId: data.subscriptionId,
+      deliveryId: data.deliveryId,
+      name: data.name,
+      address1: data.address1,
+      address2: data.address2,
+      postalCode: data.postalCode,
+      postalPlace: data.postalPlace,
+      email: data.email,
+      mobile: data.mobile,
+      quantity250: data.quantity250,
+      quantity500: data.quantity500,
+      quantity1200: data.quantity1200,
     },
   });
 }
 
 export async function upsertOrderItem(
   id: number | null,
-  input: OrderItemUpsertInput
+  data: OrderItemUpsertData
 ) {
   return prisma.orderItem.upsert({
     where: {
       id: id || 0,
     },
-    update: input,
+    update: data,
     create: {
-      orderId: input.orderId,
-      coffeeId: input.coffeeId,
-      quantity: input.quantity,
-      variation: input.variation,
+      orderId: data.orderId,
+      coffeeId: data.coffeeId,
+      quantity: data.quantity,
+      variation: data.variation,
     },
   });
 }

@@ -1,48 +1,83 @@
-import type { Delivery, Order, Subscription } from '@prisma/client';
-import { SubscriptionType, OrderType } from '@prisma/client';
+import type { Order } from '@prisma/client';
+import { OrderStatus } from '@prisma/client';
+import { OrderType } from '@prisma/client';
+import { redirect } from '@remix-run/node';
 
 import { sendConsignment } from '~/_libs/cargonizer';
-import { getOrder } from '../models/order.server';
+import { getOrder, upsertOrder } from '../models/order.server';
+import { getSubscription } from '../models/subscription.server';
 import { WEIGHT_STANDARD_PACKAGING } from '../settings';
+import { getNextDelivery } from './delivery-service';
 
-export async function createOrder(order: Order) {}
+export interface Quantites {
+  _250: number;
+  _500: number;
+  _1200: number;
+}
 
-export async function createRecurringOrder(
-  subscription: Subscription,
-  fikenContact: any,
-  delivery: Delivery
-) {
-  let recipient;
-  // if (subscription.type === SubscriptionType.PRIVATE_GIFT) {
-  //   recipient = {
-  //     name: subscription.giftSubscription.recipientName,
-  //     address1: subscription.giftSubscription.recipientAddress1,
-  //     address2: subscription.giftSubscription.address2,
-  //     postalCode: subscription.giftSubscription.postalCode,
-  //     postalPlace: subscription.giftSubscription.postalPlace,
-  //   };
-  // } else if (subscription.type === SubscriptionType.B2B) {
-  //   recipient = {
-  //     name: fikenContact.name,
-  //     address1: fikenContact.address1,
-  //     address2: fikenContact.address2,
-  //     postalCode: fikenContact.postalCode,
-  //     postalPlace: fikenContact.postalPlace,
-  //   };
-  // } else {
-  //   throw new Error(
-  //     'Cannot create re-curring order, invalid subscription type'
-  //   );
-  // }
+async function _createOrder(
+  subscriptionId: number,
+  type: OrderType,
+  quantities: Quantites | null = {
+    _250: 0,
+    _500: 0,
+    _1200: 0,
+  }
+): Promise<Order> {
+  console.debug('_CREATE ORDER', subscriptionId);
+  const subscription = await getSubscription(subscriptionId);
 
-  return {
-    type: OrderType.RECURRING,
-    quantity250: subscription.quantity250,
-    quantity500: subscription.quantity500,
-    quantity1200: subscription.quantity1200,
-    subscriptionId: subscription.id,
+  if (!subscription) {
+    console.warn(
+      `[order-service] The subscription was not found, cannot create order. Subscription id: ${subscriptionId}`
+    );
+    throw new Error('Failed to create order, subscription was not found');
+  }
+
+  if (type !== OrderType.CUSTOMIZED && !quantities) {
+    // DEFAULT TO SUBSCRIPTION QUANTITIES
+    quantities = {
+      _250: subscription.quantity250,
+      _500: subscription.quantity500,
+      _1200: subscription.quantity1200,
+    };
+  }
+
+  const delivery = await getNextDelivery();
+
+  const order = await upsertOrder(null, {
+    subscriptionId,
     deliveryId: delivery.id,
-  };
+    status: OrderStatus.ACTIVE,
+    type,
+    name: subscription.recipientName,
+    address1: subscription.recipientAddress1,
+    address2: subscription.recipientAddress2,
+    postalCode: subscription.recipientPostalCode,
+    postalPlace: subscription.recipientPostalPlace,
+    email: subscription.recipientEmail,
+    mobile: subscription.recipientMobile,
+    quantity250: quantities?._250 || 0,
+    quantity500: quantities?._500 || 0,
+    quantity1200: quantities?._1200 || 0,
+  });
+
+  if (!order) throw new Error('Failed to create order');
+
+  return order;
+}
+
+export async function createNonRecurringOrder(
+  subscriptionId: number,
+  quantities: Quantites
+) {
+  await _createOrder(subscriptionId, OrderType.NON_RECURRING, quantities);
+  return redirect(`/subscriptions/admin/${subscriptionId}`);
+}
+
+export async function createCustomizedOrder(subscriptionId: number) {
+  const order = await _createOrder(subscriptionId, OrderType.CUSTOMIZED);
+  return redirect(`/orders/admin/${order.id}`);
 }
 
 export function calculateWeight(
@@ -85,7 +120,7 @@ export function generateReference(order: Order) {
   return reference;
 }
 
-export async function sendOrder(orderId: number) {
+export async function shipOrder(orderId: number) {
   const order = await getOrder(orderId);
 
   if (!order) {

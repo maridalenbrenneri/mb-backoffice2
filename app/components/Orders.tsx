@@ -29,9 +29,9 @@ export default function Orders(props: { orders: Order[] }) {
               <TableCell>Type</TableCell>
               <TableCell>Order date</TableCell>
               <TableCell>Delivery</TableCell>
-              <TableCell>Quantity 250</TableCell>
-              <TableCell>Quantity 500</TableCell>
-              <TableCell>Quantity 1200</TableCell>
+              <TableCell>250g</TableCell>
+              <TableCell>500g</TableCell>
+              <TableCell>1,2kg</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -43,8 +43,12 @@ export default function Orders(props: { orders: Order[] }) {
                 <TableCell component="th" scope="row">
                   <Link to={`/orders/admin/${order.id}`}>{order.id}</Link>
                 </TableCell>
-                <TableCell>{order.status}</TableCell>
-                <TableCell>{order.type}</TableCell>
+                <TableCell>
+                  <small>{order.status}</small>
+                </TableCell>
+                <TableCell>
+                  <small>{order.type}</small>
+                </TableCell>
                 <TableCell>{toPrettyDateTime(order.createdAt)}</TableCell>
                 <TableCell>
                   <Link to={`/deliveries/admin/${order.delivery?.id}`}>
