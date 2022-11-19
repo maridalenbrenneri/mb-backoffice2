@@ -17,6 +17,8 @@ export async function getNextDelivery() {
 
   if (delivery) return delivery;
 
+  // TODO: CREATE DELIVERY IF NEXT WASNT FOUND
+
   // IF NO DELIVERY WAS FOUND FOR NEXT WEEK, TRY GETTING THE NEXT ONE ANY DATE GREATER THAN TODAY
 
   const deliveries = await getDeliveries({

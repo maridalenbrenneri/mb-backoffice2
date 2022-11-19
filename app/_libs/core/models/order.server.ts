@@ -1,7 +1,7 @@
 import { prisma } from '~/db.server';
 
 import type { Order, OrderItem } from '@prisma/client';
-import { OrderType, OrderStatus } from '@prisma/client';
+
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 
 export type { Order };
@@ -21,6 +21,7 @@ export type OrderUpsertData = Pick<
   | 'quantity250'
   | 'quantity500'
   | 'quantity1200'
+  | 'wooOrderId'
 >;
 
 export type OrderItemUpsertData = Pick<
@@ -52,6 +53,37 @@ export async function getOrder(id: number) {
       orderItems: true,
       delivery: true,
       subscription: true,
+    },
+  });
+}
+export async function upsertOrderFromWoo(
+  wooOrderId: number,
+  data: OrderUpsertData
+) {
+  return prisma.order.upsert({
+    where: {
+      wooOrderId,
+    },
+    update: {
+      // WE ONLY UPDATE STATUS FROM WOO, NOTHING ELSE IS OVERWRITTEN
+      status: data.status,
+    },
+    create: {
+      wooOrderId: data.wooOrderId,
+      type: data.type,
+      status: data.status,
+      subscriptionId: data.subscriptionId,
+      deliveryId: data.deliveryId,
+      name: data.name,
+      address1: data.address1,
+      address2: data.address2,
+      postalCode: data.postalCode,
+      postalPlace: data.postalPlace,
+      email: data.email,
+      mobile: data.mobile,
+      quantity250: data.quantity250,
+      quantity500: 0,
+      quantity1200: 0,
     },
   });
 }

@@ -49,6 +49,7 @@ export async function getDeliveryById(id: number) {
         orderBy: {
           createdAt: 'desc',
         },
+        take: TAKE_MAX_ROWS,
       },
     },
   });

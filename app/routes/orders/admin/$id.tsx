@@ -94,6 +94,10 @@ export default function UpdateOrder() {
               label="Created At"
               data={toPrettyDateTime(order.createdAt, true)}
             />
+            <DataLabel
+              label="Updated At"
+              data={toPrettyDateTime(order.updatedAt, true)}
+            />
           </Box>
         </Grid>
         <Grid item>

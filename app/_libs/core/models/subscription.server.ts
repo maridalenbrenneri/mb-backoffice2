@@ -64,6 +64,7 @@ export async function getSubscription(id: number) {
         include: {
           delivery: true,
         },
+        take: TAKE_MAX_ROWS,
         orderBy: {
           createdAt: 'desc',
         },
@@ -80,7 +81,7 @@ export async function getSubscriptions(filter?: any) {
     },
   };
 
-  // ADD DEFAULT FILTER VALUES IF NOT OVERIDDEN IN FILTE INPUT
+  // ADD DEFAULT FILTER VALUES IF NOT OVERIDDEN IN FILTER INPUT
   if (!filter.orderBy) filter.orderBy = { updatedAt: 'desc' };
   if (!filter.take || filter.take > TAKE_MAX_ROWS)
     filter.take = TAKE_DEFAULT_ROWS;
@@ -89,13 +90,18 @@ export async function getSubscriptions(filter?: any) {
   return prisma.subscription.findMany(filter);
 }
 
+// CREATE FOR WOO IMPORT, NEVER DOES UPDATE
 export async function createGiftSubscription(
   input: GiftSubscriptionCreateInput
 ) {
-  return prisma.subscription.create({
-    data: {
+  return prisma.subscription.upsert({
+    where: {
+      gift_wooOrderLineItemId: input.gift_wooOrderLineItemId || undefined,
+    },
+    update: {},
+    create: {
       type: SubscriptionType.PRIVATE_GIFT,
-      recipientCountry: 'Norway',
+      recipientCountry: 'NO',
       ...input,
     },
   });
@@ -122,7 +128,7 @@ export async function upsertSubscription(input: SubscriptionUpsertInput) {
       recipientPostalPlace: input.recipientPostalCode,
       recipientEmail: input.recipientEmail,
       recipientMobile: input.recipientMobile,
-      recipientCountry: 'Norway',
+      recipientCountry: 'NO',
       internalNote: input.internalNote,
     },
   });

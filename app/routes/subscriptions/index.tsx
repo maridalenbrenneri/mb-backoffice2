@@ -31,6 +31,7 @@ import { SubscriptionStatus, SubscriptionType } from '@prisma/client';
 
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { resolveSubscriptionCode } from '~/_libs/core/services/subscription-service';
+import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 
 const defaultStatus = SubscriptionStatus.ACTIVE;
 const defaultType = '_all';
@@ -51,6 +52,8 @@ function buildFilter(search: URLSearchParams) {
   filter.orderBy = {
     id: 'desc',
   };
+
+  filter.take = TAKE_MAX_ROWS;
 
   return filter;
 }
@@ -146,6 +149,11 @@ export default function Subscriptions() {
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="subscription table">
             <TableHead>
+              <TableRow>
+                <TableCell colSpan={4}>
+                  <small>{subscriptions.length} subscriptions</small>
+                </TableCell>
+              </TableRow>
               <TableRow>
                 <TableCell>ID</TableCell>
                 <TableCell>Recipient</TableCell>

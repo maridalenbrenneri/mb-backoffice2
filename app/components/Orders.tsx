@@ -12,6 +12,7 @@ import Box from '@mui/material/Box';
 import type { Order } from '@prisma/client';
 
 import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { TableFooter } from '@mui/material';
 
 export default function Orders(props: { orders: Order[] }) {
   const { orders } = props;
@@ -24,10 +25,15 @@ export default function Orders(props: { orders: Order[] }) {
         <Table sx={{ minWidth: 650 }} aria-label="orders table">
           <TableHead>
             <TableRow>
+              <TableCell colSpan={8}>
+                <small>{orders.length} orders</small>
+              </TableCell>
+            </TableRow>
+            <TableRow>
               <TableCell>ID</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Type</TableCell>
-              <TableCell>Order date</TableCell>
+              <TableCell>Created</TableCell>
               <TableCell>Delivery</TableCell>
               <TableCell>250g</TableCell>
               <TableCell>500g</TableCell>
@@ -61,6 +67,11 @@ export default function Orders(props: { orders: Order[] }) {
               </TableRow>
             ))}
           </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>{orders.length} orders</TableCell>
+            </TableRow>
+          </TableFooter>
         </Table>
       </TableContainer>
     </Box>

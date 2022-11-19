@@ -34,6 +34,10 @@ import {
   createCustomizedOrder,
   createNonRecurringOrder,
 } from '~/_libs/core/services/order-service';
+import {
+  WOO_NON_RECURRENT_SUBSCRIPTION_ID,
+  WOO_RENEWALS_SUBSCRIPTION_ID,
+} from '~/_libs/core/settings';
 
 type LoaderData = {
   subscription: Subscription;
@@ -79,6 +83,12 @@ export default function UpdateSubscription() {
 
   const isUpdating = Boolean(transition.submission);
   const isCreatingOrder = Boolean(transition.submission);
+
+  if (!subscription) return null;
+
+  const isReadOnly =
+    subscription.id === WOO_RENEWALS_SUBSCRIPTION_ID ||
+    subscription.id === WOO_NON_RECURRENT_SUBSCRIPTION_ID;
 
   return (
     <main>
@@ -222,6 +232,7 @@ export default function UpdateSubscription() {
                     label="Note"
                     variant="outlined"
                     multiline
+                    defaultValue={subscription.internalNote}
                   />
                 </div>
                 <div>
@@ -229,7 +240,7 @@ export default function UpdateSubscription() {
                     <Button
                       type="submit"
                       variant="contained"
-                      disabled={isUpdating}
+                      disabled={isUpdating || isReadOnly}
                       name="_action"
                       value="update"
                     >
@@ -301,7 +312,7 @@ export default function UpdateSubscription() {
                     <Button
                       type="submit"
                       variant="contained"
-                      disabled={isCreatingOrder}
+                      disabled={isCreatingOrder || isReadOnly}
                       name="_action"
                       value="create-order"
                     >
@@ -328,6 +339,7 @@ export default function UpdateSubscription() {
                     name="_action"
                     value="create-customized-order"
                     variant="contained"
+                    disabled={isCreatingOrder || isReadOnly}
                   >
                     {isCreatingOrder ? 'Creating...' : 'Create =>'}
                   </Button>

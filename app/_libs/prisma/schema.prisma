@@ -172,7 +172,7 @@ model Order {
   status  OrderStatus
   type    OrderType
 
-  wooOrderId  Int?
+  wooOrderId  Int? @unique
 
   name        String
   email       String?
@@ -186,6 +186,9 @@ model Order {
   quantity250 Int?
   quantity500 Int?
   quantity1200 Int?
+
+  customerNote String?
+  internalNote String?
 
   orderItems OrderItem[]
 

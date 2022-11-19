@@ -75,8 +75,6 @@ export default function wooApiToGiftSubscriptions(
   const giftSubscriptionsData = new Array<GiftSubscriptionCreateInput>();
 
   for (const order of wooGaboOrders) {
-    // console.debug(order);
-
     const order_number = +resolveMetadataValue(
       order.meta_data,
       '_order_number'
@@ -95,8 +93,6 @@ export default function wooApiToGiftSubscriptions(
       item.customer_email = order.billing.email;
 
       const giftSubscriptionData = itemToSubscription(item);
-
-      // console.log('GIFTSUBSCRIPTION TO WRITE', mbSubscription);
 
       giftSubscriptionsData.push(giftSubscriptionData);
     }

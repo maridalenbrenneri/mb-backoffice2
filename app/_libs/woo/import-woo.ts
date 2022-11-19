@@ -6,12 +6,16 @@ import { fetchGiftSubscriptionOrders, fetchOrders } from './orders/fetch';
 import type { GiftSubscriptionCreateInput } from '../core/models/subscription.server';
 import { createGiftSubscription } from '../core/models/subscription.server';
 import { createWooImportResult } from '../core/models/woo-import-result.server';
+import { upsertOrderFromWoo } from '../core/models/order.server';
+import { getNextDelivery } from '../core/services/delivery-service';
+import wooApiToOrder from './orders/woo-api-to-order';
+import { WOO_RENEWALS_SUBSCRIPTION_ID } from '../core/settings';
 
-const importWooData = async () => {
-  const IMPORT_ORDERS = false;
-  const IMPORT_GIFT_SUBSCRIPTIONS = true;
-  const IMPORT_SUBSCRIPTIONS = true;
-
+const importWooData = async ({
+  IMPORT_ORDERS = false,
+  IMPORT_SUBSCRIPTIONS = false,
+  IMPORT_GIFT_SUBSCRIPTIONS = false,
+}) => {
   console.debug('START IMPORT WOO DATA');
 
   const startTimeStamp = DateTime.now().toISO();
@@ -22,21 +26,38 @@ const importWooData = async () => {
   let subscriptions = [];
   let subscriptionStats;
 
+  const nextDelivery = await getNextDelivery();
+
   if (IMPORT_ORDERS) {
     console.debug('FETCHING ORDERS...');
 
+    let wooOrders: any[] = [];
+
     try {
-      orders = await fetchOrders();
+      wooOrders = await fetchOrders();
     } catch (err) {
       errors.push(err.message);
-      console.warn(err.message);
     }
 
-    console.debug(`=> DONE (${orders.length} fetched)`);
+    console.debug(`=> DONE (${wooOrders.length} fetched)`);
 
-    console.debug('UPSERTING ORDERS...');
+    // console.debug('UPSERTING ORDERS...', wooOrders);
 
-    // TODO ...
+    orders = wooOrders.map((wo) =>
+      wooApiToOrder(wo, WOO_RENEWALS_SUBSCRIPTION_ID, nextDelivery.id)
+    );
+
+    for (const order of orders) {
+      for (const gift of order.gifts) {
+        await createGiftSubscription(gift);
+      }
+
+      if (order.items.length) {
+        // IF NOT, ORDER ONLY HAVE GIFT SUBSCRIPTIONS
+        // TODO: CREATE THE ITEMS...
+        await upsertOrderFromWoo(order.order.wooOrderId as number, order.order);
+      }
+    }
 
     console.debug(' => DONE');
   }
@@ -46,9 +67,8 @@ const importWooData = async () => {
 
     try {
       giftSubscriptions = await fetchGiftSubscriptionOrders();
-    } catch (eerr) {
+    } catch (err) {
       errors.push(err.message);
-      console.warn(err.message);
     }
 
     console.debug(`=> DONE (${giftSubscriptions.length} fetched)`);
@@ -69,7 +89,6 @@ const importWooData = async () => {
       subscriptions = await fetchSubscriptions();
     } catch (err) {
       errors.push(err.message);
-      console.warn(err.message);
     }
 
     subscriptionStats = resolveSubscriptionStats(subscriptions);
@@ -87,8 +106,6 @@ const importWooData = async () => {
     success: !errors?.length,
     errors,
     subscriptionStats,
-    orderCount: orders?.length,
-    giftSubscriptionCount: giftSubscriptions?.length,
   };
 
   await createWooImportResult({ result: JSON.stringify(result) });

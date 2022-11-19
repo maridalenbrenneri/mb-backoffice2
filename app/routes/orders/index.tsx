@@ -21,7 +21,16 @@ import { OrderStatus } from '@prisma/client';
 
 import { getOrders } from '~/_libs/core/models/order.server';
 import { useState } from 'react';
-import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TableFooter,
+} from '@mui/material';
+import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 
 const defaultStatus = OrderStatus.ACTIVE;
 
@@ -35,6 +44,8 @@ function buildFilter(search: URLSearchParams) {
   const getStatusFilter = search.get('status') || defaultStatus;
 
   if (getStatusFilter !== '_all') filter.where.status = getStatusFilter;
+
+  filter.take = TAKE_MAX_ROWS;
 
   return filter;
 }
@@ -96,10 +107,17 @@ export default function Orders() {
           <Table sx={{ minWidth: 650 }} aria-label="subscription table">
             <TableHead>
               <TableRow>
+                <TableCell colSpan={6}>
+                  <small>{orders.length} orders</small>
+                </TableCell>
+              </TableRow>
+              <TableRow>
                 <TableCell>ID</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Type</TableCell>
-                <TableCell>Name</TableCell>
+                <TableCell>Created</TableCell>
+                <TableCell>Customer</TableCell>
+                <TableCell>Woo id</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -113,10 +131,17 @@ export default function Orders() {
                   </TableCell>
                   <TableCell>{order.status}</TableCell>
                   <TableCell>{order.type}</TableCell>
+                  <TableCell>{toPrettyDateTime(order.createdAt)}</TableCell>
                   <TableCell>{order.name}</TableCell>
+                  <TableCell>{order.wooOrderId}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell>{orders.length} orders</TableCell>
+              </TableRow>
+            </TableFooter>
           </Table>
         </TableContainer>
       </Box>

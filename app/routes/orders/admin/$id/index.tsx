@@ -95,31 +95,6 @@ export default function NewOrderItem() {
           />
         </FormControl>
 
-        {/* <FormControl>
-          <TextField
-            name="_250"
-            label="250g"
-            variant="outlined"
-            error={errors?._250}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="_500"
-            label="500g"
-            variant="outlined"
-            error={errors?._500}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="_1200"
-            label="1,2kg"
-            variant="outlined"
-            error={errors?._1200}
-          /> *
-            </FormControl>/ */}
-
         <div>
           <FormControl sx={{ m: 1 }}>
             <Button type="submit" disabled={isCreating}>
