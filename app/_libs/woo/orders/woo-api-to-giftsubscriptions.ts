@@ -5,11 +5,7 @@ import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 
 import { WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
 import { resolveStatusAndFirstDeliveryDate } from '~/_libs/core/services/subscription-service';
-
-function resolveMetadataValue(meta_data: Array<any>, key: string) {
-  const res = meta_data.find((data) => data.key === key);
-  return !res ? null : res.value;
-}
+import { resolveMetadataValue } from '../utils';
 
 function itemToSubscription(item: any): GiftSubscriptionCreateInput {
   const duration_months = +resolveMetadataValue(

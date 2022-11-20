@@ -6,6 +6,7 @@ import {
   useTransition,
   useLoaderData,
   Outlet,
+  Link,
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
@@ -98,6 +99,9 @@ export default function UpdateOrder() {
               label="Updated At"
               data={toPrettyDateTime(order.updatedAt, true)}
             />
+            {order.wooOrderId && (
+              <DataLabel label="Woo Order ID" data={order.wooOrderId} />
+            )}
           </Box>
         </Grid>
         <Grid item>

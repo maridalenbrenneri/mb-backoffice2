@@ -5,65 +5,122 @@ import resolveSubscriptionStats from './subscriptions/stats-data';
 import { fetchGiftSubscriptionOrders, fetchOrders } from './orders/fetch';
 import type { GiftSubscriptionCreateInput } from '../core/models/subscription.server';
 import { createGiftSubscription } from '../core/models/subscription.server';
-import { createWooImportResult } from '../core/models/woo-import-result.server';
-import { upsertOrderFromWoo } from '../core/models/order.server';
+import { createImportResult } from '../core/models/import-result.server';
+import {
+  upsertOrderFromWoo,
+  upsertOrderItemFromWoo,
+} from '../core/models/order.server';
 import { getNextDelivery } from '../core/services/delivery-service';
 import wooApiToOrder from './orders/woo-api-to-order';
 import { WOO_RENEWALS_SUBSCRIPTION_ID } from '../core/settings';
+import { getCoffees } from '../core/models/coffee.server';
 
-const importWooData = async ({
-  IMPORT_ORDERS = false,
-  IMPORT_SUBSCRIPTIONS = false,
-  IMPORT_GIFT_SUBSCRIPTIONS = false,
-}) => {
-  console.debug('START IMPORT WOO DATA');
+export default async function wooImport(
+  type: 'IMPORT_ORDERS' | 'IMPORT_SUBSCRIPTIONS' | 'IMPORT_GIFT_SUBSCRIPTIONS'
+) {
+  const startTimeStamp = DateTime.now().toJSDate();
 
-  const startTimeStamp = DateTime.now().toISO();
-  const errors: string[] = [];
+  if (type === 'IMPORT_ORDERS') {
+    console.debug('FETCHING WOO ORDERS...');
 
-  let orders = [];
-  let giftSubscriptions: GiftSubscriptionCreateInput[] = [];
-  let subscriptions = [];
-  let subscriptionStats;
-
-  const nextDelivery = await getNextDelivery();
-
-  if (IMPORT_ORDERS) {
-    console.debug('FETCHING ORDERS...');
-
+    const errors: Error[] = [];
     let wooOrders: any[] = [];
+    let orderInfos: any[] = [];
+    const ordersNotImported: number[] = [];
+    let ordersUpsertedCount = 0;
 
     try {
       wooOrders = await fetchOrders();
     } catch (err) {
-      errors.push(err.message);
+      errors.push(err);
     }
 
     console.debug(`=> DONE (${wooOrders.length} fetched)`);
 
-    // console.debug('UPSERTING ORDERS...', wooOrders);
+    if (!errors.length) {
+      const nextDelivery = await getNextDelivery();
+      const coffees = await getCoffees();
 
-    orders = wooOrders.map((wo) =>
-      wooApiToOrder(wo, WOO_RENEWALS_SUBSCRIPTION_ID, nextDelivery.id)
-    );
+      const getCoffeeIdFromCode = (code: string) => {
+        const coffee = coffees.find((c) => c.productCode === code);
+        return coffee?.id;
+      };
 
-    for (const order of orders) {
-      for (const gift of order.gifts) {
-        await createGiftSubscription(gift);
-      }
+      const verifyThatItemsAreValid = (items: any[], wooOrderId: number) => {
+        if (items.some((i) => !getCoffeeIdFromCode(i.productCode))) {
+          console.warn(
+            `[woo-import-orders] Order contained item with invalid product code, import will ignore order. Woo order id: ${wooOrderId}`
+          );
+          ordersNotImported.push(wooOrderId);
+          return false;
+        }
 
-      if (order.items.length) {
-        // IF NOT, ORDER ONLY HAVE GIFT SUBSCRIPTIONS
-        // TODO: CREATE THE ITEMS...
-        await upsertOrderFromWoo(order.order.wooOrderId as number, order.order);
+        return true;
+      };
+
+      try {
+        orderInfos = wooOrders.map((wo) =>
+          wooApiToOrder(wo, WOO_RENEWALS_SUBSCRIPTION_ID, nextDelivery.id)
+        );
+
+        for (const info of orderInfos) {
+          for (const gift of info.gifts) {
+            await createGiftSubscription(gift);
+          }
+
+          // IF items IS EMPTY, ORDER ONLY HAVE GIFT SUBSCRIPTIONS
+          if (info.items.length) {
+            if (!verifyThatItemsAreValid(info.items, info.order.wooOrderId))
+              continue;
+
+            const orderCreated = await upsertOrderFromWoo(
+              info.order.wooOrderId as number,
+              info.order
+            );
+
+            for (const item of info.items) {
+              const coffeeId = getCoffeeIdFromCode(
+                item.productCode
+              ) as unknown as number;
+
+              await upsertOrderItemFromWoo(item.wooOrderItemId, {
+                orderId: orderCreated.id,
+                coffeeId,
+                variation: '_250',
+                quantity: item.quantity,
+              });
+            }
+          }
+
+          ordersUpsertedCount++;
+        }
+      } catch (err) {
+        errors.push(err);
       }
     }
 
+    const result = {
+      importStartedAt: startTimeStamp,
+      name: 'woo-import-orders',
+      result: JSON.stringify({
+        ordersUpsertedCount,
+        ordersNotImported,
+      }),
+      errors: errors?.length ? errors.map((e) => e.message).join() : null,
+    };
+
+    await createImportResult(result);
+
     console.debug(' => DONE');
+
+    return result;
   }
 
-  if (IMPORT_GIFT_SUBSCRIPTIONS) {
-    console.debug('FETCHING GIFT SUBSCRIPTIONS...');
+  if (type === 'IMPORT_GIFT_SUBSCRIPTIONS') {
+    console.debug('FETCHING WOO GIFT SUBSCRIPTIONS...');
+
+    let giftSubscriptions: GiftSubscriptionCreateInput[] = [];
+    const errors: string[] = [];
 
     try {
       giftSubscriptions = await fetchGiftSubscriptionOrders();
@@ -71,19 +128,38 @@ const importWooData = async ({
       errors.push(err.message);
     }
 
-    console.debug(`=> DONE (${giftSubscriptions.length} fetched)`);
-
-    console.debug('UPSERTING GIFT SUBSCRIPTIONS...');
-
-    for (const subscription of giftSubscriptions) {
-      await createGiftSubscription(subscription);
+    if (!errors.length) {
+      try {
+        for (const subscription of giftSubscriptions) {
+          await createGiftSubscription(subscription);
+        }
+      } catch (err) {
+        errors.push(err.message);
+      }
     }
 
+    const result = {
+      importStartedAt: startTimeStamp,
+      name: 'woo-import-subscriptions',
+      result: giftSubscriptions.length
+        ? JSON.stringify(`{upserted: ${giftSubscriptions.length}`)
+        : null,
+      errors: errors?.length ? errors.join() : null,
+    };
+
+    await createImportResult(result);
+
     console.debug(' => DONE');
+
+    return result;
   }
 
-  if (IMPORT_SUBSCRIPTIONS) {
-    console.debug('FETCHING SUBSCRIPTIONS...');
+  if (type === 'IMPORT_SUBSCRIPTIONS') {
+    console.debug('FETCHING WOO SUBSCRIPTIONS...');
+
+    let subscriptions = [];
+    let subscriptionStats;
+    const errors: string[] = [];
 
     try {
       subscriptions = await fetchSubscriptions();
@@ -91,26 +167,25 @@ const importWooData = async ({
       errors.push(err.message);
     }
 
-    subscriptionStats = resolveSubscriptionStats(subscriptions);
+    if (!errors?.length) {
+      try {
+        subscriptionStats = resolveSubscriptionStats(subscriptions);
+      } catch (err) {
+        errors.push(err.message);
+      }
+    }
+
+    const result = {
+      importStartedAt: startTimeStamp,
+      name: 'woo-import-subscriptions',
+      result: subscriptionStats ? JSON.stringify(subscriptionStats) : null,
+      errors: errors?.length ? errors.join() : null,
+    };
+
+    await createImportResult(result);
 
     console.debug(`=> DONE (${subscriptions.length} fetched)`);
+
+    return result;
   }
-
-  const completeTimeStamp = DateTime.now().toISO();
-
-  console.debug('DONE IMPORTING WOO DATA');
-
-  const result = {
-    importStarted: startTimeStamp,
-    importCompleted: completeTimeStamp,
-    success: !errors?.length,
-    errors,
-    subscriptionStats,
-  };
-
-  await createWooImportResult({ result: JSON.stringify(result) });
-
-  return result;
-};
-
-export default importWooData;
+}

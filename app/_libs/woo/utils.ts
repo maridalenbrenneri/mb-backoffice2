@@ -41,3 +41,21 @@ export function resolveQuantityAndFrequency(variationId: number) {
       return resolve(SubscriptionFrequency.FORTNIGHTLY, 7);
   }
 }
+
+export function resolveMetadataValue(meta_data: Array<any>, key: string) {
+  const res = meta_data.find((data) => data.key === key);
+  return !res ? null : res.value;
+}
+
+export function getSubstringInsideParentheses(str: string) {
+  if (!str) return null;
+
+  const regExp = /\(([^)]+)\)/;
+  const matches = regExp.exec(str);
+
+  //matches[1] contains the value between the parentheses
+
+  if (!matches || matches.length < 2) return null;
+
+  return matches[1];
+}

@@ -1,7 +1,10 @@
 import { OrderStatus, OrderType } from '@prisma/client';
 import { WOO_ABO_PRODUCT_ID, WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
 import * as constants from '../constants';
-import { resolveQuantityAndFrequency } from '../utils';
+import {
+  getSubstringInsideParentheses,
+  resolveQuantityAndFrequency,
+} from '../utils';
 import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
 
 const resolveOrderStatus = (
@@ -47,12 +50,18 @@ const wooApiToOrder = (
     throw new Error(`No line items on order. Woo order id ${wooApiOrder.id}`);
   }
 
+  // if (wooApiOrder.id === 41066) {
+  //   console.debug('BJADA', wooApiOrder);
+  // }
+
   const items: any[] = wooApiOrder.line_items.map((item: any) => {
     return {
+      wooOrderItemId: item.id,
       name: item.name,
       wooProductId: item.product_id,
       wooVariationId: item.variation_id,
       quantity: item.quantity,
+      productCode: getSubstringInsideParentheses(item.name),
     };
   });
 

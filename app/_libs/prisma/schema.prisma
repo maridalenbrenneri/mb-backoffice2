@@ -45,6 +45,8 @@ model Coffee {
   DeliveryCoffee3 Delivery[] @relation(name: "delivery_to_coffee_3")
   DeliveryCoffee4 Delivery[] @relation(name: "delivery_to_coffee_4")
 
+  OrderItems OrderItem[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -156,9 +158,13 @@ enum OrderType {
 model OrderItem {
   id Int @id @default(autoincrement())
 
-  coffeeId Int
+  wooOrderItemId Int? @unique
+
   variation String
   quantity Int
+
+  coffee Coffee @relation(fields: [coffeeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  coffeeId Int
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   orderId Int
@@ -206,6 +212,19 @@ model WooImportResult {
   id Int @id @default(autoincrement())
 
   result String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ImportResult {
+  id Int @id @default(autoincrement())
+
+  name String
+  result String?
+  errors String?
+
+  importStartedAt DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

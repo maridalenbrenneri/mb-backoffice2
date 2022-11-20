@@ -12,9 +12,7 @@ export default function WooImportInfoBox(props: { wooImportResult: any }) {
       <Box sx={{ m: 1 }}>
         <DataLabel
           label="Last imported"
-          data={
-            toPrettyDateTime(wooImportResult?.importStarted) || 'Not available'
-          }
+          data={toPrettyDateTime(wooImportResult?.createdAt) || 'Not available'}
         />
       </Box>
     </Box>

@@ -22,7 +22,7 @@ import {
 import type { Coffee } from '@prisma/client';
 import { CoffeeStatus } from '@prisma/client';
 
-import { getCoffee } from '~/_libs/core/models/coffee.server';
+import { getCoffeeById } from '~/_libs/core/models/coffee.server';
 import { upsertAction } from './_shared';
 
 type LoaderData = { coffee: Coffee };
@@ -30,7 +30,7 @@ type LoaderData = { coffee: Coffee };
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
 
-  const coffee = await getCoffee(+params.id);
+  const coffee = await getCoffeeById(+params.id);
   invariant(coffee, `Coffee not found: ${params.id}`);
 
   return json({ coffee });

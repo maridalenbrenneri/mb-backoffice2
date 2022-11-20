@@ -7,7 +7,7 @@ export const action: ActionFunction = async ({ request }) => {
   if (request.method !== 'POST')
     return json({ message: 'Method not allowed' }, 405);
 
-  const res = await importWooData({ IMPORT_ORDERS: true });
+  const res = await importWooData('IMPORT_ORDERS');
 
   return json(res);
 };

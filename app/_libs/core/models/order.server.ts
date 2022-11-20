@@ -26,7 +26,7 @@ export type OrderUpsertData = Pick<
 
 export type OrderItemUpsertData = Pick<
   OrderItem,
-  'id' | 'orderId' | 'coffeeId' | 'variation' | 'quantity'
+  'orderId' | 'coffeeId' | 'variation' | 'quantity'
 >;
 
 export async function getOrders(filter?: any) {
@@ -56,38 +56,6 @@ export async function getOrder(id: number) {
     },
   });
 }
-export async function upsertOrderFromWoo(
-  wooOrderId: number,
-  data: OrderUpsertData
-) {
-  return prisma.order.upsert({
-    where: {
-      wooOrderId,
-    },
-    update: {
-      // WE ONLY UPDATE STATUS FROM WOO, NOTHING ELSE IS OVERWRITTEN
-      status: data.status,
-    },
-    create: {
-      wooOrderId: data.wooOrderId,
-      type: data.type,
-      status: data.status,
-      subscriptionId: data.subscriptionId,
-      deliveryId: data.deliveryId,
-      name: data.name,
-      address1: data.address1,
-      address2: data.address2,
-      postalCode: data.postalCode,
-      postalPlace: data.postalPlace,
-      email: data.email,
-      mobile: data.mobile,
-      quantity250: data.quantity250,
-      quantity500: 0,
-      quantity1200: 0,
-    },
-  });
-}
-
 export async function upsertOrder(id: number | null, data: OrderUpsertData) {
   return prisma.order.upsert({
     where: {
@@ -123,6 +91,59 @@ export async function upsertOrderItem(
     },
     update: data,
     create: {
+      orderId: data.orderId,
+      coffeeId: data.coffeeId,
+      quantity: data.quantity,
+      variation: data.variation,
+    },
+  });
+}
+
+export async function upsertOrderFromWoo(
+  wooOrderId: number,
+  data: OrderUpsertData
+) {
+  return prisma.order.upsert({
+    where: {
+      wooOrderId,
+    },
+    update: {
+      // WE ONLY UPDATE STATUS FROM WOO, NOTHING ELSE IS OVERWRITTEN
+      status: data.status,
+    },
+    create: {
+      wooOrderId,
+      type: data.type,
+      status: data.status,
+      subscriptionId: data.subscriptionId,
+      deliveryId: data.deliveryId,
+      name: data.name,
+      address1: data.address1,
+      address2: data.address2,
+      postalCode: data.postalCode,
+      postalPlace: data.postalPlace,
+      email: data.email,
+      mobile: data.mobile,
+      quantity250: data.quantity250,
+      quantity500: 0,
+      quantity1200: 0,
+    },
+  });
+}
+
+export async function upsertOrderItemFromWoo(
+  wooOrderItemId: number,
+  data: OrderItemUpsertData
+) {
+  console.log('UPSERT', wooOrderItemId, data);
+  return prisma.orderItem.upsert({
+    where: {
+      wooOrderItemId,
+    },
+    // WE NEVER UPDATE AN ORDER ITEM FROM WOO
+    update: {},
+    create: {
+      wooOrderItemId,
       orderId: data.orderId,
       coffeeId: data.coffeeId,
       quantity: data.quantity,

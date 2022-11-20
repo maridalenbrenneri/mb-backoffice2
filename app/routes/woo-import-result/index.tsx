@@ -11,17 +11,17 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
-import type { WooImportResult } from '~/_libs/core/models/woo-import-result.server';
-import { getWooImportResults } from '~/_libs/core/models/woo-import-result.server';
+import type { WooImportResult } from '~/_libs/core/models/import-result.server';
+import { getImportResults } from '~/_libs/core/models/import-result.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { Box } from '@mui/material';
 
 type LoaderData = {
-  results: Awaited<ReturnType<typeof getWooImportResults>>;
+  results: Awaited<ReturnType<typeof getImportResults>>;
 };
 
 export const loader = async () => {
-  const results = await getWooImportResults();
+  const results = await getImportResults();
   return json<LoaderData>({
     results,
   });

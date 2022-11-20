@@ -28,7 +28,7 @@ export async function getActiveCoffees() {
   return prisma.coffee.findMany(filter);
 }
 
-export async function getCoffee(id: number) {
+export async function getCoffeeById(id: number) {
   return prisma.coffee.findUnique({ where: { id } });
 }
 

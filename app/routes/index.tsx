@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 
 import { SubscriptionStatus, SubscriptionType } from '@prisma/client';
 
-import { getLastWooImportResult } from '~/_libs/core/models/woo-import-result.server';
+import { getLastImportResult } from '~/_libs/core/models/import-result.server';
 import type { Subscription } from '~/_libs/core/models/subscription.server';
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
@@ -21,14 +21,16 @@ import WooImportInfoBox from '~/components/WooImportInfoBox';
 import { Grid, Paper } from '@mui/material';
 
 type LoaderData = {
-  wooData: Awaited<ReturnType<typeof getLastWooImportResult>>;
+  wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
   activeSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   deliveries: Awaited<ReturnType<typeof getDeliveries>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
 export const loader = async () => {
-  const wooData = await getLastWooImportResult();
+  const wooSubscriptionImportResult = await getLastImportResult(
+    'woo-import-subscriptions'
+  );
   const activeSubscriptions = await getSubscriptions({
     where: {
       status: SubscriptionStatus.ACTIVE,
@@ -46,7 +48,7 @@ export const loader = async () => {
   const cargonizerProfile = await getCargonizerProfile();
 
   return json<LoaderData>({
-    wooData,
+    wooSubscriptionImportResult,
     activeSubscriptions,
     deliveries,
     cargonizerProfile,
@@ -66,13 +68,13 @@ function resolveAboStats(
 
   // TODO: ADD MONTHLY WITH 3rd WEEK DELIVERY AS OWN bagCounter
 
-  const gifts = activeSubscriptions.filter(
-    (s) => s.type === SubscriptionType.PRIVATE_GIFT
-  );
+  const gifts =
+    activeSubscriptions.filter(
+      (s) => s.type === SubscriptionType.PRIVATE_GIFT
+    ) || [];
 
-  const B2Bs = activeSubscriptions.filter(
-    (s) => s.type === SubscriptionType.B2B
-  );
+  const B2Bs =
+    activeSubscriptions.filter((s) => s.type === SubscriptionType.B2B) || [];
 
   return {
     bagCounterMonthly,
@@ -87,20 +89,26 @@ function resolveAboStats(
 }
 
 export default function Index() {
-  const { wooData, activeSubscriptions, deliveries, cargonizerProfile } =
-    useLoaderData() as unknown as LoaderData;
+  const {
+    wooSubscriptionImportResult,
+    activeSubscriptions,
+    deliveries,
+    cargonizerProfile,
+  } = useLoaderData() as unknown as LoaderData;
 
-  if (!wooData?.length) {
+  if (!wooSubscriptionImportResult?.length) {
     return (
       <Box>Couldn't load dashboard. No imported data from Woo was found </Box>
     );
   }
 
-  const wooImportResult = JSON.parse(wooData[0].result);
-  const wooSubscriptionStats =
-    wooImportResult.subscriptionStats as SubscriptionStats;
+  console.log('WOO DATA', wooSubscriptionImportResult);
 
-  const aboStats = resolveAboStats(wooSubscriptionStats, activeSubscriptions);
+  const wooStats = JSON.parse(
+    wooSubscriptionImportResult[0].result as string
+  ) as SubscriptionStats;
+
+  const aboStats = resolveAboStats(wooStats, activeSubscriptions);
 
   return (
     <main>
@@ -116,7 +124,9 @@ export default function Index() {
       <Grid container spacing={2}>
         <Grid item md={4} xl={3}>
           <Paper sx={{ p: 1 }}>
-            <WooImportInfoBox wooImportResult={wooImportResult} />
+            <WooImportInfoBox
+              wooImportResult={wooSubscriptionImportResult[0]}
+            />
           </Paper>
         </Grid>
         <Grid item md={4} xl={3}>
