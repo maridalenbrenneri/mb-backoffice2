@@ -15,11 +15,8 @@ export async function getLastImportResult(name: string) {
   });
 }
 
-export async function getImportResults(name: string) {
+export async function getImportResults() {
   return prisma.importResult.findMany({
-    where: {
-      name,
-    },
     orderBy: {
       createdAt: 'desc',
     },

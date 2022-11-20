@@ -15,21 +15,29 @@ import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats
 import { emptyBagCounter } from '~/_libs/core/services/subscription-stats';
 import { toPrettyDate } from '~/_libs/core/utils/dates';
 import { getRoastOverview } from '~/_libs/core/services/roast-service';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TableFooter,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
+import { getNextDeliveryFromList } from '~/_libs/core/services/delivery-service';
 
 export default function RoastOverviewBox(props: {
   stats: SubscriptionStats;
   deliveries: Delivery[];
 }) {
   const { stats, deliveries } = props;
-  const [delivery, setDelivery] = useState<Delivery>(); // TODO: Resolve "NEXT" as the default selected
+  const [delivery, setDelivery] = useState<Delivery>();
   const [overview, setOverview] = useState<any>();
 
   const notSetLabel = '[Not set]';
 
   useEffect(() => {
-    setDelivery(deliveries[0]);
+    const delivery = getNextDeliveryFromList(deliveries);
+    setDelivery(delivery || deliveries[0]);
   }, [deliveries]);
 
   useEffect(() => {
@@ -59,6 +67,7 @@ export default function RoastOverviewBox(props: {
       </Box>
     );
 
+  if (!delivery) return null;
   if (!overview) return null;
 
   const handleChange = (e: any) => {
@@ -79,28 +88,35 @@ export default function RoastOverviewBox(props: {
 
   return (
     <Box>
-      <Form method="post">
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`delivery-label`}>Delivery day</InputLabel>
-          <Select
-            labelId={`delivery-label`}
-            name={`deliveryId`}
-            defaultValue={delivery?.id || 0}
-            onChange={handleChange}
-            sx={{ minWidth: 250 }}
-          >
-            {deliveries.map((d) => (
-              <MenuItem value={d.id} key={d.id}>
-                {toPrettyDate(d.date)} - {d.type}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Form>
-      <p>Total weight, kg: {overview.totalKg}</p>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="roast overview table">
           <TableHead>
+            <TableRow>
+              <TableCell>
+                <Form method="post">
+                  <FormControl sx={{ m: 1 }}>
+                    <InputLabel id={`delivery-label`}>Delivery day</InputLabel>
+                    <Select
+                      labelId={`delivery-label`}
+                      name={`deliveryId`}
+                      defaultValue={delivery?.id || 0}
+                      onChange={handleChange}
+                      sx={{ minWidth: 250 }}
+                    >
+                      {deliveries.map((d) => (
+                        <MenuItem value={d.id} key={d.id}>
+                          {toPrettyDate(d.date)} - {d.type}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl></FormControl>
+                </Form>
+              </TableCell>
+              <TableCell colSpan={4}>
+                Total <big>{overview.totalKg}</big>kg
+              </TableCell>
+            </TableRow>
             <TableRow>
               <TableCell></TableCell>
               <TableCell>Total (kg)</TableCell>
@@ -146,10 +162,35 @@ export default function RoastOverviewBox(props: {
               <TableCell>{overview._500.coffee4}</TableCell>
               <TableCell>{overview._1200.coffee4}</TableCell>
             </TableRow>
+
+            {overview.notSetOnDelivery.length && (
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <strong>
+                    Coffees in active orders not set on the Delivery
+                  </strong>
+                </TableCell>
+              </TableRow>
+            )}
+            {overview.notSetOnDelivery.map((i: any) => (
+              <TableRow key={i.coffeeId}>
+                <TableCell>{i.coffeeId}</TableCell>
+                <TableCell>{i.totalKg}</TableCell>
+                <TableCell>{i._250}</TableCell>
+                <TableCell>{i._500}</TableCell>
+                <TableCell>{i._1200}</TableCell>
+              </TableRow>
+            ))}
           </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={5}>
+                <Link to={`deliveries/admin/${delivery.id}`}>Edit coffees</Link>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
         </Table>
       </TableContainer>
-      <Link to={`deliveries/admin/${delivery.id}`}>Edit coffees</Link>
     </Box>
   );
 }

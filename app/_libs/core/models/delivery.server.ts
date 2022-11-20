@@ -4,24 +4,18 @@ import type { Delivery } from '@prisma/client';
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 
 export type { Delivery };
-export type DeliveryUpsertInput = Pick<
+export type DeliveryUpsertData = Pick<
   Delivery,
-  'id' | 'date' | 'type' | 'coffee1Id' | 'coffee2Id' | 'coffee3Id' | 'coffee4Id'
+  'date' | 'type' | 'coffee1Id' | 'coffee2Id' | 'coffee3Id' | 'coffee4Id'
 >;
 
 export async function getDeliveries(filter?: any) {
-  filter = filter || {
-    include: {
-      coffee1: true,
-      coffee2: true,
-      coffee3: true,
-      coffee4: true,
-      orders: true,
-    },
-  };
+  filter = filter || {};
+
+  console.debug('FILTER', filter);
 
   // ADD DEFAULT FILTER VALUES IF NOT OVERIDDEN IN FILTER INPUT
-  if (!filter.orderBy) filter.orderBy = { updatedAt: 'desc' };
+  if (!filter.orderBy) filter.orderBy = { date: 'desc' };
   if (!filter.take || filter.take > TAKE_MAX_ROWS)
     filter.take = TAKE_DEFAULT_ROWS;
 
@@ -55,19 +49,22 @@ export async function getDeliveryById(id: number) {
   });
 }
 
-export async function upsertDelivery(input: DeliveryUpsertInput) {
+export async function upsertDelivery(
+  id: number | null,
+  data: DeliveryUpsertData
+) {
   return prisma.delivery.upsert({
     where: {
-      id: input.id || 0,
+      id: id || 0,
     },
-    update: input,
+    update: data,
     create: {
-      date: input.date,
-      type: input.type,
-      coffee1Id: input.coffee1Id || null,
-      coffee2Id: input.coffee2Id || null,
-      coffee3Id: input.coffee3Id || null,
-      coffee4Id: input.coffee4Id || null,
+      date: data.date,
+      type: data.type,
+      coffee1Id: data.coffee1Id || null,
+      coffee2Id: data.coffee2Id || null,
+      coffee3Id: data.coffee3Id || null,
+      coffee4Id: data.coffee4Id || null,
     },
   });
 }

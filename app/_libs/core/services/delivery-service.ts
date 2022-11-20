@@ -1,6 +1,9 @@
 import { DateTime } from 'luxon';
 
-import { getDeliveries, getDelivery } from '../models/delivery.server';
+import type { Delivery } from '@prisma/client';
+
+import { getDelivery, upsertDelivery } from '../models/delivery.server';
+import { getNextDeliveryDates } from '../utils/dates';
 
 export async function getNextDelivery() {
   const today = DateTime.now().startOf('day');
@@ -10,30 +13,35 @@ export async function getNextDelivery() {
     where: {
       date: {
         gte: today.toJSDate(),
-        lte: nextweek.toJSDate(),
+        lt: nextweek.toJSDate(),
       },
     },
   });
 
   if (delivery) return delivery;
 
-  // TODO: CREATE DELIVERY IF NEXT WASNT FOUND
+  // IF DELIVERY WASN'T FOUND, CREATE
 
-  // IF NO DELIVERY WAS FOUND FOR NEXT WEEK, TRY GETTING THE NEXT ONE ANY DATE GREATER THAN TODAY
+  const nextDates = getNextDeliveryDates();
 
-  const deliveries = await getDeliveries({
-    where: {
-      date: {
-        gte: today.toJSDate(),
-      },
-    },
-    orderBy: {
-      date: 'desc',
-    },
-    take: 1,
+  const nextDelivery = await upsertDelivery(null, {
+    date: nextDates[0].date.toJSDate(),
+    type: nextDates[0].type,
+    coffee1Id: null,
+    coffee2Id: null,
+    coffee3Id: null,
+    coffee4Id: null,
   });
 
-  if (!deliveries.length) throw new Error('No Deliveries found');
+  return nextDelivery;
+}
 
-  return deliveries[0];
+export function getNextDeliveryFromList(deliveries: Delivery[]) {
+  const today = DateTime.now().startOf('day');
+  const nextweek = today.plus({ days: 7 }).startOf('day');
+
+  return deliveries.find((d) => {
+    const date = DateTime.fromISO(d.date.toString());
+    return date >= today && date < nextweek;
+  });
 }

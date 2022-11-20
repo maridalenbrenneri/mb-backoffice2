@@ -1,5 +1,5 @@
 import { json } from '@remix-run/node';
-import { Link, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import JSONPretty from 'react-json-pretty';
 
 import Table from '@mui/material/Table';
@@ -10,11 +10,10 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import { Box } from '@mui/material';
 
-import type { WooImportResult } from '~/_libs/core/models/import-result.server';
 import { getImportResults } from '~/_libs/core/models/import-result.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
-import { Box } from '@mui/material';
 
 type LoaderData = {
   results: Awaited<ReturnType<typeof getImportResults>>;
@@ -36,20 +35,28 @@ export default function ImportResult() {
 
       <Box sx={{ m: 2 }}>
         <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="subscription table">
+          <Table
+            sx={{ minWidth: 650 }}
+            size="small"
+            aria-label="subscription table"
+          >
             <TableHead>
               <TableRow>
                 <TableCell>Date</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Errors</TableCell>
                 <TableCell>Result</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {results.map((result: WooImportResult) => (
+              {results.map((result) => (
                 <TableRow
                   key={result.id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
                   <TableCell>{toPrettyDateTime(result.createdAt)}</TableCell>
+                  <TableCell>{result.name}</TableCell>
+                  <TableCell>{result.errors}</TableCell>
                   <TableCell>
                     <JSONPretty
                       id="json-pretty"

@@ -24,7 +24,6 @@ async function _createOrder(
     _1200: 0,
   }
 ): Promise<Order> {
-  console.debug('_CREATE ORDER', subscriptionId);
   const subscription = await getSubscription(subscriptionId);
 
   if (!subscription) {
@@ -46,6 +45,7 @@ async function _createOrder(
   const delivery = await getNextDelivery();
 
   const order = await upsertOrder(null, {
+    wooOrderId: null,
     subscriptionId,
     deliveryId: delivery.id,
     status: OrderStatus.ACTIVE,

@@ -4,7 +4,11 @@ import { useLoaderData } from '@remix-run/react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-import { SubscriptionStatus, SubscriptionType } from '@prisma/client';
+import {
+  OrderStatus,
+  SubscriptionStatus,
+  SubscriptionType,
+} from '@prisma/client';
 
 import { getLastImportResult } from '~/_libs/core/models/import-result.server';
 import type { Subscription } from '~/_libs/core/models/subscription.server';
@@ -29,7 +33,7 @@ type LoaderData = {
 
 export const loader = async () => {
   const wooSubscriptionImportResult = await getLastImportResult(
-    'woo-import-subscriptions'
+    'woo-import-subscription-stats'
   );
   const activeSubscriptions = await getSubscriptions({
     where: {
@@ -44,7 +48,34 @@ export const loader = async () => {
       quantity1200: true,
     },
   });
-  const deliveries = await getDeliveries();
+
+  const deliveries = await getDeliveries({
+    include: {
+      coffee1: { select: { id: true, productCode: true } },
+      coffee2: { select: { id: true, productCode: true } },
+      coffee3: { select: { id: true, productCode: true } },
+      coffee4: { select: { id: true, productCode: true } },
+      orders: {
+        where: {
+          status: OrderStatus.ACTIVE,
+        },
+        select: {
+          id: true,
+          type: true,
+          orderItems: {
+            select: {
+              coffeeId: true,
+              quantity: true,
+              variation: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { date: 'asc' },
+    take: 5,
+  });
+
   const cargonizerProfile = await getCargonizerProfile();
 
   return json<LoaderData>({
@@ -101,8 +132,6 @@ export default function Index() {
       <Box>Couldn't load dashboard. No imported data from Woo was found </Box>
     );
   }
-
-  console.log('WOO DATA', wooSubscriptionImportResult);
 
   const wooStats = JSON.parse(
     wooSubscriptionImportResult[0].result as string

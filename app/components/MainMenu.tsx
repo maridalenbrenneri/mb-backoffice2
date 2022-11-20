@@ -93,10 +93,10 @@ export default function MainMenu() {
               <ListItem
                 button
                 component={Link}
-                to={'/woo-import-result'}
+                to={'/import-result'}
                 onClick={() => setIsDrawerOpen(false)}
               >
-                <ListItemText primary="Woo Import Data" />
+                <ListItemText primary="Woo Import History" />
               </ListItem>
             </List>
           </Drawer>
