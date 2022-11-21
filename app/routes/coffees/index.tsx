@@ -97,7 +97,7 @@ export default function Coffees() {
             <MenuItem value={'_all'}>All</MenuItem>
             <MenuItem value={CoffeeStatus.ACTIVE}>Active</MenuItem>
             <MenuItem value={CoffeeStatus.SOLD_OUT}>Sold out</MenuItem>
-            <MenuItem value={CoffeeStatus.IN_ORDER}>In order</MenuItem>
+            <MenuItem value={CoffeeStatus.ORDERED}>Ordered</MenuItem>
           </Select>
         </FormControl>
       </Form>
@@ -122,7 +122,9 @@ export default function Coffees() {
                 <TableCell component="th" scope="row">
                   <Link to={`admin/${coffee.id}`}>{coffee.id}</Link>
                 </TableCell>
-                <TableCell>{coffee.status}</TableCell>
+                <TableCell>
+                  <small>{coffee.status}</small>
+                </TableCell>
                 <TableCell>{coffee.productCode}</TableCell>
                 <TableCell>{coffee.name}</TableCell>
                 <TableCell>{coffee.country}</TableCell>

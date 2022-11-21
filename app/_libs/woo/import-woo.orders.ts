@@ -7,7 +7,7 @@ import {
   upsertOrderFromWoo,
   upsertOrderItemFromWoo,
 } from '../core/models/order.server';
-import { getNextDelivery } from '../core/services/delivery-service';
+import { getNextOrCreateDelivery } from '../core/services/delivery-service';
 import wooApiToOrder from './orders/woo-api-to-order';
 import { WOO_RENEWALS_SUBSCRIPTION_ID } from '../core/settings';
 import { getCoffees } from '../core/models/coffee.server';
@@ -19,7 +19,6 @@ export default async function importWooOrders() {
 
   const errors: Error[] = [];
   let wooOrders: any[] = [];
-  let orderInfos: any[] = [];
   const ordersNotImported: number[] = [];
   let ordersUpsertedCount = 0;
 
@@ -32,7 +31,7 @@ export default async function importWooOrders() {
   console.debug(`=> DONE (${wooOrders.length} fetched)`);
 
   if (!errors.length) {
-    const nextDelivery = await getNextDelivery();
+    const nextDelivery = await getNextOrCreateDelivery();
     const coffees = await getCoffees();
 
     const getCoffeeIdFromCode = (code: string) => {
@@ -53,9 +52,15 @@ export default async function importWooOrders() {
     };
 
     try {
-      orderInfos = wooOrders.map((wo) =>
-        wooApiToOrder(wo, WOO_RENEWALS_SUBSCRIPTION_ID, nextDelivery.id)
-      );
+      const orderInfos: any[] = [];
+      for (const wooOrder of wooOrders) {
+        const mapped = await wooApiToOrder(
+          wooOrder,
+          WOO_RENEWALS_SUBSCRIPTION_ID,
+          nextDelivery.id
+        );
+        orderInfos.push(mapped);
+      }
 
       for (const info of orderInfos) {
         for (const gift of info.gifts) {

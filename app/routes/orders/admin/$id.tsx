@@ -6,7 +6,6 @@ import {
   useTransition,
   useLoaderData,
   Outlet,
-  Link,
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
@@ -131,7 +130,11 @@ export default function UpdateOrder() {
         />
         <input type="hidden" name="deliveryId" value={order.deliveryId} />
         <input type="hidden" name="type" value={order.type} />
-        <input type="hidden" name="type" value={order.customerNote} />
+        <input
+          type="hidden"
+          name="customerNote"
+          value={order.customerNote || undefined}
+        />
 
         <FormControl sx={{ m: 1 }}>
           <InputLabel id={`status-label`}>Status</InputLabel>
@@ -261,6 +264,15 @@ export default function UpdateOrder() {
                 variant="outlined"
                 defaultValue={order.quantity250}
                 error={errors?.quantity250}
+              />
+            </FormControl>
+            <FormControl>
+              <TextField
+                name="quantity500"
+                label="Quantity 500"
+                variant="outlined"
+                defaultValue={order.quantity500}
+                error={errors?.quantity500}
               />
             </FormControl>
             <FormControl>

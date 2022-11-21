@@ -147,7 +147,11 @@ export default function Subscriptions() {
         </Form>
 
         <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="subscription table">
+          <Table
+            sx={{ minWidth: 650 }}
+            aria-label="subscription table"
+            size="small"
+          >
             <TableHead>
               <TableRow>
                 <TableCell colSpan={4}>

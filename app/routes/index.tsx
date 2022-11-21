@@ -26,6 +26,7 @@ import { Grid, Paper } from '@mui/material';
 
 type LoaderData = {
   wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
+  wooOrderImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
   activeSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   deliveries: Awaited<ReturnType<typeof getDeliveries>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
@@ -35,6 +36,7 @@ export const loader = async () => {
   const wooSubscriptionImportResult = await getLastImportResult(
     'woo-import-subscription-stats'
   );
+  const wooOrderImportResult = await getLastImportResult('woo-import-orders');
   const activeSubscriptions = await getSubscriptions({
     where: {
       status: SubscriptionStatus.ACTIVE,
@@ -80,6 +82,7 @@ export const loader = async () => {
 
   return json<LoaderData>({
     wooSubscriptionImportResult,
+    wooOrderImportResult,
     activeSubscriptions,
     deliveries,
     cargonizerProfile,
@@ -122,6 +125,7 @@ function resolveAboStats(
 export default function Index() {
   const {
     wooSubscriptionImportResult,
+    wooOrderImportResult,
     activeSubscriptions,
     deliveries,
     cargonizerProfile,
@@ -142,19 +146,21 @@ export default function Index() {
   return (
     <main>
       <Box sx={{ minWidth: 120, my: 4 }}>
-        <Typography variant="h3">Roast overview</Typography>
+        <Typography variant="h2">Roast overview</Typography>
         <RoastOverviewBox stats={aboStats} deliveries={deliveries} />
       </Box>
       <Box sx={{ minWidth: 120, my: 4 }}>
-        <Typography variant="h3">Subscription overview</Typography>
+        <Typography variant="h2">Subscription overview</Typography>
         <SubscriptionStatsBox stats={aboStats} />
       </Box>
 
+      <Typography variant="h2">Other stuff</Typography>
       <Grid container spacing={2}>
         <Grid item md={4} xl={3}>
           <Paper sx={{ p: 1 }}>
             <WooImportInfoBox
-              wooImportResult={wooSubscriptionImportResult[0]}
+              subscriptions={wooSubscriptionImportResult[0]}
+              orders={wooOrderImportResult[0]}
             />
           </Paper>
         </Grid>

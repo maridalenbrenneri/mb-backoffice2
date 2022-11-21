@@ -23,8 +23,7 @@ export function toPrettyDateTime(
   return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
 }
 
-// RESOLVE DATE FOR NEXT STOR-ABO AFTER THE SPECIFIED DATE
-export function resolveNextDeliveryDay(date?: DateTime) {
+export function resolveDateForNextMonthlyDelivery(date?: DateTime) {
   date = date?.startOf('day') || DateTime.now().startOf('day');
 
   const firstOfMonth = date.startOf('month');
@@ -52,7 +51,9 @@ function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
     .startOf('week')
     .plus({ days: 1 });
 
-  const nextStorAbo = resolveNextDeliveryDay(date);
+  const nextStorAbo = resolveDateForNextMonthlyDelivery(date);
+
+  // TODO: HANDLE MONTHLY_3RD "BEDRIFTS-ABO"
 
   const type =
     nextStorAbo.toISODate() === date.toISODate() ? 'STORABO' : 'NORMAL';
@@ -64,7 +65,7 @@ function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
   };
 }
 
-// RETURN NEXT 5 DELIVERY DATES (Tuesdays)
+// RETURNS NEXT 5 DELIVERY DATES (Tuesdays)
 export function getNextDeliveryDates(): DeliveryDate[] {
   return [
     getDate(7, 1),
@@ -73,4 +74,15 @@ export function getNextDeliveryDates(): DeliveryDate[] {
     getDate(28, 4),
     getDate(35, 5),
   ];
+}
+
+// RETURNS NEXT DELIVERY DATE AFTER THE DATE SPECIFIED
+export function getNextDeliveryDateFrom(date: DateTime): DeliveryDate {
+  const today = DateTime.now().startOf('day');
+
+  const diff = date.diff(today, ['days']);
+
+  console.debug('getNextDeliveryDateFrom', date.toString(), diff.days);
+
+  return getDate(diff.days);
 }

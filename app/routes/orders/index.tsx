@@ -104,7 +104,11 @@ export default function Orders() {
         </Form>
 
         <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="subscription table">
+          <Table
+            sx={{ minWidth: 650 }}
+            aria-label="subscription table"
+            size="small"
+          >
             <TableHead>
               <TableRow>
                 <TableCell colSpan={6}>
@@ -129,8 +133,12 @@ export default function Orders() {
                   <TableCell component="th" scope="row">
                     <Link to={`admin/${order.id}`}>{order.id}</Link>
                   </TableCell>
-                  <TableCell>{order.status}</TableCell>
-                  <TableCell>{order.type}</TableCell>
+                  <TableCell>
+                    <small>{order.status}</small>
+                  </TableCell>
+                  <TableCell>
+                    <small>{order.type}</small>
+                  </TableCell>
                   <TableCell>{toPrettyDateTime(order.createdAt)}</TableCell>
                   <TableCell>{order.name}</TableCell>
                   <TableCell>{order.wooOrderId}</TableCell>

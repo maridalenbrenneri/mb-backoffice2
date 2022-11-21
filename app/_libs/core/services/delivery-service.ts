@@ -3,9 +3,10 @@ import { DateTime } from 'luxon';
 import type { Delivery } from '@prisma/client';
 
 import { getDelivery, upsertDelivery } from '../models/delivery.server';
-import { getNextDeliveryDates } from '../utils/dates';
+import { getNextDeliveryDateFrom } from '../utils/dates';
 
-export async function getNextDelivery() {
+// RESOLVES NEXT DELIVERY FROM TODAY OR THE DATE SPECIFIED. IF DELIVERY DOESN'T EXIST, IT IS CREATED
+export async function getNextOrCreateDelivery(): Promise<Delivery> {
   const today = DateTime.now().startOf('day');
   const nextweek = today.plus({ days: 7 }).startOf('day');
 
@@ -20,13 +21,13 @@ export async function getNextDelivery() {
 
   if (delivery) return delivery;
 
-  // IF DELIVERY WASN'T FOUND, CREATE
+  // DELIVERY NOT FOUND, CREATE
 
-  const nextDates = getNextDeliveryDates();
+  const nextDate = getNextDeliveryDateFrom(today);
 
   const nextDelivery = await upsertDelivery(null, {
-    date: nextDates[0].date.toJSDate(),
-    type: nextDates[0].type,
+    date: nextDate.date.toJSDate(),
+    type: nextDate.type,
     coffee1Id: null,
     coffee2Id: null,
     coffee3Id: null,

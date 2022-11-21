@@ -7,8 +7,6 @@ import {
   SubscriptionType,
 } from '@prisma/client';
 
-import { resolveNextDeliveryDay } from '../utils/dates';
-
 function calculateSubscriptionWeight(subscription: Subscription) {
   let weight = 0;
 
@@ -48,30 +46,20 @@ export function resolveSubscriptionCode(subscription: Subscription) {
   return `${type}${freq}-${quantity}`;
 }
 
-// TODO: THIS SHOULD USE DELIVERY
-export function resolveStatusAndFirstDeliveryDate(
-  duration_months: number,
-  date?: DateTime
-): { firstDeliveryDate: DateTime; status: SubscriptionStatus } {
-  date = date || DateTime.now();
-
-  const firstDeliveryDate = resolveNextDeliveryDay(date);
-
+// TODO: RESOLVE STATUS FROM ORDERS COMPLETED INSTEAD OF DATE (CANNOT BE DONE UNTIL ALL ACTIVE GABOS HAVE BEEN IMPORTED FROM THE START)
+export function resolveStatusForGiftSubscription(
+  durationMonths: number,
+  firstDeliveryDate: DateTime
+): SubscriptionStatus {
   const last = firstDeliveryDate
-    .plus({ months: duration_months })
+    .plus({ months: durationMonths })
     .startOf('month')
     .plus({ days: 7 })
     .startOf('day');
 
   const today = DateTime.now().startOf('day');
-
-  // console.log("TODAY", "LAST", today.toISODate(), last.toISODate());
-
   const status =
     today <= last ? SubscriptionStatus.ACTIVE : SubscriptionStatus.COMPLETED;
 
-  return {
-    firstDeliveryDate,
-    status,
-  };
+  return status;
 }

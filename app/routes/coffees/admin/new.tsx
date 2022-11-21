@@ -74,7 +74,7 @@ export default function NewCoffee() {
 
         <div>
           <FormControl sx={{ m: 1 }}>
-            <Button type="submit" disabled={isCreating}>
+            <Button type="submit" disabled={isCreating} variant="contained">
               {isCreating ? 'Creating...' : 'Create Coffee'}
             </Button>
           </FormControl>

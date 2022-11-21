@@ -41,11 +41,11 @@ const resolveFullname = (wooApiOrder: any) => {
   return `${wooApiOrder.shipping?.first_name} ${wooApiOrder.shipping?.last_name}`;
 };
 
-const wooApiToOrder = (
+export default async function wooApiToOrder(
   wooApiOrder: any,
   subscriptionId: number,
   deliveryId: number
-) => {
+) {
   if (!wooApiOrder.line_items?.length) {
     throw new Error(`No line items on order. Woo order id ${wooApiOrder.id}`);
   }
@@ -136,6 +136,4 @@ const wooApiToOrder = (
     }
   ],
   */
-};
-
-export default wooApiToOrder;
+}

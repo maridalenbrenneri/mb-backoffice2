@@ -11,12 +11,13 @@ export default async function importWooGiftSubscriptions() {
   console.debug('FETCHING WOO GIFT SUBSCRIPTIONS...');
 
   let giftSubscriptions: GiftSubscriptionCreateInput[] = [];
-  const errors: string[] = [];
+  const errors: Error[] = [];
 
   try {
     giftSubscriptions = await fetchGiftSubscriptionOrders();
   } catch (err) {
-    errors.push(err.message);
+    errors.push(err);
+    throw err;
   }
 
   if (!errors.length) {
@@ -25,7 +26,8 @@ export default async function importWooGiftSubscriptions() {
         await createGiftSubscription(subscription);
       }
     } catch (err) {
-      errors.push(err.message);
+      errors.push(err);
+      throw err;
     }
   }
 
@@ -35,12 +37,17 @@ export default async function importWooGiftSubscriptions() {
     result: giftSubscriptions.length
       ? JSON.stringify(`{upserted: ${giftSubscriptions.length}`)
       : null,
-    errors: errors?.length ? errors.join() : null,
+    errors: errors?.length ? errors[0].message : null,
   };
 
   await createImportResult(result);
 
   console.debug(' => DONE');
 
-  return result;
+  return {
+    importStartedAt: startTimeStamp,
+    name: 'woo-import-subscriptions',
+    result: { upserted: giftSubscriptions.length },
+    errors: errors?.length ? errors[0] : null,
+  };
 }

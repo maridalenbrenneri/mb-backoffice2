@@ -10,7 +10,7 @@ export default function CargonizerProfileBox(props: { profile: any }) {
 
   return (
     <Box sx={{ m: 2 }}>
-      <Typography variant="subtitle1">Cargonizer Profile</Typography>
+      <Typography variant="subtitle1">Cargonizer profile</Typography>
       <Box sx={{ m: 1 }}>
         <DataLabel label="Username" data={profile.user.username} />
         <DataLabel

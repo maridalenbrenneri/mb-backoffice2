@@ -86,7 +86,9 @@ export default function Deliveries() {
                   <Link to={`admin/${delivery.id}`}>{delivery.id}</Link>
                 </TableCell>
                 <TableCell>{toPrettyDate(delivery.date)}</TableCell>
-                <TableCell>{delivery.type}</TableCell>
+                <TableCell>
+                  <small>{delivery.type}</small>
+                </TableCell>
                 <TableCell>{delivery.coffee1?.productCode}</TableCell>
                 <TableCell>{delivery.coffee2?.productCode}</TableCell>
                 <TableCell>{delivery.coffee3?.productCode}</TableCell>

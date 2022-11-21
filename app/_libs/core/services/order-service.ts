@@ -7,7 +7,7 @@ import { sendConsignment } from '~/_libs/cargonizer';
 import { getOrder, upsertOrder } from '../models/order.server';
 import { getSubscription } from '../models/subscription.server';
 import { WEIGHT_STANDARD_PACKAGING } from '../settings';
-import { getNextDelivery } from './delivery-service';
+import { getNextOrCreateDelivery } from './delivery-service';
 
 export interface Quantites {
   _250: number;
@@ -42,7 +42,7 @@ async function _createOrder(
     };
   }
 
-  const delivery = await getNextDelivery();
+  const delivery = await getNextOrCreateDelivery();
 
   const order = await upsertOrder(null, {
     wooOrderId: null,

@@ -1,11 +1,7 @@
-import type { ActionFunction } from "@remix-run/node";
-import {
-  Form,
-  useLoaderData,
-  useTransition,
-} from "@remix-run/react";
-import * as React from "react";
-import { json } from "@remix-run/node";
+import type { ActionFunction } from '@remix-run/node';
+import { Form, useLoaderData, useTransition } from '@remix-run/react';
+import * as React from 'react';
+import { json } from '@remix-run/node';
 
 import {
   Typography,
@@ -14,16 +10,16 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-} from "@mui/material";
+} from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import Select from '@mui/material/Select';
 
-import { upsertAction } from "./_shared";
-import type { DeliveryDate} from "~/_libs/core/utils/dates";
-import { getNextDeliveryDates } from "~/_libs/core/utils/dates";
-import type { Coffee} from "~/_libs/core/models/coffee.server";
-import { getCoffees } from "~/_libs/core/models/coffee.server";
-import { toPrettyDate } from "~/_libs/core/utils/dates";
+import { upsertAction } from './_shared';
+import type { DeliveryDate } from '~/_libs/core/utils/dates';
+import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
+import type { Coffee } from '~/_libs/core/models/coffee.server';
+import { getCoffees } from '~/_libs/core/models/coffee.server';
+import { toPrettyDate } from '~/_libs/core/utils/dates';
 
 type LoaderData = {
   deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
@@ -52,8 +48,10 @@ export default function NewDelivery() {
 
   const [deliveryDate, setDeliveryDate] = React.useState(deliveryDates[0]);
   const handleChange = (event: SelectChangeEvent) => {
-    const dd = deliveryDates.find(d => d.id === (event.target.value as unknown as number)) as DeliveryDate;
-    console.log("DeliveryDate set", dd);
+    const dd = deliveryDates.find(
+      (d) => d.id === (event.target.value as unknown as number)
+    ) as DeliveryDate;
+    console.log('DeliveryDate set', dd);
     setDeliveryDate(dd);
   };
 
@@ -61,27 +59,30 @@ export default function NewDelivery() {
     <Box m={2}>
       <Typography variant="h2">Create Delivery</Typography>
       <Form method="post">
-        <input type="hidden" name="delivery_date" value={deliveryDate.date.toString()} />
+        <input
+          type="hidden"
+          name="delivery_date"
+          value={deliveryDate.date.toString()}
+        />
         <input type="hidden" name="delivery_type" value={deliveryDate.type} />
 
-        <FormControl sx={{m: 1}}>
-          <InputLabel id="date-label">
-            Date
-          </InputLabel>
+        <FormControl sx={{ m: 1 }}>
+          <InputLabel id="date-label">Date</InputLabel>
           <Select
             labelId="date-label"
             defaultValue={`${deliveryDates[0].id}`}
-            onChange={handleChange}>
-              {deliveryDates.map((date: DeliveryDate) => (
-                <MenuItem value={date.id} key={date.id}>
-                  {toPrettyDate(date.date)} - {date.type}
-                </MenuItem>
-              ))}
+            onChange={handleChange}
+          >
+            {deliveryDates.map((date: DeliveryDate) => (
+              <MenuItem value={date.id} key={date.id}>
+                {toPrettyDate(date.date)} - {date.type}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
         {[1, 2, 3, 4].map((coffeeNr: number) => (
-          <FormControl key={coffeeNr} sx={{m: 1}}>
+          <FormControl key={coffeeNr} sx={{ m: 1 }}>
             <InputLabel id={`coffee-${coffeeNr}-label`}>
               Coffee {coffeeNr}
             </InputLabel>
@@ -90,20 +91,23 @@ export default function NewDelivery() {
               name={`coffee${coffeeNr}`}
               defaultValue={''}
               displayEmpty
-              sx={{ minWidth: 200 }}>
-                {coffees.map((coffee: Coffee) => (
-                  <MenuItem value={coffee.id} key={coffee.id}>
-                    {coffee.productCode} - {coffee.name}
-                  </MenuItem>
-                ))}
+              sx={{ minWidth: 200 }}
+            >
+              {coffees.map((coffee: Coffee) => (
+                <MenuItem value={coffee.id} key={coffee.id}>
+                  {coffee.productCode} - {coffee.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         ))}
-        <FormControl sx={{m: 1}}>
-          <Button type="submit" disabled={isCreating}>
-            {isCreating ? "Creating..." : "Create Delivery"}
-          </Button>
+        <div>
+          <FormControl sx={{ m: 1 }}>
+            <Button type="submit" disabled={isCreating} variant="contained">
+              {isCreating ? 'Creating...' : 'Create Delivery'}
+            </Button>
           </FormControl>
+        </div>
       </Form>
     </Box>
   );
