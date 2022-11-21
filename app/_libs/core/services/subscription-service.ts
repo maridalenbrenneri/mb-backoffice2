@@ -6,6 +6,11 @@ import {
   SubscriptionStatus,
   SubscriptionType,
 } from '@prisma/client';
+import {
+  getSubscriptions,
+  updateStatusOnSubscription,
+} from '../models/subscription.server';
+import { TAKE_MAX_ROWS } from '../settings';
 
 function calculateSubscriptionWeight(subscription: Subscription) {
   let weight = 0;
@@ -62,4 +67,43 @@ export function resolveStatusForGiftSubscription(
     today <= last ? SubscriptionStatus.ACTIVE : SubscriptionStatus.COMPLETED;
 
   return status;
+}
+
+export async function updateStatusOnGiftSubscriptions() {
+  const gifts = await getSubscriptions({
+    where: {
+      status: SubscriptionStatus.ACTIVE,
+      type: SubscriptionType.PRIVATE_GIFT,
+    },
+    select: {
+      id: true,
+      status: true,
+      gift_durationMonths: true,
+      gift_firstDeliveryDate: true,
+    },
+    take: TAKE_MAX_ROWS,
+  });
+
+  let updatedCount = 0;
+
+  console.debug(`Checking status on ${gifts.length} gift subscriptions`);
+
+  for (const gift of gifts) {
+    const duration = gift.gift_durationMonths as number;
+    const date = DateTime.fromISO(
+      (gift.gift_firstDeliveryDate as Date).toISOString()
+    );
+
+    const status = resolveStatusForGiftSubscription(duration, date);
+
+    if (gift.status !== status) {
+      console.debug(
+        `Detected new status for gift subscription ${gift.id}. Updating from ${gift.status} to ${status}`
+      );
+      await updateStatusOnSubscription(gift.id, status);
+      updatedCount++;
+    }
+  }
+
+  return { updatedCount };
 }

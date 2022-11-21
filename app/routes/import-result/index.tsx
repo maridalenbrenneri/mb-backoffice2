@@ -35,16 +35,12 @@ export default function ImportResult() {
 
       <Box sx={{ m: 2 }}>
         <TableContainer component={Paper}>
-          <Table
-            sx={{ minWidth: 650 }}
-            size="small"
-            aria-label="subscription table"
-          >
+          <Table sx={{ minWidth: 650 }} size="small">
             <TableHead>
               <TableRow>
                 <TableCell>Date</TableCell>
                 <TableCell>Name</TableCell>
-                <TableCell>Errors</TableCell>
+                <TableCell>Error</TableCell>
                 <TableCell>Result</TableCell>
               </TableRow>
             </TableHead>
@@ -54,7 +50,9 @@ export default function ImportResult() {
                   key={result.id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
-                  <TableCell>{toPrettyDateTime(result.createdAt)}</TableCell>
+                  <TableCell>
+                    {toPrettyDateTime(result.createdAt, true)}
+                  </TableCell>
                   <TableCell>{result.name}</TableCell>
                   <TableCell>{result.errors}</TableCell>
                   <TableCell sx={{ width: '50%' }}>

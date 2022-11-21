@@ -135,3 +135,17 @@ export async function upsertSubscription(
     },
   });
 }
+
+export async function updateStatusOnSubscription(
+  id: number,
+  status: SubscriptionStatus
+) {
+  return prisma.subscription.update({
+    where: {
+      id,
+    },
+    data: {
+      status,
+    },
+  });
+}
