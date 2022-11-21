@@ -33,7 +33,7 @@ async function _createOrder(
     throw new Error('Failed to create order, subscription was not found');
   }
 
-  if (type !== OrderType.CUSTOMIZED && !quantities) {
+  if (type !== OrderType.CUSTOM && !quantities) {
     // DEFAULT TO SUBSCRIPTION QUANTITIES
     quantities = {
       _250: subscription.quantity250,
@@ -75,8 +75,8 @@ export async function createNonRecurringOrder(
   return redirect(`/subscriptions/admin/${subscriptionId}`);
 }
 
-export async function createCustomizedOrder(subscriptionId: number) {
-  const order = await _createOrder(subscriptionId, OrderType.CUSTOMIZED);
+export async function createCustomdOrder(subscriptionId: number) {
+  const order = await _createOrder(subscriptionId, OrderType.CUSTOM);
   return redirect(`/orders/admin/${order.id}`);
 }
 

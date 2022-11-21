@@ -31,7 +31,7 @@ import { getCustomer } from '~/_libs/fiken';
 import GiftSubscriptionWooData from '~/components/GiftSubscriptionWooData';
 import Orders from '~/components/Orders';
 import {
-  createCustomizedOrder,
+  createCustomdOrder,
   createNonRecurringOrder,
 } from '~/_libs/core/services/order-service';
 import {
@@ -48,7 +48,7 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  if (_action === 'update') return await upsertAction(request);
+  if (_action === 'update') return await upsertAction(values);
 
   if (_action === 'create-order')
     return await createNonRecurringOrder(+(values as any).id, {
@@ -57,8 +57,8 @@ export const action: ActionFunction = async ({ request }) => {
       _1200: +(values as any).quantity1200,
     });
 
-  if (_action === 'create-customized-order')
-    return await createCustomizedOrder(+(values as any).id);
+  if (_action === 'create-custom-order')
+    return await createCustomdOrder(+(values as any).id);
 
   return null;
 };
@@ -156,7 +156,7 @@ export default function UpdateSubscription() {
                   <div>
                     <FormControl>
                       <TextField
-                        name="name"
+                        name="recipientName"
                         label="Name"
                         variant="outlined"
                         defaultValue={subscription.recipientName}
@@ -167,7 +167,7 @@ export default function UpdateSubscription() {
                   <div>
                     <FormControl>
                       <TextField
-                        name="address1"
+                        name="recipientAddress1"
                         label="Address1"
                         variant="outlined"
                         defaultValue={subscription.recipientAddress1}
@@ -176,7 +176,7 @@ export default function UpdateSubscription() {
                     </FormControl>
                     <FormControl>
                       <TextField
-                        name="address2"
+                        name="recipientAddress2"
                         label="Address2"
                         variant="outlined"
                         defaultValue={subscription.recipientAddress2}
@@ -187,7 +187,7 @@ export default function UpdateSubscription() {
                   <div>
                     <FormControl>
                       <TextField
-                        name="postalCode"
+                        name="recipientPostalCode"
                         label="Postal code"
                         variant="outlined"
                         defaultValue={subscription.recipientPostalCode}
@@ -196,7 +196,7 @@ export default function UpdateSubscription() {
                     </FormControl>
                     <FormControl>
                       <TextField
-                        name="postalPlace"
+                        name="recipientPostalPlace"
                         label="Place"
                         variant="outlined"
                         defaultValue={subscription.recipientPostalPlace}
@@ -207,7 +207,7 @@ export default function UpdateSubscription() {
                   <div>
                     <FormControl>
                       <TextField
-                        name="email"
+                        name="recipientEmail"
                         label="Email"
                         variant="outlined"
                         defaultValue={subscription.recipientEmail}
@@ -216,7 +216,7 @@ export default function UpdateSubscription() {
                     </FormControl>
                     <FormControl>
                       <TextField
-                        name="mobile"
+                        name="recipientMobile"
                         label="Mobile"
                         variant="outlined"
                         defaultValue={subscription.recipientMobile}
@@ -330,14 +330,14 @@ export default function UpdateSubscription() {
                 p: 2,
               }}
             >
-              <Typography variant="h3">Create New Customized Order</Typography>
+              <Typography variant="h3">Create New Custom Order</Typography>
               <Form method="post">
                 <input type="hidden" name="id" value={subscription.id} />
                 <FormControl sx={{ m: 1 }}>
                   <Button
                     type="submit"
                     name="_action"
-                    value="create-customized-order"
+                    value="create-custom-order"
                     variant="contained"
                     disabled={isCreatingOrder || isReadOnly}
                   >

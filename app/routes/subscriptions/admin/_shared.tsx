@@ -83,46 +83,23 @@ export const renderFrequency = (
   );
 };
 
-export const upsertAction = async (request: any) => {
-  const formData = await request.formData();
-
-  const id = +formData.get('id');
-  const fikenContactId = +formData.get('fikenContactId');
-
-  const type = formData.get('type');
-  const status = formData.get('status');
-
-  const frequency = formData.get('frequency');
-  const quantity250 = +formData.get('quantity250');
-  const quantity500 = +formData.get('quantity500');
-  const quantity1200 = +formData.get('quantity1200');
-
-  const internalNote = formData.get('internalNote');
-
-  const recipientName = formData.get('name');
-  const recipientAddress1 = formData.get('address1');
-  const recipientAddress2 = formData.get('address2');
-  const recipientPostalCode = formData.get('postalCode');
-  const recipientPostalPlace = formData.get('postalPlace');
-  const recipientEmail = formData.get('email');
-  const recipientMobile = formData.get('mobile');
-
+export const upsertAction = async (values: any) => {
   const errors = {
-    status: status ? null : 'Status is required',
-    type: type ? null : 'Type is required',
-    quantity250: isUnsignedInt(quantity250)
+    status: values.status ? null : 'Status is required',
+    type: values.type ? null : 'Type is required',
+    quantity250: isUnsignedInt(values.quantity250)
       ? null
       : 'Must be a number greater or equal to zero',
-    quantity500: isUnsignedInt(quantity500)
+    quantity500: isUnsignedInt(values.quantity500)
       ? null
       : 'Must be a number greater or equal to zero',
-    quantity1200: isUnsignedInt(quantity1200)
+    quantity1200: isUnsignedInt(values.quantity1200)
       ? null
       : 'Must be a number greater or equal to zero',
-    name: recipientName ? null : 'Name is required',
-    address1: recipientAddress1 ? null : 'Address1 is required',
-    postalCode: recipientPostalCode ? null : 'Postal code is required',
-    postalPlace: recipientPostalPlace ? null : 'Place is required',
+    name: values.recipientName ? null : 'Name is required',
+    address1: values.recipientAddress1 ? null : 'Address1 is required',
+    postalCode: values.recipientPostalCode ? null : 'Postal code is required',
+    postalPlace: values.recipientPostalPlace ? null : 'Place is required',
   };
 
   if (Object.values(errors).some((errorMessage) => errorMessage)) {
@@ -130,27 +107,29 @@ export const upsertAction = async (request: any) => {
     return json<ActionData>(errors);
   }
 
+  const id = +values.id;
+
   const data = {
-    fikenContactId: fikenContactId || null,
-    type,
-    status,
-    frequency,
-    quantity250,
-    quantity500,
-    quantity1200,
-    internalNote,
-    recipientName,
-    recipientAddress1,
-    recipientAddress2,
-    recipientPostalCode,
-    recipientPostalPlace,
-    recipientEmail,
-    recipientMobile,
+    fikenContactId: values.fikenContactId || null,
+    type: values.type,
+    status: values.status,
+    frequency: values.frequency,
+    quantity250: +values.quantity250,
+    quantity500: +values.quantity500,
+    quantity1200: +values.quantity1200,
+    internalNote: values.internalNote,
+    recipientName: values.recipientName,
+    recipientAddress1: values.recipientAddress1,
+    recipientAddress2: values.recipientAddress2,
+    recipientPostalCode: values.recipientPostalCode,
+    recipientPostalPlace: values.recipientPostalPlace,
+    recipientEmail: values.recipientEmail,
+    recipientMobile: values.recipientMobile,
   };
 
-  await upsertSubscription({ ...data, id });
+  await upsertSubscription(id, data);
 
-  // return redirect(`/subscriptions/admin/${id}`);
+  //return redirect(`/subscriptions/admin/${id}`);
   return redirect('/subscriptions');
 };
 

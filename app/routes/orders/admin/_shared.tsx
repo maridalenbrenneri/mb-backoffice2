@@ -6,7 +6,7 @@ import { upsertOrder } from '~/_libs/core/models/order.server';
 import { shipOrder } from '~/_libs/core/services/order-service';
 import { isUnsignedInt } from '~/_libs/core/utils/numbers';
 
-type ActionData =
+type OrderActionData =
   | {
       subscriptionId: null | string;
       deliveryId: null | string;
@@ -27,8 +27,8 @@ type OrderItemActionData =
     }
   | undefined;
 
-export const upsertAction = async (values: any) => {
-  const errors: ActionData = {
+export const upsertOrderAction = async (values: any) => {
+  const errors: OrderActionData = {
     subscriptionId: values.subscriptionId ? null : 'Subscription is required',
     deliveryId: values.deliveryId ? null : 'Delivery is required',
     status: values.status ? null : 'Status is required',
@@ -46,10 +46,14 @@ export const upsertAction = async (values: any) => {
 
   if (Object.values(errors).some((errorMessage) => errorMessage)) {
     console.debug('Errors in form', errors);
-    return json<ActionData>(errors);
+    return json<OrderActionData>(errors);
   }
 
   const data = {
+    status: values.status,
+    type: values.type,
+    subscriptionId: +values.subscriptionId,
+    deliveryId: +values.deliveryId,
     name: values.name,
     address1: values.address1,
     address2: values.address2,
@@ -57,8 +61,6 @@ export const upsertAction = async (values: any) => {
     postalPlace: values.postalPlace,
     email: values.email,
     mobile: values.mobile,
-    subscriptionId: +values.subscriptionId,
-    deliveryId: +values.deliveryId,
     quantity250: +values.quantity250,
     quantity500: +values.quantity500,
     quantity1200: +values.quantity1200,
@@ -82,21 +84,21 @@ export const upsertOrderItemAction = async (values: any) => {
     return json<OrderItemActionData>(errors);
   }
 
-  const input = {
+  const data = {
     orderId: +values.orderId,
     coffeeId: +values.coffeeId,
     variation: values.variation,
     quantity: +values.quantity,
   } as any;
 
-  console.log('INPUT', input);
+  console.log('INPUT', data);
 
-  await upsertOrderItem(+values.id, input);
+  await upsertOrderItem(+values.id, data);
 
   return redirect(`/orders/admin/${values.orderId}`);
 };
 
-export const sendOrderAction = async (values: any) => {
+export const shipOrderAction = async (values: any) => {
   const result = await shipOrder(+values.id);
   console.debug('sendOrder RESULT', result);
   return null;

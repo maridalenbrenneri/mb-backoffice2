@@ -60,13 +60,13 @@ enum SubscriptionType {
 enum SubscriptionStatus {
   ACTIVE    // RECURRING ORDERS ACTIVE 
   PASSIVE   // ORDERS CAN BE MANUALLY TRIGGERED
-  CANCELLED // ORDERS CANNOT BE TRIGGERED
-  COMPLETED 
+  COMPLETED // ORDERS CANNOT BE TRIGGERED
   DELETED
 }
 
 enum SubscriptionFrequency {
   MONTHLY
+  MONTHLY_3RD
   FORTNIGHTLY
 }
 
@@ -152,7 +152,7 @@ enum OrderStatus {
 enum OrderType {
   RECURRING 
   NON_RECURRING
-  CUSTOMIZED
+  CUSTOM
 }
 
 model OrderItem {

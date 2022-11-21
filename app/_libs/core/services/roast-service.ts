@@ -138,7 +138,7 @@ export function getRoastOverview(
     );
 
     const customOrders = delivery.orders.filter(
-      (o: Order) => o.type === OrderType.CUSTOMIZED
+      (o: Order) => o.type === OrderType.CUSTOM
     );
 
     if (nonRecurringOrders.length) {

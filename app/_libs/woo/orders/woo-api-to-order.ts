@@ -109,7 +109,7 @@ const wooApiToOrder = (
     gifts: hasGifts ? wooApiToGiftSubscriptions([wooApiOrder]) : [],
     order: {
       ...orderBaseData,
-      type: OrderType.CUSTOMIZED,
+      type: OrderType.CUSTOM,
       quantity250: 0,
     },
     items: normalItems,

@@ -11,9 +11,8 @@ import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 export type { Subscription };
 export { SubscriptionType, SubscriptionStatus, SubscriptionFrequency };
 
-export type SubscriptionUpsertInput = Pick<
+export type SubscriptionUpsertData = Pick<
   Subscription,
-  | 'id'
   | 'type'
   | 'status'
   | 'frequency'
@@ -107,29 +106,32 @@ export async function createGiftSubscription(
   });
 }
 
-export async function upsertSubscription(input: SubscriptionUpsertInput) {
+export async function upsertSubscription(
+  id: number | null,
+  data: SubscriptionUpsertData
+) {
   return prisma.subscription.upsert({
     where: {
-      id: input.id || 0,
+      id: id || 0,
     },
-    update: input,
+    update: data,
     create: {
-      type: input.type,
-      fikenContactId: input.fikenContactId,
-      status: input.status,
-      frequency: input.frequency,
-      quantity250: input.quantity250,
-      quantity500: input.quantity500,
-      quantity1200: input.quantity1200,
-      recipientName: input.recipientName,
-      recipientAddress1: input.recipientAddress1,
-      recipientAddress2: input.recipientAddress2,
-      recipientPostalCode: input.recipientPostalCode,
-      recipientPostalPlace: input.recipientPostalCode,
-      recipientEmail: input.recipientEmail,
-      recipientMobile: input.recipientMobile,
+      type: data.type,
+      fikenContactId: data.fikenContactId,
+      status: data.status,
+      frequency: data.frequency,
+      quantity250: data.quantity250,
+      quantity500: data.quantity500,
+      quantity1200: data.quantity1200,
+      recipientName: data.recipientName,
+      recipientAddress1: data.recipientAddress1,
+      recipientAddress2: data.recipientAddress2,
+      recipientPostalCode: data.recipientPostalCode,
+      recipientPostalPlace: data.recipientPostalCode,
+      recipientEmail: data.recipientEmail,
+      recipientMobile: data.recipientMobile,
       recipientCountry: 'NO',
-      internalNote: input.internalNote,
+      internalNote: data.internalNote,
     },
   });
 }

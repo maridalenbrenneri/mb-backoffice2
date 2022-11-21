@@ -57,7 +57,7 @@ export default function ImportResult() {
                   <TableCell>{toPrettyDateTime(result.createdAt)}</TableCell>
                   <TableCell>{result.name}</TableCell>
                   <TableCell>{result.errors}</TableCell>
-                  <TableCell>
+                  <TableCell sx={{ width: '50%' }}>
                     <JSONPretty
                       id="json-pretty"
                       data={result.result}

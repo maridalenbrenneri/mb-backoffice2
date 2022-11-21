@@ -22,7 +22,7 @@ export default function Orders(props: { orders: Order[] }) {
   return (
     <Box>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="orders table">
+        <Table sx={{ minWidth: 650 }} aria-label="orders table" size="small">
           <TableHead>
             <TableRow>
               <TableCell colSpan={8}>

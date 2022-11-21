@@ -34,7 +34,7 @@ import type { OrderItem } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
 import { getOrder } from '~/_libs/core/models/order.server';
-import { upsertAction, sendOrderAction } from './_shared';
+import { upsertOrderAction, shipOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
 import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
@@ -59,8 +59,8 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  if (_action === 'send-order') return await sendOrderAction(values);
-  else if (_action === 'update') return await upsertAction(values);
+  if (_action === 'send-order') return await shipOrderAction(values);
+  else if (_action === 'update') return await upsertOrderAction(values);
 
   return null;
 };
@@ -131,6 +131,7 @@ export default function UpdateOrder() {
         />
         <input type="hidden" name="deliveryId" value={order.deliveryId} />
         <input type="hidden" name="type" value={order.type} />
+        <input type="hidden" name="type" value={order.customerNote} />
 
         <FormControl sx={{ m: 1 }}>
           <InputLabel id={`status-label`}>Status</InputLabel>
@@ -233,13 +234,24 @@ export default function UpdateOrder() {
           <FormControl>
             <TextField
               name="internalNote"
-              label="Note"
+              label="Internal note"
               variant="outlined"
               multiline
+              defaultValue={order.internalNote}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
+              name="customerNote"
+              label="Customer note"
+              variant="outlined"
+              multiline
+              disabled
+              defaultValue={order.customerNote}
             />
           </FormControl>
         </div>
-        {order.type !== OrderType.CUSTOMIZED && (
+        {order.type !== OrderType.CUSTOM && (
           <div>
             <Typography variant="h3">Coffee</Typography>
             <FormControl>
@@ -249,15 +261,6 @@ export default function UpdateOrder() {
                 variant="outlined"
                 defaultValue={order.quantity250}
                 error={errors?.quantity250}
-              />
-            </FormControl>
-            <FormControl>
-              <TextField
-                name="quantity500"
-                label="Quantity 500"
-                variant="outlined"
-                defaultValue={order.quantity500}
-                error={errors?.quantity500}
               />
             </FormControl>
             <FormControl>
@@ -286,7 +289,7 @@ export default function UpdateOrder() {
         </div>
       </Form>
 
-      {order.type === OrderType.CUSTOMIZED && (
+      {order.type === OrderType.CUSTOM && (
         <Box my={2}>
           <Typography variant="h3">Items</Typography>
           <TableContainer component={Paper}>
