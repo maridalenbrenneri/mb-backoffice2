@@ -31,9 +31,9 @@ export default function ImportResult() {
 
   return (
     <main>
-      <Typography variant="h1">Woo Import</Typography>
+      <Typography variant="h1">Scheduled jobs</Typography>
 
-      <Box sx={{ m: 2 }}>
+      <Box sx={{ my: 2 }}>
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} size="small">
             <TableHead>

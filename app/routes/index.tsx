@@ -21,12 +21,13 @@ import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
 import RoastOverviewBox from '~/components/RoastOverviewBox';
 import { getCargonizerProfile } from '~/_libs/cargonizer';
 import CargonizerProfileBox from '~/components/CargonizerProfileBox';
-import WooImportInfoBox from '~/components/WooImportInfoBox';
+import JobsInfoBox from '~/components/JobsInfoBox';
 import { Grid, Paper } from '@mui/material';
 
 type LoaderData = {
   wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
   wooOrderImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
+  updateGaboStatusResult: Awaited<ReturnType<typeof getLastImportResult>>;
   activeSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   deliveries: Awaited<ReturnType<typeof getDeliveries>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
@@ -37,6 +38,10 @@ export const loader = async () => {
     'woo-import-subscription-stats'
   );
   const wooOrderImportResult = await getLastImportResult('woo-import-orders');
+  const updateGaboStatusResult = await getLastImportResult(
+    'update-status-on-gift-subscriptions'
+  );
+
   const activeSubscriptions = await getSubscriptions({
     where: {
       status: SubscriptionStatus.ACTIVE,
@@ -83,6 +88,7 @@ export const loader = async () => {
   return json<LoaderData>({
     wooSubscriptionImportResult,
     wooOrderImportResult,
+    updateGaboStatusResult,
     activeSubscriptions,
     deliveries,
     cargonizerProfile,
@@ -126,6 +132,7 @@ export default function Index() {
   const {
     wooSubscriptionImportResult,
     wooOrderImportResult,
+    updateGaboStatusResult,
     activeSubscriptions,
     deliveries,
     cargonizerProfile,
@@ -158,9 +165,10 @@ export default function Index() {
       <Grid container spacing={2}>
         <Grid item md={4} xl={3}>
           <Paper sx={{ p: 1 }}>
-            <WooImportInfoBox
+            <JobsInfoBox
               subscriptions={wooSubscriptionImportResult[0]}
               orders={wooOrderImportResult[0]}
+              gaboStatus={updateGaboStatusResult[0]}
             />
           </Paper>
         </Grid>

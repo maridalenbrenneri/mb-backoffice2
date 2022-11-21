@@ -9,7 +9,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { Box, Button } from '@mui/material';
+import { Box, Button, TableFooter } from '@mui/material';
 
 import type { Delivery } from '~/_libs/core/models/delivery.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
@@ -64,8 +64,13 @@ export default function Deliveries() {
       </Box>
 
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="subscription table">
+        <Table sx={{ minWidth: 650 }} size="small">
           <TableHead>
+            <TableRow>
+              <TableCell colSpan={4}>
+                <small>{deliveries.length} deliveries</small>
+              </TableCell>
+            </TableRow>
             <TableRow>
               <TableCell>ID</TableCell>
               <TableCell>Date</TableCell>
@@ -96,6 +101,11 @@ export default function Deliveries() {
               </TableRow>
             ))}
           </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>{deliveries.length} deliveries</TableCell>
+            </TableRow>
+          </TableFooter>
         </Table>
       </TableContainer>
     </main>

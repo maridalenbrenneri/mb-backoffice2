@@ -3,23 +3,29 @@ import { Box, Typography } from '@mui/material';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 import DataLabel from './DataLabel';
 
-export default function WooImportInfoBox(props: {
+export default function JobsInfoBox(props: {
   subscriptions: any;
   orders: any;
+  gaboStatus: any;
 }) {
-  const { subscriptions, orders } = props;
+  const { subscriptions, orders, gaboStatus } = props;
 
   return (
     <Box sx={{ m: 2 }}>
-      <Typography variant="subtitle1">Woo, last imported</Typography>
+      <Typography variant="subtitle1">Scheduled jobs (last run)</Typography>
       <Box sx={{ m: 1 }}>
         <DataLabel
-          label="Subscriptions"
+          label="Woo import, subscriptions"
           data={toPrettyDateTime(subscriptions?.createdAt) || 'Not available'}
         />
         <DataLabel
-          label="Orders"
+          label="Woo import, orders"
           data={toPrettyDateTime(orders?.createdAt) || 'Not available'}
+        />
+
+        <DataLabel
+          label="Update GABO status"
+          data={toPrettyDateTime(gaboStatus?.createdAt) || 'Not available'}
         />
       </Box>
     </Box>

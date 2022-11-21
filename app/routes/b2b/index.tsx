@@ -30,9 +30,9 @@ export default function B2BCustomers() {
 
   return (
     <main>
-      <Typography variant="h1">Fiken Customers</Typography>
+      <Typography variant="h1">Fiken customers</Typography>
 
-      <Box sx={{ m: 2 }}>
+      <Box sx={{ my: 2 }}>
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="subscription table">
             <TableHead>

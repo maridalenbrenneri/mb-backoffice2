@@ -87,7 +87,7 @@ export default function MainMenu() {
                 to={'/b2b'}
                 onClick={() => setIsDrawerOpen(false)}
               >
-                <ListItemText primary="Fiken Customers" />
+                <ListItemText primary="Fiken customers" />
               </ListItem>
 
               <ListItem
@@ -96,7 +96,7 @@ export default function MainMenu() {
                 to={'/import-result'}
                 onClick={() => setIsDrawerOpen(false)}
               >
-                <ListItemText primary="Woo Import History" />
+                <ListItemText primary="Scheduled jobs" />
               </ListItem>
             </List>
           </Drawer>
