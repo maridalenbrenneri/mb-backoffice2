@@ -1,6 +1,6 @@
 import { prisma } from '~/db.server';
 
-import type { Order, OrderItem } from '@prisma/client';
+import type { Order, OrderItem, OrderStatus } from '@prisma/client';
 
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 
@@ -46,16 +46,25 @@ export async function getOrders(filter?: any) {
   return prisma.order.findMany(filter);
 }
 
-export async function getOrder(id: number) {
+export async function getOrder(filter: any) {
+  if (!filter) return null;
+
+  return await prisma.order.findFirst(filter);
+}
+
+export async function getOrderById(id: number) {
   return prisma.order.findUnique({
     where: { id },
-    include: {
-      orderItems: true,
-      delivery: true,
-      subscription: true,
-    },
   });
 }
+
+export async function updateOrderStatus(id: number, status: OrderStatus) {
+  return prisma.order.update({
+    where: { id },
+    data: { status },
+  });
+}
+
 export async function upsertOrder(id: number | null, data: OrderUpsertData) {
   return prisma.order.upsert({
     where: {
@@ -135,7 +144,6 @@ export async function upsertOrderItemFromWoo(
   wooOrderItemId: number,
   data: OrderItemUpsertData
 ) {
-  console.log('UPSERT', wooOrderItemId, data);
   return prisma.orderItem.upsert({
     where: {
       wooOrderItemId,

@@ -22,17 +22,19 @@ import {
 import type { Coffee } from '~/_libs/core/models/coffee.server';
 import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
 import { upsertOrderItemAction } from '../_shared';
-import { getOrder } from '~/_libs/core/models/order.server';
+import { getOrderById } from '~/_libs/core/models/order.server';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
-  order: Awaited<ReturnType<typeof getOrder>>;
+  order: Awaited<ReturnType<typeof getOrderById>>;
 };
+
+// TODO: USE outletContext instead of reloading order form db
 
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
 
-  const order = await getOrder(+params.id);
+  const order = await getOrderById(+params.id);
   invariant(order, `Order not found: ${params.id}`);
 
   const coffees = await getActiveCoffees();
@@ -52,6 +54,8 @@ export default function NewOrderItem() {
   const errors = useActionData();
   const transition = useTransition();
   const isCreating = Boolean(transition.submission);
+
+  if (!order || order.wooOrderId) return null;
 
   return (
     <Box

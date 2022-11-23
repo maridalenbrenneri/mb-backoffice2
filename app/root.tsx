@@ -9,7 +9,7 @@ import {
   useCatch,
 } from '@remix-run/react';
 
-import { Box, ThemeProvider, CssBaseline } from '@mui/material';
+import { Box, ThemeProvider, CssBaseline, Typography } from '@mui/material';
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -87,7 +87,7 @@ export function ErrorBoundary({ error }: { error: Error }) {
   return (
     <Document title="Uh-oh!">
       <div className="error-container">
-        <h1>App Error</h1>
+        <Typography variant="h4">App Error</Typography>
         <pre>{error.message}</pre>
       </div>
     </Document>

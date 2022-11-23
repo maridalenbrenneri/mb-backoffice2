@@ -51,6 +51,15 @@ export async function getCargonizerProfile() {
 export const sendConsignment = async (
   input: SendConsignmentInput
 ): Promise<SendOrderResult> => {
+  if (!process.env.CARGONIZER_ENABLED)
+    return {
+      orderId: input.order.id,
+      consignmentId: 0,
+      trackingUrl: '',
+      printResult: input.print ? 'Requested' : 'Not requested',
+      error: 'Cargonizer not enabled in settings, didnt do anything',
+    };
+
   const order = input.order;
 
   if (!order) throw new Error('Order was null');
@@ -64,10 +73,9 @@ export const sendConsignment = async (
     consignmentCreate.customer.postcode
   );
   if (servicePartner.error) {
-    return {
-      orderId: input.order.id,
-      error: servicePartner.error,
-    };
+    throw new Error(
+      `Error creating consignment in Cargonizer. Order ${input.order.id} Message: ${servicePartner.error}`
+    );
   }
 
   const xml = await createConsignmentXml(consignmentCreate, servicePartner);
@@ -76,10 +84,9 @@ export const sendConsignment = async (
 
   const consignment = await requestConsignment(xml);
   if (consignment.error) {
-    return {
-      orderId: input.order.id,
-      error: consignment.error,
-    };
+    throw new Error(
+      `Error creating consignment in Cargonizer. Order ${input.order.id} Message: ${consignment.error}`
+    );
   }
 
   let error: string | undefined = undefined;
@@ -157,7 +164,7 @@ async function printLabel(consignmentId: number) {
     return { result: 'Success' };
   } catch (err) {
     console.warn(
-      '[Cargonizer] Error when printing Cargonizer label',
+      '[Cargonizer] Error when printing Cargonizer label. Message: ',
       err.message
     );
     return {

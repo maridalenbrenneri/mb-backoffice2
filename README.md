@@ -26,18 +26,6 @@ Run app:
 - PostgresSQL - Database hosted on Fly.io (https://fly.io)
 - Fly.io - Cloud and run environment (https://fly.io)
 
-## Integrations
-
-- Cargonizer
-  - https://logistra.no/cargonizer-api-documentation.html
-- Woo Commerce
-  - https://woocommerce.github.io/woocommerce-rest-api-docs
-  - https://woocommerce.github.io/subscriptions-rest-api-docs)
-- Fiken
-  - https://api.fiken.no/api/v2/docs/
-
-Integration libs are located in app/\_libs folder. All code referencing third party API's is found here.
-
 ## Fly.io devops and deployment
 
 Organization name: Maridalen Brenneri
@@ -135,3 +123,23 @@ There's no LILL-ABO. Monthly and fortnighly is supperted.
 - Import Woo
 - Complete expired gift subscriptions
 - Create re-curring orders for active GIFT and B2B
+
+# Integrations
+
+Integration libs are located in app/\_libs folder. All code referencing third party API's is found here.
+
+## Cargonizer
+
+- https://logistra.no/cargonizer-api-documentation.html
+- Woo Commerce
+
+## Fiken
+
+- https://api.fiken.no/api/v2/docs/
+
+## Woo
+
+- https://woocommerce.github.io/woocommerce-rest-api-docs
+- https://woocommerce.github.io/subscriptions-rest-api-docs)
+
+View/Set API key: In Word Press admin go to Woo Commerce => Settings => Advanced => Rest API

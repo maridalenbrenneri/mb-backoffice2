@@ -2,8 +2,8 @@ import { json } from '@remix-run/node';
 import type { ActionFunction } from '@remix-run/node';
 import { DateTime } from 'luxon';
 
-import importWooOrders from '~/_libs/woo/import-woo.orders';
 import { createImportResult } from '~/_libs/core/models/import-result.server';
+import * as woo from '~/_libs/woo';
 
 export const action: ActionFunction = async ({ request }) => {
   if (request.method !== 'POST')
@@ -13,7 +13,7 @@ export const action: ActionFunction = async ({ request }) => {
   const importStartedAt = DateTime.now().toJSDate();
 
   try {
-    const result = await importWooOrders();
+    const result = await woo.importWooOrders();
 
     await createImportResult({
       importStartedAt,

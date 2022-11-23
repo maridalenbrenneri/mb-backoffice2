@@ -3,7 +3,7 @@ import { json, redirect } from '@remix-run/node';
 import type { OrderUpsertData } from '~/_libs/core/models/order.server';
 import { upsertOrderItem } from '~/_libs/core/models/order.server';
 import { upsertOrder } from '~/_libs/core/models/order.server';
-import { shipOrder } from '~/_libs/core/services/order-service';
+import { completeOrder } from '~/_libs/core/services/order-service';
 import { isUnsignedInt } from '~/_libs/core/utils/numbers';
 
 type OrderActionData =
@@ -98,8 +98,10 @@ export const upsertOrderItemAction = async (values: any) => {
   return redirect(`/orders/admin/${values.orderId}`);
 };
 
-export const shipOrderAction = async (values: any) => {
-  const result = await shipOrder(+values.id);
-  console.debug('sendOrder RESULT', result);
-  return null;
+export const completeOrderAction = async (orderId: number) => {
+  const completed = await completeOrder(orderId);
+
+  console.debug('Order completed', completed);
+
+  return redirect(`/orders/admin/${orderId}`);
 };

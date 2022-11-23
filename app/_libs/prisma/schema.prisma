@@ -155,6 +155,11 @@ enum OrderType {
   CUSTOM
 }
 
+enum OrderShippingType {
+  SHIP
+  LOCAL_PICK_UP
+}
+
 model OrderItem {
   id Int @id @default(autoincrement())
 
@@ -195,6 +200,8 @@ model Order {
 
   customerNote String?
   internalNote String?
+
+  shippingType OrderShippingType?
 
   orderItems OrderItem[]
 

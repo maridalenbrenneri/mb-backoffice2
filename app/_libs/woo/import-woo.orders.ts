@@ -50,6 +50,8 @@ export default async function importWooOrders() {
     orderInfos.push(mapped);
   }
 
+  // TODO: RESOLVE ORDERS WITH "local pickup" FROM COUPONS
+
   for (const info of orderInfos) {
     for (const gift of info.gifts) {
       await createGiftSubscription(gift);

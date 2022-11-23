@@ -2,8 +2,8 @@ import { json } from '@remix-run/node';
 import type { ActionFunction } from '@remix-run/node';
 import { DateTime } from 'luxon';
 
-import importWooGiftSubscriptions from '~/_libs/woo/import-woo-gift-subscriptions';
 import { createImportResult } from '~/_libs/core/models/import-result.server';
+import * as woo from '~/_libs/woo';
 
 // IMPORTS ALL GIFT SUBSCRIPTION FROM UPDATE AFTER TODAY - 13 MONTHS
 //  FOR INITAL USE, GIFT SUBSCRIPTIONS ARE REGUALLY IMPORTED IN THE ORDER IMPORT
@@ -15,7 +15,7 @@ export const action: ActionFunction = async ({ request }) => {
   const importStartedAt = DateTime.now().toJSDate();
 
   try {
-    const result = await importWooGiftSubscriptions();
+    const result = await woo.importWooGiftSubscriptions();
 
     await createImportResult({
       importStartedAt,

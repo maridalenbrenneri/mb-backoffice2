@@ -1,13 +1,17 @@
 import type { Order } from '@prisma/client';
+import { OrderShippingType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { OrderType } from '@prisma/client';
 import { redirect } from '@remix-run/node';
 
 import { sendConsignment } from '~/_libs/cargonizer';
+import { updateOrderStatus } from '../models/order.server';
 import { getOrder, upsertOrder } from '../models/order.server';
 import { getSubscription } from '../models/subscription.server';
 import { WEIGHT_STANDARD_PACKAGING } from '../settings';
 import { getNextOrCreateDelivery } from './delivery-service';
+
+import * as woo from '~/_libs/woo';
 
 export interface Quantites {
   _250: number;
@@ -120,8 +124,17 @@ export function generateReference(order: Order) {
   return reference;
 }
 
-export async function shipOrder(orderId: number) {
-  const order = await getOrder(orderId);
+// COMPLETE IN MB AND WOO, CREATE CONSIGNMENT IN CARGONIZER
+export async function completeOrder(orderId: number) {
+  const order = await getOrder({
+    where: {
+      id: orderId,
+    },
+    include: {
+      subscription: true,
+      orderItems: true,
+    },
+  });
 
   if (!order) {
     console.warn(
@@ -129,9 +142,23 @@ export async function shipOrder(orderId: number) {
     );
     return;
   }
+  let cargonizer;
+  if (order.shippingType !== OrderShippingType.LOCAL_PICK_UP) {
+    cargonizer = await sendConsignment({
+      order,
+      print: true,
+    });
+  }
 
-  return await sendConsignment({
-    order,
-    print: true,
-  });
+  if (order.wooOrderId) {
+    await woo.completeWooOrder(order.wooOrderId);
+  }
+
+  await updateOrderStatus(order.id, OrderStatus.COMPLETED);
+
+  return {
+    data: 'completed',
+    printResult: cargonizer ? cargonizer.printResult : null,
+    printError: cargonizer ? cargonizer.error : null,
+  };
 }

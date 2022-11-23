@@ -33,7 +33,7 @@ import type { OrderItem } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
 import { getOrder } from '~/_libs/core/models/order.server';
-import { upsertOrderAction, shipOrderAction } from './_shared';
+import { completeOrderAction, upsertOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
 import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
@@ -46,7 +46,14 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
 
-  const order = await getOrder(+params.id);
+  const order = await getOrder({
+    where: { id: +params.id },
+    include: {
+      orderItems: true,
+      delivery: true,
+      subscription: true,
+    },
+  });
   invariant(order, `Order not found: ${params.id}`);
 
   const coffees = await getActiveCoffees();
@@ -58,7 +65,7 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  if (_action === 'send-order') return await shipOrderAction(values);
+  if (_action === 'send-order') return await completeOrderAction(+values.id);
   else if (_action === 'update') return await upsertOrderAction(values);
 
   return null;
@@ -72,6 +79,8 @@ export default function UpdateOrder() {
   const isUpdating = Boolean(transition.submission);
 
   if (!order) return null;
+
+  const isReadOnly = !!order.wooOrderId;
 
   return (
     <Box
@@ -107,6 +116,11 @@ export default function UpdateOrder() {
           <Box sx={{ m: 2 }}>
             <Form method="post">
               <input type="hidden" name="id" value={order.id} />
+              <input
+                type="hidden"
+                name="wooOrderId"
+                value={order.wooOrderId || undefined}
+              />
               <Button
                 sx={{ height: 50 }}
                 type="submit"
@@ -291,7 +305,7 @@ export default function UpdateOrder() {
             <Button
               variant="contained"
               type="submit"
-              disabled={isUpdating}
+              disabled={isUpdating || isReadOnly}
               name="_action"
               value="update"
             >
