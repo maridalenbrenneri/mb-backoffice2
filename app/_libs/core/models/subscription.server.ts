@@ -1,6 +1,6 @@
 import { prisma } from '~/db.server';
 
-import type { Subscription } from '@prisma/client';
+import { ShippingType, Subscription } from '@prisma/client';
 import {
   SubscriptionType,
   SubscriptionStatus,
@@ -16,6 +16,7 @@ export type SubscriptionUpsertData = Pick<
   | 'type'
   | 'status'
   | 'frequency'
+  | 'shippingType'
   | 'quantity250'
   | 'quantity500'
   | 'quantity1200'
@@ -100,6 +101,7 @@ export async function createGiftSubscription(
     update: {},
     create: {
       type: SubscriptionType.PRIVATE_GIFT,
+      shippingType: ShippingType.SHIP,
       recipientCountry: 'NO',
       ...input,
     },
@@ -119,6 +121,7 @@ export async function upsertSubscription(
       type: data.type,
       fikenContactId: data.fikenContactId,
       status: data.status,
+      shippingType: data.shippingType,
       frequency: data.frequency,
       quantity250: data.quantity250,
       quantity500: data.quantity500,

@@ -50,11 +50,11 @@ export default async function importWooOrders() {
     orderInfos.push(mapped);
   }
 
-  // TODO: RESOLVE ORDERS WITH "local pickup" FROM COUPONS
-
   for (const info of orderInfos) {
+    let included = false;
     for (const gift of info.gifts) {
       await createGiftSubscription(gift);
+      included = true;
     }
 
     // IF items IS EMPTY, ORDER ONLY HAVE GIFT SUBSCRIPTIONS
@@ -78,9 +78,11 @@ export default async function importWooOrders() {
           quantity: item.quantity,
         });
       }
+
+      included = true;
     }
 
-    ordersUpsertedCount++;
+    if (included) ordersUpsertedCount++;
   }
 
   return {

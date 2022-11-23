@@ -1,6 +1,6 @@
 import { prisma } from '~/db.server';
 
-import type { Order, OrderItem, OrderStatus } from '@prisma/client';
+import { Order, OrderItem, OrderStatus, ShippingType } from '@prisma/client';
 
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 
@@ -9,6 +9,7 @@ export type OrderUpsertData = Pick<
   Order,
   | 'subscriptionId'
   | 'deliveryId'
+  | 'shippingType'
   | 'type'
   | 'status'
   | 'name'
@@ -74,6 +75,7 @@ export async function upsertOrder(id: number | null, data: OrderUpsertData) {
     create: {
       type: data.type,
       status: data.status,
+      shippingType: data.shippingType || ShippingType.SHIP,
       subscriptionId: data.subscriptionId,
       deliveryId: data.deliveryId,
       name: data.name,
@@ -124,6 +126,7 @@ export async function upsertOrderFromWoo(
       wooOrderId,
       type: data.type,
       status: data.status,
+      shippingType: data.shippingType,
       subscriptionId: data.subscriptionId,
       deliveryId: data.deliveryId,
       name: data.name,
@@ -157,5 +160,11 @@ export async function upsertOrderItemFromWoo(
       quantity: data.quantity,
       variation: data.variation,
     },
+  });
+}
+
+export async function createOrders(orders: any[]) {
+  return prisma.order.createMany({
+    data: orders,
   });
 }

@@ -19,6 +19,8 @@ export async function getNextOrCreateDelivery(): Promise<Delivery> {
     },
   });
 
+  console.debug('getNextOrCreateDelivery, delivery found: ', delivery?.date);
+
   if (delivery) return delivery;
 
   // DELIVERY NOT FOUND, CREATE

@@ -48,7 +48,7 @@ export default function RoastOverviewBox(props: {
     if (!delivery) return;
 
     const overview =
-      delivery.type === 'STORABO'
+      delivery.type === 'MONTHLY'
         ? getRoastOverview(stats.bagCounterMonthly, delivery)
         : getRoastOverview(emptyBagCounter(), delivery);
 

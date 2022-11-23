@@ -12,8 +12,6 @@ export type DeliveryUpsertData = Pick<
 export async function getDeliveries(filter?: any) {
   filter = filter || {};
 
-  console.debug('FILTER', filter);
-
   // ADD DEFAULT FILTER VALUES IF NOT OVERIDDEN IN FILTER INPUT
   if (!filter.orderBy) filter.orderBy = { date: 'desc' };
   if (!filter.take || filter.take > TAKE_MAX_ROWS)

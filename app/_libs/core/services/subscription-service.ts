@@ -11,6 +11,7 @@ import {
   updateStatusOnSubscription,
 } from '../models/subscription.server';
 import { TAKE_MAX_ROWS } from '../settings';
+import { resolveDateForNextMonthlyDelivery } from '../utils/dates';
 
 function calculateSubscriptionWeight(subscription: Subscription) {
   let weight = 0;
@@ -51,7 +52,7 @@ export function resolveSubscriptionCode(subscription: Subscription) {
   return `${type}${freq}-${quantity}`;
 }
 
-// TODO: RESOLVE STATUS FROM ORDERS COMPLETED INSTEAD OF DATE (CANNOT BE DONE UNTIL ALL ACTIVE GABOS HAVE BEEN IMPORTED FROM THE START)
+// TODO: RESOLVE COMPLETED STATUS FROM ORDERS COMPLETED INSTEAD OF DATE (CANNOT BE DONE UNTIL ALL ACTIVE GABOS HAVE BEEN IMPORTED FROM THE START)
 export function resolveStatusForGiftSubscription(
   durationMonths: number,
   firstDeliveryDate: DateTime
@@ -63,12 +64,17 @@ export function resolveStatusForGiftSubscription(
     .startOf('day');
 
   const today = DateTime.now().startOf('day');
-  const status =
-    today <= last ? SubscriptionStatus.ACTIVE : SubscriptionStatus.COMPLETED;
 
-  return status;
+  const nextMonthly = resolveDateForNextMonthlyDelivery();
+
+  if (today > last) return SubscriptionStatus.COMPLETED;
+
+  if (firstDeliveryDate > nextMonthly) return SubscriptionStatus.NOT_STARTED;
+
+  return SubscriptionStatus.ACTIVE;
 }
 
+// TODO: ADD NEW STATUS "NOT_STARTED" AND UPDATE TO "ACTIVE" WHEN STARTED - IMPORT NEEDS TO BE UPDATED
 export async function updateStatusOnGiftSubscriptions() {
   const gifts = await getSubscriptions({
     where: {

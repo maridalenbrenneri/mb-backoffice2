@@ -1,4 +1,4 @@
-import { OrderStatus, OrderType } from '@prisma/client';
+import { OrderStatus, OrderType, ShippingType } from '@prisma/client';
 import { WOO_ABO_PRODUCT_ID, WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
 import * as constants from '../constants';
 import {
@@ -41,6 +41,11 @@ const resolveFullname = (wooApiOrder: any) => {
   return `${wooApiOrder.shipping?.first_name} ${wooApiOrder.shipping?.last_name}`;
 };
 
+function resolveShippingType(wooApiOrder: any) {
+  // TODO: Resolve if local
+  return ShippingType.SHIP;
+}
+
 export default async function wooApiToOrder(
   wooApiOrder: any,
   subscriptionId: number,
@@ -72,6 +77,7 @@ export default async function wooApiToOrder(
     subscriptionId,
     deliveryId,
     status: resolveOrderStatus(wooApiOrder.status, wooApiOrder.payment_method),
+    shippingType: resolveShippingType(wooApiOrder),
     name: resolveFullname(wooApiOrder),
     address1: wooApiOrder.shipping?.address_1,
     address2: wooApiOrder.shipping?.address_2,

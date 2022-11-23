@@ -67,7 +67,7 @@ export default function Deliveries() {
         <Table sx={{ minWidth: 650 }} size="small">
           <TableHead>
             <TableRow>
-              <TableCell colSpan={4}>
+              <TableCell colSpan={7}>
                 <small>{deliveries.length} deliveries</small>
               </TableCell>
             </TableRow>

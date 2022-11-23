@@ -23,40 +23,90 @@ export function toPrettyDateTime(
   return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
 }
 
-export function resolveDateForNextMonthlyDelivery(date?: DateTime) {
-  date = date?.startOf('day') || DateTime.now().startOf('day');
-
+function getFirstTuesdayOfMonth(date: DateTime) {
   const firstOfMonth = date.startOf('month');
-  const firstTuesdayOfMonth = firstOfMonth
+  return firstOfMonth
     .plus({ days: 7 }) // ONE WEEK INTO CURRENT MONTH
     .startOf('week') // FIRST MONDAY OF THE MONTH
     .plus({ days: 1 }); // FIRST TUESDAY OF THE MONTH - DELIVERY DAY!
+}
+
+function getFirstTuesdayOfNextMonth(date: DateTime) {
+  const nextMonth = date.startOf('month').plus({ months: 1 });
+  return getFirstTuesdayOfMonth(nextMonth);
+}
+
+export function resolveDateForNextDelivery(date?: DateTime) {
+  date = date?.startOf('day') || DateTime.now().startOf('day');
+
+  const tuesdayThisWeek = date.startOf('week').plus({ days: 1 });
+
+  if (date <= tuesdayThisWeek) return tuesdayThisWeek;
+
+  // RETURN TUESDAY NEXT WEEK
+  return date.startOf('week').plus({ week: 1, days: 1 });
+}
+
+export function resolveDateForNextMonthlyDelivery(date?: DateTime) {
+  date = date?.startOf('day') || DateTime.now().startOf('day');
+
+  const firstTuesdayOfMonth = getFirstTuesdayOfMonth(date);
 
   if (date <= firstTuesdayOfMonth) {
-    // INPUT DATE IS ON OR BEFORE THE DELIVERY DAY OF THE MONTH
+    // INPUT DATE IS ON OR BEFORE THE MONTHLY DELIVERY DAY OF THIS MONTH
     return firstTuesdayOfMonth;
   }
 
-  const firstTuesdayOfNextMonth = firstOfMonth
-    .plus({ months: 1, days: 7 }) // ONE WEEK INTO NEXT MONTH
-    .startOf('week') // FIRST MONDAY OF THE MONTH
-    .plus({ days: 1 }); //  FIRST TUESDAY OF THE MONTH - DELIVERY DAY!
+  return getFirstTuesdayOfNextMonth(date);
+}
 
-  return firstTuesdayOfNextMonth;
+export function resolveDateForNextMonthly3rdDelivery(date?: DateTime) {
+  date = date?.startOf('day') || DateTime.now().startOf('day');
+
+  const firstTuesdayOfMonth = getFirstTuesdayOfMonth(date);
+
+  const thirdTuesdayOfMonth = firstTuesdayOfMonth.plus({ weeks: 2 });
+
+  if (date <= thirdTuesdayOfMonth) {
+    // INPUT DATE IS ON OR BEFORE THE MONTHLY_3RD DELIVERY DAY OF THE MONTH
+    return thirdTuesdayOfMonth;
+  }
+
+  const firstTuesdayOfNextMonth = getFirstTuesdayOfNextMonth(date);
+
+  console.log('firstTuesdayOfNextMonth', firstTuesdayOfNextMonth.toString());
+
+  return firstTuesdayOfNextMonth.plus({ weeks: 2 });
 }
 
 function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
-  const date = DateTime.now()
-    .plus({ days: daysFromNow })
-    .startOf('week')
-    .plus({ days: 1 });
+  const fromDate = DateTime.now().plus({ days: daysFromNow }).startOf('day');
 
-  const nextStorAbo = resolveDateForNextMonthlyDelivery(date);
+  const nextDeliveryDateAnyType = resolveDateForNextDelivery(fromDate);
+  const nextMonthly = resolveDateForNextMonthlyDelivery(fromDate);
+  const nextMonthly3rd = resolveDateForNextMonthly3rdDelivery(fromDate);
 
-  // TODO: HANDLE MONTHLY_3RD "BEDRIFTS-ABO"
+  console.debug(' === DATES === ');
+  console.debug('getDate, input date', fromDate.toString());
+  console.debug('getDate, next any', nextDeliveryDateAnyType.toString());
+  console.debug('getDate, next monthly', nextMonthly.toString());
+  console.debug('getDate, next 3rd', nextMonthly3rd.toString());
+  console.debug(' === === ');
 
-  const type =
-    nextStorAbo.toISODate() === date.toISODate() ? 'STORABO' : 'NORMAL';
+  let type;
+  let date;
+  if (nextMonthly.toISODate() === nextDeliveryDateAnyType.toISODate()) {
+    type = 'MONTHLY';
+    date = nextMonthly;
+  } else if (
+    nextMonthly3rd.toISODate() === nextDeliveryDateAnyType.toISODate()
+  ) {
+    type = 'MONTHLY_3RD';
+    date = nextMonthly3rd;
+  } else {
+    type = 'NORMAL';
+    date = nextDeliveryDateAnyType;
+  }
 
   return {
     id,
@@ -68,11 +118,11 @@ function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
 // RETURNS NEXT 5 DELIVERY DATES (Tuesdays)
 export function getNextDeliveryDates(): DeliveryDate[] {
   return [
-    getDate(7, 1),
-    getDate(14, 2),
-    getDate(21, 3),
-    getDate(28, 4),
-    getDate(35, 5),
+    getDate(0, 1),
+    getDate(7, 2),
+    getDate(14, 3),
+    getDate(21, 4),
+    getDate(28, 5),
   ];
 }
 

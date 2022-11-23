@@ -42,7 +42,10 @@ export const loader = async () => {
 };
 
 export const action: ActionFunction = async ({ request }) => {
-  return await upsertAction(request);
+  const formData = await request.formData();
+  const { ...values } = Object.fromEntries(formData);
+
+  return await upsertAction(values);
 };
 
 export default function NewSubscription() {
@@ -72,28 +75,28 @@ export default function NewSubscription() {
       <Typography variant="h2">Create New Subscription</Typography>
       <Form method="post">
         <input type="hidden" name="type" value={SubscriptionType.B2B} />
-        <input type="hidden" name="name" value={customer.name} />
+        <input type="hidden" name="recipientName" value={customer.name} />
         <input
           type="hidden"
-          name="address1"
+          name="recipientAddress1"
           value={customer.address.address1}
         />
         <input
           type="hidden"
-          name="address2"
+          name="recipientAddress2"
           value={customer.address.address2}
         />
         <input
           type="hidden"
-          name="postalCode"
+          name="recipientPostalCode"
           value={customer.address.postalCode}
         />
         <input
           type="hidden"
-          name="postalPlace"
+          name="recipientPostalPlace"
           value={customer.address.postalPlace}
         />
-        <input type="hidden" name="email" value={customer.email} />
+        <input type="hidden" name="recipientEmail" value={customer.email} />
 
         <FormControl sx={{ m: 1 }}>
           <InputLabel id={`customer-label`}>Customer</InputLabel>
@@ -113,8 +116,11 @@ export default function NewSubscription() {
         </FormControl>
 
         {renderTypes()}
-        {renderStatus()}
-        {renderFrequency()}
+
+        <div>
+          {renderStatus()}
+          {renderFrequency()}
+        </div>
 
         <FormControl>
           <TextField
@@ -143,19 +149,23 @@ export default function NewSubscription() {
             error={errors?.quantity1200}
           />
         </FormControl>
-        <FormControl>
-          <TextField
-            name="internalNote"
-            label="Note"
-            variant="outlined"
-            multiline
-          />
-        </FormControl>
-        <FormControl sx={{ m: 1 }}>
-          <Button type="submit" disabled={isCreating}>
-            {isCreating ? 'Creating...' : 'Create Subscription'}
-          </Button>
-        </FormControl>
+        <div>
+          <FormControl>
+            <TextField
+              name="internalNote"
+              label="Note"
+              variant="outlined"
+              multiline
+            />
+          </FormControl>
+        </div>
+        <div>
+          <FormControl sx={{ m: 1 }}>
+            <Button type="submit" disabled={isCreating} variant="contained">
+              {isCreating ? 'Creating...' : 'Create Subscription'}
+            </Button>
+          </FormControl>
+        </div>
       </Form>
     </Box>
   );

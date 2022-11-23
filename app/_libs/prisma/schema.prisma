@@ -58,6 +58,7 @@ enum SubscriptionType {
 }
 
 enum SubscriptionStatus {
+  NOT_STARTED // ONLY USED FOR GIFT SUBSCRIPTIONS, NO ORDERS CAN BE CREATED
   ACTIVE    // RECURRING ORDERS ACTIVE 
   PASSIVE   // ORDERS CAN BE MANUALLY TRIGGERED
   COMPLETED // ORDERS CANNOT BE TRIGGERED
@@ -80,6 +81,8 @@ model Subscription {
   quantity250  Int @default(0)
   quantity500  Int @default(0)
   quantity1200 Int @default(0)
+
+  shippingType ShippingType
 
   customerNote String?
   internalNote String?
@@ -120,7 +123,7 @@ model Delivery {
 
   status DeliveryStatus @default(ACTIVE)
 
-  date DateTime
+  date DateTime @unique
   type String
 
   coffee1     Coffee? @relation(name: "delivery_to_coffee_1", fields: [coffee1Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -155,7 +158,7 @@ enum OrderType {
   CUSTOM
 }
 
-enum OrderShippingType {
+enum ShippingType {
   SHIP
   LOCAL_PICK_UP
 }
@@ -201,7 +204,7 @@ model Order {
   customerNote String?
   internalNote String?
 
-  shippingType OrderShippingType?
+  shippingType ShippingType
 
   orderItems OrderItem[]
 
