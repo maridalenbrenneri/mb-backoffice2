@@ -103,7 +103,7 @@ export default function Coffees() {
       </Form>
 
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="subscription table">
+        <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>
@@ -119,7 +119,7 @@ export default function Coffees() {
                 key={coffee.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                <TableCell component="th" scope="row">
+                <TableCell>
                   <Link to={`admin/${coffee.id}`}>{coffee.id}</Link>
                 </TableCell>
                 <TableCell>
