@@ -29,7 +29,8 @@ import {
 } from '@mui/material';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
-import { OrderItem, ShippingType } from '@prisma/client';
+import type { OrderItem } from '@prisma/client';
+import { ShippingType } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
 import { getOrder } from '~/_libs/core/models/order.server';

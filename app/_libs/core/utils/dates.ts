@@ -6,21 +6,34 @@ export interface DeliveryDate {
   type: string;
 }
 
-export function toPrettyDate(date: DateTime | Date | undefined | null) {
+// TODO: Date hell
+
+export function toPrettyDate(date: Date | undefined | null) {
   if (!date) return null;
 
-  return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
+  if (date.toLocaleDateString) {
+    return date.toLocaleDateString();
+  }
+
+  return date.toString();
+  // return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
 }
 
 export function toPrettyDateTime(
-  date: DateTime | Date | undefined | null,
+  date: Date | undefined | null,
   includeSeconds = false
 ) {
   if (!date) return null;
 
-  const seconds = includeSeconds ? ':ss' : '';
+  // const seconds = includeSeconds ? ':ss' : '';
 
-  return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
+  if (date.toLocaleString) {
+    return date.toLocaleString();
+  }
+
+  return date.toString();
+
+  // return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
 }
 
 function getFirstTuesdayOfMonth(date: DateTime) {
