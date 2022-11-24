@@ -164,7 +164,7 @@ export default function RoastOverviewBox(props: {
               <TableCell>{overview._1200.coffee4}</TableCell>
             </TableRow>
 
-            {overview.notSetOnDelivery.length && (
+            {overview.notSetOnDelivery.length > 0 && (
               <TableRow>
                 <TableCell colSpan={5}>
                   <strong>

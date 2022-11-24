@@ -37,7 +37,17 @@ App name: mb-backoffice
 fly deploy
 ```
 
-Deploy app to https://mb-backoffice.fly.dev
+Deploys app to https://mb-backoffice.fly.dev
+
+#### Secrets / env vars
+
+```sh
+flyctl secrets set DATABASE_URL=postgres://example.com/mydb
+
+flyctl secrets unset
+
+flyctl secrets list
+```
 
 ### Database
 

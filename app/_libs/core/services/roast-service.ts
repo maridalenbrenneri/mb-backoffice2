@@ -130,8 +130,6 @@ export function getRoastOverview(
 
   const notSetOnDelivery: any[] = [];
 
-  console.debug('IN getRoastOverview delivery:', delivery);
-
   if (delivery?.orders?.length) {
     const nonRecurringOrders = delivery.orders.filter(
       (o: Order) => o.type === OrderType.NON_RECURRING
