@@ -23,6 +23,7 @@ export type OrderUpsertData = Pick<
   | 'quantity500'
   | 'quantity1200'
   | 'wooOrderId'
+  | 'internalNote'
 >;
 
 export type OrderItemUpsertData = Pick<

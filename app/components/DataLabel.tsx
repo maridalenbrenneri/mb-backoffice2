@@ -10,6 +10,13 @@ export default function DataLabel(props: {
 
   const renderData = () => {
     if (dataLinkUrl) {
+      if (dataLinkUrl.startsWith('http')) {
+        return (
+          <a href={dataLinkUrl} target="_blank" rel="noreferrer">
+            {data}
+          </a>
+        );
+      }
       return <Link to={dataLinkUrl}>{data}</Link>;
     }
     return <span>{data || ''}</span>;

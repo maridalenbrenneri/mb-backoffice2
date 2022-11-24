@@ -75,6 +75,7 @@ export default function NewSubscription() {
       <Typography variant="h2">Create New Subscription</Typography>
       <Form method="post">
         <input type="hidden" name="type" value={SubscriptionType.B2B} />
+        <input type="hidden" name="fikenContactId" value={customer.contactId} />
         <input type="hidden" name="recipientName" value={customer.name} />
         <input
           type="hidden"

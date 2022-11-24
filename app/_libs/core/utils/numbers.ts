@@ -3,3 +3,17 @@ export const isUnsignedInt = (number: number | undefined | null) => {
 
   return number >= 0;
 };
+
+export function parseIntOrNull(value: string | null | undefined) {
+  if (!value) return null;
+
+  const parsed = parseInt(value);
+  return isNaN(parsed) ? null : parsed;
+}
+
+export function parseIntOrZero(value: string | null | undefined) {
+  if (!value) return 0;
+
+  const parsed = parseInt(value);
+  return isNaN(parsed) ? 0 : parsed;
+}

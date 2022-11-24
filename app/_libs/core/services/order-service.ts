@@ -53,6 +53,7 @@ async function _createOrder(
     subscriptionId,
     deliveryId: delivery.id,
     status: OrderStatus.ACTIVE,
+    shippingType: subscription.shippingType,
     type,
     name: subscription.recipientName,
     address1: subscription.recipientAddress1,
@@ -64,6 +65,7 @@ async function _createOrder(
     quantity250: quantities?._250 || 0,
     quantity500: quantities?._500 || 0,
     quantity1200: quantities?._1200 || 0,
+    internalNote: null,
   });
 
   if (!order) throw new Error('Failed to create order');

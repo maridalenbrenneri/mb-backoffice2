@@ -64,6 +64,7 @@ export const upsertOrderAction = async (values: any) => {
     quantity250: +values.quantity250,
     quantity500: +values.quantity500,
     quantity1200: +values.quantity1200,
+    internalNote: values.internalNote,
   } as OrderUpsertData;
 
   await upsertOrder(+values.id, data);

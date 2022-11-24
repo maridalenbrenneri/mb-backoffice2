@@ -38,6 +38,7 @@ import {
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
 } from '~/_libs/core/settings';
+import DataLabel from '~/components/DataLabel';
 
 type LoaderData = {
   subscription: Subscription;
@@ -258,6 +259,13 @@ export default function UpdateSubscription() {
               }}
             >
               <GiftSubscriptionWooData subscription={subscription} />
+              {subscription.fikenContactId && (
+                <DataLabel
+                  label="Fiken contact id"
+                  data={subscription.fikenContactId}
+                  dataLinkUrl={`https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`}
+                />
+              )}
             </Paper>
           </Grid>
 

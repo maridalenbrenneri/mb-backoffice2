@@ -10,7 +10,11 @@ import {
 } from '@prisma/client';
 
 import { upsertSubscription } from '~/_libs/core/models/subscription.server';
-import { isUnsignedInt } from '~/_libs/core/utils/numbers';
+import {
+  isUnsignedInt,
+  parseIntOrNull,
+  parseIntOrZero,
+} from '~/_libs/core/utils/numbers';
 
 type ActionData =
   | {
@@ -84,6 +88,8 @@ export const renderFrequency = (
   );
 };
 
+function validateQuantities(values: any) {}
+
 export const upsertAction = async (values: any) => {
   const errors = {
     status: values.status ? null : 'Status is required',
@@ -111,14 +117,14 @@ export const upsertAction = async (values: any) => {
   const id = +values.id;
 
   const data = {
-    fikenContactId: values.fikenContactId || null,
+    fikenContactId: parseIntOrNull(values.fikenContactId),
     type: values.type,
     status: values.status,
     shippingType: ShippingType.SHIP,
     frequency: values.frequency,
-    quantity250: +values.quantity250,
-    quantity500: +values.quantity500,
-    quantity1200: +values.quantity1200,
+    quantity250: parseIntOrZero(values.quantity250),
+    quantity500: parseIntOrZero(values.quantity500),
+    quantity1200: parseIntOrZero(values.quantity1200),
     internalNote: values.internalNote,
     recipientName: values.recipientName,
     recipientAddress1: values.recipientAddress1,
