@@ -33,7 +33,7 @@ import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { resolveSubscriptionCode } from '~/_libs/core/services/subscription-service';
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 
-const defaultStatus = SubscriptionStatus.ACTIVE;
+const defaultStatus = '_all';
 const defaultType = '_all';
 
 type LoaderData = {
@@ -44,7 +44,18 @@ function buildFilter(search: URLSearchParams) {
   const filter: any = { where: {} };
 
   const getStatusFilter = search.get('status') || defaultStatus;
-  if (getStatusFilter !== '_all') filter.where.status = getStatusFilter;
+  if (getStatusFilter === '_all') {
+    filter.where.OR = [
+      {
+        status: SubscriptionStatus.ACTIVE,
+      },
+      {
+        status: SubscriptionStatus.PASSIVE,
+      },
+    ];
+  } else {
+    filter.where.status = getStatusFilter;
+  }
 
   const getTypeFilter = search.get('type') || defaultType;
   if (getTypeFilter !== '_all') filter.where.type = getTypeFilter;
@@ -133,12 +144,9 @@ export default function Subscriptions() {
               onChange={handleSelectStatus}
               sx={{ minWidth: 250 }}
             >
-              <MenuItem value={'_all'}>All</MenuItem>
+              <MenuItem value={'_all'}>Active & Passive</MenuItem>
               <MenuItem value={SubscriptionStatus.ACTIVE}>Active</MenuItem>
               <MenuItem value={SubscriptionStatus.PASSIVE}>Passive</MenuItem>
-              <MenuItem value={SubscriptionStatus.CANCELLED}>
-                Cancelled
-              </MenuItem>
               <MenuItem value={SubscriptionStatus.COMPLETED}>
                 Completed
               </MenuItem>
