@@ -113,13 +113,13 @@ export default function Subscriptions() {
     <main>
       <Typography variant="h1">Subscriptions</Typography>
 
-      <Box sx={{ m: 2 }}>
+      <Box sx={{ m: 1, p: 2 }}>
         <Button href="/subscriptions/admin/new" variant="contained">
           Create a new subscription
         </Button>
       </Box>
 
-      <Box sx={{ m: 2 }}>
+      <Box sx={{ m: 1 }}>
         <Form method="get">
           <FormControl sx={{ m: 1 }}>
             <InputLabel id={`subscription-type`}>Type</InputLabel>
@@ -129,6 +129,7 @@ export default function Subscriptions() {
               defaultValue={type}
               onChange={handleSelectType}
               sx={{ minWidth: 250 }}
+              size="small"
             >
               <MenuItem value={'_all'}>All</MenuItem>
               <MenuItem value={SubscriptionType.B2B}>B2B</MenuItem>
@@ -143,10 +144,14 @@ export default function Subscriptions() {
               defaultValue={status}
               onChange={handleSelectStatus}
               sx={{ minWidth: 250 }}
+              size="small"
             >
               <MenuItem value={'_all'}>Active & Passive</MenuItem>
               <MenuItem value={SubscriptionStatus.ACTIVE}>Active</MenuItem>
               <MenuItem value={SubscriptionStatus.PASSIVE}>Passive</MenuItem>
+              <MenuItem value={SubscriptionStatus.NOT_STARTED}>
+                Not started
+              </MenuItem>
               <MenuItem value={SubscriptionStatus.COMPLETED}>
                 Completed
               </MenuItem>
@@ -161,31 +166,44 @@ export default function Subscriptions() {
             size="small"
           >
             <TableHead>
-              <TableRow>
-                <TableCell colSpan={4}>
+              <TableRow sx={{ '&:last-child td': { border: 0 } }}>
+                <TableCell colSpan={4} sx={{ border: 0, fontSize: 12 }}>
                   <small>{subscriptions.length} subscriptions</small>
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Recipient</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Abo type</TableCell>
+                <TableCell>
+                  <small>ID</small>
+                </TableCell>
+                <TableCell>
+                  <small>Type</small>
+                </TableCell>
+                <TableCell>
+                  <small>Status</small>
+                </TableCell>
+                <TableCell>
+                  <small>Recipient</small>
+                </TableCell>
+                <TableCell>
+                  <small>Abo type</small>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {subscriptions.map((subscription: Subscription) => (
-                <TableRow
-                  key={subscription.id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell component="th" scope="row">
+                <TableRow key={subscription.id}>
+                  <TableCell>
                     <Link to={`admin/${subscription.id}`}>
                       {subscription.id}
                     </Link>
                   </TableCell>
+                  <TableCell>
+                    <small>{subscription.type}</small>
+                  </TableCell>
+                  <TableCell>
+                    <small>{subscription.status}</small>
+                  </TableCell>
                   <TableCell>{subscription.recipientName}</TableCell>
-                  <TableCell>{subscription.status}</TableCell>
                   <TableCell>{resolveSubscriptionCode(subscription)}</TableCell>
                 </TableRow>
               ))}

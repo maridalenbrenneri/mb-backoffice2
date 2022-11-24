@@ -102,6 +102,7 @@ export default function RoastOverviewBox(props: {
                       defaultValue={delivery?.id || 0}
                       onChange={handleChange}
                       sx={{ minWidth: 250 }}
+                      size="small"
                     >
                       {deliveries.map((d) => (
                         <MenuItem value={d.id} key={d.id}>
