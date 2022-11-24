@@ -121,9 +121,9 @@ export default function RoastOverviewBox(props: {
             <TableRow>
               <TableCell></TableCell>
               <TableCell>Total (kg)</TableCell>
-              <TableCell>250</TableCell>
-              <TableCell>500</TableCell>
-              <TableCell>1200</TableCell>
+              <TableCell>250g</TableCell>
+              <TableCell>500g</TableCell>
+              <TableCell>1,2kg</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

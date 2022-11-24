@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
 import { Link } from '@remix-run/react';
+import { colors } from '~/style/colors';
 
 export default function DataLabel(props: {
   label: string;
@@ -24,10 +25,8 @@ export default function DataLabel(props: {
 
   return (
     <Box sx={{ m: 0.25 }}>
-      <small>
-        <strong>{label}</strong>
-      </small>
-      : {renderData()}
+      <span sx={{ color: colors.COLOR_GREY1 }}></span>
+      <small>{label}</small>: {renderData()}
     </Box>
   );
 }

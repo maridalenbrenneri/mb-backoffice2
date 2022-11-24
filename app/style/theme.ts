@@ -73,5 +73,22 @@ export const theme = createTheme({
         }
         `,
     },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          '&.MuiTableCell-head': {
+            fontSize: 12,
+            color: colors.COLOR_GREY2,
+          },
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          color: colors.COLOR_GREY2,
+        },
+      },
+    },
   },
 });

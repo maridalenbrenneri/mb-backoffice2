@@ -29,7 +29,7 @@ import {
 } from '@mui/material';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
-import type { OrderItem } from '@prisma/client';
+import { OrderItem, ShippingType } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
 import { getOrder } from '~/_libs/core/models/order.server';
@@ -175,6 +175,21 @@ export default function UpdateOrder() {
             disabled={true}
           >
             {Object.keys(OrderType).map((type: any) => (
+              <MenuItem value={type} key={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ m: 1 }}>
+          <InputLabel id={`shipping-type-label`}>Shipping</InputLabel>
+          <Select
+            labelId="shipping-type-label"
+            name="shippingType"
+            defaultValue={order.shippingType}
+            sx={{ minWidth: 250 }}
+          >
+            {Object.keys(ShippingType).map((type: any) => (
               <MenuItem value={type} key={type}>
                 {type}
               </MenuItem>

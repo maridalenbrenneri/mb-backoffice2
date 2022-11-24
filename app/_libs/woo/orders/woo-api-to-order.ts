@@ -6,6 +6,7 @@ import {
   resolveQuantityAndFrequency,
 } from '../utils';
 import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
+import { WOO_NO_SHIPPING_COUPON } from '../../core/settings';
 
 const resolveOrderStatus = (
   wooStatus: string,
@@ -26,15 +27,9 @@ const resolveOrderStatus = (
   throw new Error(`Unknown status "${wooStatus}"`);
 };
 
-const resolveQuantity = (line_items: any[]) => {
-  if (!line_items?.length) return 0;
-
-  const productId = line_items[0].product_id;
-  const variationId = line_items[0].variation_id;
-
-  if (productId !== WOO_ABO_PRODUCT_ID) return 0;
-
-  return resolveQuantityAndFrequency(variationId)?.quantity || 0;
+const resolveQuantity = (variationId: number) => {
+  const foo = resolveQuantityAndFrequency(variationId);
+  return foo?.quantity || 0;
 };
 
 const resolveFullname = (wooApiOrder: any) => {
@@ -42,8 +37,30 @@ const resolveFullname = (wooApiOrder: any) => {
 };
 
 function resolveShippingType(wooApiOrder: any) {
-  // TODO: Resolve if local
+  const couponLines = wooApiOrder.coupon_lines;
+
+  if (couponLines?.some((d: any) => d.code === WOO_NO_SHIPPING_COUPON))
+    return ShippingType.LOCAL_PICK_UP;
+
   return ShippingType.SHIP;
+}
+
+export function hasSupportedStatus(wooApiOrder: any) {
+  switch (wooApiOrder.status) {
+    case constants.WOO_STATUS_PROCESSING:
+    case constants.WOO_STATUS_CANCELLED:
+    case constants.WOO_STATUS_COMPLETED:
+    case constants.WOO_STATUS_ON_HOLD:
+      return true;
+  }
+
+  console.debug(
+    'Unsupported Woo Status on order',
+    wooApiOrder.id,
+    wooApiOrder.status
+  );
+
+  return false;
 }
 
 export default async function wooApiToOrder(

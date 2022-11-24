@@ -166,27 +166,17 @@ export default function Subscriptions() {
             size="small"
           >
             <TableHead>
-              <TableRow sx={{ '&:last-child td': { border: 0 } }}>
-                <TableCell colSpan={4} sx={{ border: 0, fontSize: 12 }}>
-                  <small>{subscriptions.length} subscriptions</small>
+              <TableRow>
+                <TableCell colSpan={5} sx={{ border: 0 }}>
+                  {subscriptions.length} subscriptions
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>
-                  <small>ID</small>
-                </TableCell>
-                <TableCell>
-                  <small>Type</small>
-                </TableCell>
-                <TableCell>
-                  <small>Status</small>
-                </TableCell>
-                <TableCell>
-                  <small>Recipient</small>
-                </TableCell>
-                <TableCell>
-                  <small>Abo type</small>
-                </TableCell>
+                <TableCell>ID</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Recipient</TableCell>
+                <TableCell>Abo type</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

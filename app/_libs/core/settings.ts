@@ -1,5 +1,5 @@
 // BUSINESS SETTINGS
-export const WEIGHT_STANDARD_PACKAGING = 150;
+export const WEIGHT_STANDARD_PACKAGING = 150; // grams
 export const SUBSCRIPTION_RENEWAL_WEEKDAY = 4; // 1 is Monday and 7 is Sunday
 
 // CARGONIZER
@@ -17,7 +17,7 @@ export const FIKEN_API_URL = 'https://api.fiken.no/api/v2';
 export const FIKEN_COMPANY_SLUG = 'maridalen-brenneri-as';
 
 // WOO
-export const WOO_MB_PRODUCT_CODE_ATTRIBUTE_NAME = 'mb-product-code';
+export const WOO_NO_SHIPPING_COUPON = 'nullfrakt2018';
 export const WOO_GABO_PRODUCT_ID = 968;
 export const WOO_ABO_PRODUCT_ID = 456;
 export const WOO_ABO_PRODUCT_VARIATION_1_1 = 569;

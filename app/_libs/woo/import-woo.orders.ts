@@ -5,9 +5,10 @@ import {
   upsertOrderItemFromWoo,
 } from '../core/models/order.server';
 import { getNextOrCreateDelivery } from '../core/services/delivery-service';
-import wooApiToOrder from './orders/woo-api-to-order';
+import wooApiToOrder, { hasSupportedStatus } from './orders/woo-api-to-order';
 import { WOO_RENEWALS_SUBSCRIPTION_ID } from '../core/settings';
 import { getCoffees } from '../core/models/coffee.server';
+import { OrderType } from '@prisma/client';
 
 export default async function importWooOrders() {
   console.debug('FETCHING WOO ORDERS...');
@@ -16,7 +17,11 @@ export default async function importWooOrders() {
   const ordersNotImported: number[] = [];
   let ordersUpsertedCount = 0;
 
-  wooOrders = await fetchOrders();
+  const allWooOrders = await fetchOrders();
+
+  wooOrders = allWooOrders.filter((order) => hasSupportedStatus(order));
+
+  // console.log(wooOrders.map((w) => w.line_items));
 
   console.debug(`=> DONE (${wooOrders.length} fetched)`);
 
@@ -52,13 +57,20 @@ export default async function importWooOrders() {
 
   for (const info of orderInfos) {
     let included = false;
+
+    // GIFT SUBSCRIPTIONS
     for (const gift of info.gifts) {
       await createGiftSubscription(gift);
       included = true;
     }
 
-    // IF items IS EMPTY, ORDER ONLY HAVE GIFT SUBSCRIPTIONS
-    if (info.items.length) {
+    // SUBSCRIPTION RENEWALS
+    if (info.order.type === OrderType.RECURRING) {
+      await upsertOrderFromWoo(info.order.wooOrderId as number, info.order);
+      included = true;
+
+      // SINGLE ORDERS (IF ONLY GIFT, ITEMS IS EMPTY, ALREADY HADNLED ABOVE)
+    } else if (info.items.length) {
       if (!verifyThatItemsAreValid(info.items, info.order.wooOrderId)) continue;
 
       const orderCreated = await upsertOrderFromWoo(
@@ -78,7 +90,6 @@ export default async function importWooOrders() {
           quantity: item.quantity,
         });
       }
-
       included = true;
     }
 
