@@ -1,7 +1,11 @@
+import { json } from '@remix-run/node';
+import { Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+
 import { Button } from '@mui/material';
-import { Outlet, useNavigate } from '@remix-run/react';
+
 import type { WizardHandle } from '~/hooks/use-outlet-handle';
 import { useOutletHandle } from '~/hooks/use-outlet-handle';
+import { generatePreview } from '~/_libs/core/services/wizard-service';
 
 export type OnboardingWizardHandle = WizardHandle<'onboarding'> & {
   title: string;
@@ -9,9 +13,22 @@ export type OnboardingWizardHandle = WizardHandle<'onboarding'> & {
   submitButton: React.ReactElement;
 };
 
+type LoaderData = {
+  preview: Awaited<ReturnType<typeof generatePreview>>;
+};
+
+export const loader = async ({ request }) => {
+  const preview = await generatePreview();
+  return json<LoaderData>({
+    preview,
+  });
+};
+
 export default function WizardStepsLayoutScreen() {
   const { title, stepNumber, submitButton } =
     useOutletHandle<OnboardingWizardHandle>('onboarding')[0];
+
+  const { preview } = useLoaderData() as unknown as LoaderData;
 
   return (
     <div
@@ -28,12 +45,12 @@ export default function WizardStepsLayoutScreen() {
 
       <h2 style={{ textAlign: 'center' }}>{title}</h2>
 
-      <Outlet />
+      <Outlet context={preview} />
 
       <div style={{ marginTop: '12px' }}>
         {stepNumber !== 1 ? <BackButton /> : null}
         <span style={{ marginLeft: '12px', marginRight: '12px' }}>
-          Step {stepNumber} of 3
+          Step {stepNumber} of 4
         </span>
         {submitButton}
       </div>

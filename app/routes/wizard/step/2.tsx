@@ -1,17 +1,21 @@
-import { Button } from '@mui/material';
 import type { ActionArgs, LoaderArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
+import { Form, useLoaderData, useOutletContext } from '@remix-run/react';
+import { useState, useEffect } from 'react';
+
+import { Box, Button } from '@mui/material';
+
 import type { OnboardingWizardSession } from '~/sessions/wizard-session.server';
 import { getMaybeWizardSession } from '~/sessions/wizard-session.server';
 import { commitWizardSession } from '~/sessions/wizard-session.server';
 import { assertReferer } from '~/utils/assert-referer.server';
+import type { WizardPreviewGroup } from '~/_libs/core/services/wizard-service';
 import type { OnboardingWizardHandle } from '../step';
 
 export const handle: OnboardingWizardHandle = {
   key: 'onboarding',
-  title: 'Enter your favorite color',
+  title: 'Custom orders, print label and ship',
   stepNumber: 2,
   submitButton: (
     <Button type="submit" form="step-2" variant="contained">
@@ -54,23 +58,37 @@ export async function action({ request }: ActionArgs) {
 
 export default function WizardStep2Screen() {
   const data = useLoaderData<typeof loader>();
+  const preview = useOutletContext() as WizardPreviewGroup;
+  const [orders, setOrders] = useState<number[]>([]);
+
+  useEffect(() => {
+    setOrders(preview.orders.privates.custom.ship);
+  }, [preview]);
 
   return (
-    <Form
-      id="step-2"
-      method="post"
-      style={{ display: 'flex', flexDirection: 'column' }}
-    >
-      <label>
-        Favorite color :
-        <input
-          type="text"
-          name="favoriteColor"
-          defaultValue={data?.favoriteColor}
-        />
-      </label>
+    <Box>
+      <div>{orders.length} custom orders to be packed</div>
 
-      <input type="hidden" name="nextStep" value="3" />
-    </Form>
+      <Button variant="contained" disabled={!orders.length}>
+        Complete orders
+      </Button>
+
+      <Form
+        id="step-2"
+        method="post"
+        style={{ display: 'flex', flexDirection: 'column' }}
+      >
+        {/* <label>
+          Favorite color :
+          <input
+            type="text"
+            name="favoriteColor"
+            defaultValue={data?.favoriteColor}
+          />
+        </label> */}
+
+        <input type="hidden" name="nextStep" value="3" />
+      </Form>
+    </Box>
   );
 }
