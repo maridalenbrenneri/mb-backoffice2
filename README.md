@@ -16,6 +16,7 @@ Before first run:
 
 Run app:
 
+- "flyctl proxy 5432 -a mb-pg"
 - Run "npm run dev"
 
 ## Tools and frameworks

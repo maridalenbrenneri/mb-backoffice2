@@ -87,7 +87,7 @@ export default function UpdateSubscription() {
 
   if (!subscription) return null;
 
-  const isReadOnly =
+  const isSystemSubscription =
     subscription.id === WOO_RENEWALS_SUBSCRIPTION_ID ||
     subscription.id === WOO_NON_RECURRENT_SUBSCRIPTION_ID;
 
@@ -241,7 +241,7 @@ export default function UpdateSubscription() {
                     <Button
                       type="submit"
                       variant="contained"
-                      disabled={isUpdating || isReadOnly}
+                      disabled={isUpdating || isSystemSubscription}
                       name="_action"
                       value="update"
                     >
@@ -320,7 +320,7 @@ export default function UpdateSubscription() {
                     <Button
                       type="submit"
                       variant="contained"
-                      disabled={isCreatingOrder || isReadOnly}
+                      disabled={isCreatingOrder || isSystemSubscription}
                       name="_action"
                       value="create-order"
                     >
@@ -347,7 +347,7 @@ export default function UpdateSubscription() {
                     name="_action"
                     value="create-custom-order"
                     variant="contained"
-                    disabled={isCreatingOrder || isReadOnly}
+                    disabled={isCreatingOrder || isSystemSubscription}
                   >
                     {isCreatingOrder ? 'Creating...' : 'Create =>'}
                   </Button>

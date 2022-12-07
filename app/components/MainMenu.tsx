@@ -46,6 +46,17 @@ export default function MainMenu() {
               <ListItem
                 button
                 component={Link}
+                to={'/wizard'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
+                <ListItemText primary="Wizard" />
+              </ListItem>
+
+              <Divider />
+
+              <ListItem
+                button
+                component={Link}
                 to={'/orders'}
                 onClick={() => setIsDrawerOpen(false)}
               >
@@ -93,7 +104,7 @@ export default function MainMenu() {
               <ListItem
                 button
                 component={Link}
-                to={'/import-result'}
+                to={'/scheduled-jobs'}
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <ListItemText primary="Scheduled jobs" />
