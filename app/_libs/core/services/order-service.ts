@@ -1,5 +1,5 @@
 import type { Order } from '@prisma/client';
-import { OrderShippingType } from '@prisma/client';
+import { ShippingType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { OrderType } from '@prisma/client';
 import { redirect } from '@remix-run/node';
@@ -145,7 +145,7 @@ export async function completeOrder(orderId: number) {
     return;
   }
   let cargonizer;
-  if (order.shippingType !== OrderShippingType.LOCAL_PICK_UP) {
+  if (order.shippingType !== ShippingType.LOCAL_PICK_UP) {
     cargonizer = await sendConsignment({
       order,
       print: true,
@@ -159,8 +159,23 @@ export async function completeOrder(orderId: number) {
   await updateOrderStatus(order.id, OrderStatus.COMPLETED);
 
   return {
-    data: 'completed',
+    data: `Completed ${orderId}`,
     printResult: cargonizer ? cargonizer.printResult : null,
     printError: cargonizer ? cargonizer.error : null,
   };
+}
+
+export async function completeOrders(orderIds: number[]) {
+  const GRACE_PERIOD_MS = 300;
+
+  const result = [];
+
+  for (const orderId of orderIds) {
+    const res = await completeOrder(orderId);
+    result.push(res);
+  }
+
+  console.table(result);
+
+  return result;
 }

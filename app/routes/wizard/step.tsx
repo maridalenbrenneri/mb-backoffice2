@@ -41,16 +41,18 @@ export default function WizardStepsLayoutScreen() {
         flexDirection: 'column',
       }}
     >
-      <h1>Wizard step index</h1>
+      <h1>MB Packing Wizard</h1>
 
       <h2 style={{ textAlign: 'center' }}>{title}</h2>
 
       <Outlet context={preview} />
 
+      <hr />
+
       <div style={{ marginTop: '12px' }}>
-        {stepNumber !== 1 ? <BackButton /> : null}
+        {stepNumber !== 0 ? <BackButton /> : null}
         <span style={{ marginLeft: '12px', marginRight: '12px' }}>
-          Step {stepNumber} of 4
+          Step {stepNumber} of 9
         </span>
         {submitButton}
       </div>

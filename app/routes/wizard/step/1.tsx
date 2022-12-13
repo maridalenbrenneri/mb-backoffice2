@@ -1,4 +1,14 @@
-import { Box, Button } from '@mui/material';
+import {
+  Box,
+  Button,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableFooter,
+  TableRow,
+} from '@mui/material';
 import type { ActionArgs, LoaderArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
@@ -10,13 +20,15 @@ import { commitWizardSession } from '~/sessions/wizard-session.server';
 import type { WizardPreviewGroup } from '~/_libs/core/services/wizard-service';
 import type { OnboardingWizardHandle } from '../step';
 
+const STEP = 1;
+
 export const handle: OnboardingWizardHandle = {
   key: 'onboarding',
-  title: 'Orders with local pick-up',
+  title: 'Overview of active orders',
   stepNumber: 1,
   submitButton: (
-    <Button type="submit" form="step-1" variant="contained">
-      Next to step 2
+    <Button type="submit" form={`step-${STEP}`} variant="contained">
+      Next to step {STEP + 1}
     </Button>
   ),
 };
@@ -52,55 +64,84 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function WizardStep1Screen() {
-  const data = useLoaderData<typeof loader>();
   const preview = useOutletContext() as WizardPreviewGroup;
 
-  const [orders, setOrders] = useState<number[]>([]);
-  const [renewalOrders, setRenewalOrders] = useState<number[]>([]);
+  const [customPickUpOrders, setPickUpCustomOrders] = useState<number[]>([]);
+  const [renewalPickUpOrders, setPickUpRenewalOrders] = useState<number[]>([]);
+  const [customOrders, setCustomOrders] = useState<number[]>([]);
+
+  const [renewalABO1Orders, setRenewalABO1Orders] = useState<number[]>([]);
+  const [renewalABO2Orders, setRenewalABO2Orders] = useState<number[]>([]);
+
+  //  const [b2bCusomOrders, setB2bCusomOrders] = useState<number[]>([]);
 
   useEffect(() => {
-    setOrders(preview.orders.privates.custom.pickUp);
-    setRenewalOrders(preview.orders.privates.renewal.pickUp);
+    setPickUpCustomOrders(preview.orders.privates.custom.pickUp);
+    setPickUpRenewalOrders(preview.orders.privates.renewal.pickUp);
+    setCustomOrders(preview.orders.privates.custom.pickUp);
+    setRenewalABO1Orders(preview.orders.privates.renewal.ship.ABO1);
+    setRenewalABO2Orders(preview.orders.privates.renewal.ship.ABO2);
   }, [preview]);
 
-  console.log(preview);
+  console.table(preview);
 
   return (
     <Box>
-      <p>
-        Let's start with orders with local pick-up. These will be be completed
-        but not sent to Cargonizer. Don't forget their names on the tape!
-      </p>
+      <TableContainer component={Paper}>
+        <Table
+          sx={{ minWidth: 650 }}
+          aria-label="subscription table"
+          size="small"
+        >
+          <TableBody>
+            <TableRow>
+              <TableCell>Pick up, custom</TableCell>
+              <TableCell>
+                <small>{customPickUpOrders.length}</small>
+              </TableCell>
+            </TableRow>
 
-      <div>{orders.length} custom orders to be packed</div>
+            <TableRow>
+              <TableCell>Pick up, renewal</TableCell>
+              <TableCell>
+                <small>{renewalPickUpOrders.length}</small>
+              </TableCell>
+            </TableRow>
 
-      <Button variant="contained" disabled={!orders.length}>
-        Complete orders
-      </Button>
+            <TableRow>
+              <TableCell>Ship, custom</TableCell>
+              <TableCell>
+                <small>{customOrders.length}</small>
+              </TableCell>
+            </TableRow>
 
-      <p></p>
-
-      <div>{renewalOrders.length} subscription renewal orders to be packed</div>
-
-      <Button variant="contained" disabled={!renewalOrders.length}>
-        Complete orders
-      </Button>
+            <TableRow>
+              <TableCell>Ship, ABO1</TableCell>
+              <TableCell>
+                <small>{renewalABO1Orders.length}</small>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Ship, ABO2</TableCell>
+              <TableCell>
+                <small>{renewalABO2Orders.length}</small>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>{preview.totalCount} orders to be packed</TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </TableContainer>
 
       <Form
-        id="step-1"
+        id={`step-${STEP}`}
         method="post"
         style={{ display: 'flex', flexDirection: 'column' }}
       >
-        {/* <label>
-          Favorite fruit :
-          <input
-            type="text"
-            name="favoriteFruit"
-            defaultValue={data?.favoriteFruit}
-          />
-        </label> */}
-
-        <input type="hidden" name="nextStep" value="2" />
+        <input type="hidden" name="nextStep" value={STEP + 1} />
       </Form>
     </Box>
   );

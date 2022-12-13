@@ -1,20 +1,25 @@
+import { Box, Button } from '@mui/material';
 import type { ActionArgs, LoaderArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
+import { redirect } from '@remix-run/node';
+import { Form, useOutletContext } from '@remix-run/react';
+import { useEffect, useState } from 'react';
 import type { OnboardingWizardSession } from '~/sessions/wizard-session.server';
-import { destroyWizardSession } from '~/sessions/wizard-session.server';
-import { getWizardSession } from '~/sessions/wizard-session.server';
-import { assertReferer } from '~/utils/assert-referer.server';
+import { getMaybeWizardSession } from '~/sessions/wizard-session.server';
+import { commitWizardSession } from '~/sessions/wizard-session.server';
+import type { WizardPreviewGroup } from '~/_libs/core/services/wizard-service';
 import type { OnboardingWizardHandle } from '../step';
+
+const STEP = 4;
 
 export const handle: OnboardingWizardHandle = {
   key: 'onboarding',
-  title: 'This is your preferences',
-  stepNumber: 4,
+  title: 'Renewal orders with local pick-up',
+  stepNumber: STEP,
   submitButton: (
-    <button type="submit" form="step-4" className="button">
-      Save my preferences
-    </button>
+    <Button type="submit" form={`step-${STEP}`} variant="contained">
+      Next to step {STEP + 1}
+    </Button>
   ),
 };
 
@@ -25,23 +30,61 @@ export function meta() {
 }
 
 export async function loader({ request }: LoaderArgs) {
-  assertReferer(request, { redirectTo: '/wizard' });
-
   const onboardingWizardSession =
-    await getWizardSession<OnboardingWizardSession>(request);
+    await getMaybeWizardSession<OnboardingWizardSession>(request);
 
   return json(onboardingWizardSession);
 }
 
 export async function action({ request }: ActionArgs) {
-  return destroyWizardSession(request);
+  const formData = await request.formData();
+
+  const { favoriteFruit, nextStep } = Object.fromEntries(formData) as Pick<
+    OnboardingWizardSession,
+    'favoriteFruit'
+  > & {
+    nextStep: string;
+  };
+
+  return redirect(`wizard/step/${nextStep}`, {
+    headers: {
+      'Set-Cookie': await commitWizardSession(request, { favoriteFruit }),
+    },
+  });
 }
 
-export default function WizardStep4Screen() {
-  const data = useLoaderData<typeof loader>();
+export default function WizardStep1Screen() {
+  const preview = useOutletContext() as WizardPreviewGroup;
+
+  const [renewalOrders, setRenewalOrders] = useState<number[]>([]);
+
+  useEffect(() => {
+    setRenewalOrders(preview.orders.privates.renewal.pickUp);
+  }, [preview]);
+
   return (
-    <Form id="step-4" method="post">
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </Form>
+    <Box>
+      <p>
+        These will be be completed but not sent to Cargonizer. Don't forget
+        their names on the tape!
+      </p>
+
+      <div>
+        {renewalOrders.length} subscription renewal orders with local pick up to
+        be packed
+      </div>
+
+      <Button variant="contained" disabled={!renewalOrders.length}>
+        Complete orders
+      </Button>
+
+      <Form
+        id={`step-${STEP}`}
+        method="post"
+        style={{ display: 'flex', flexDirection: 'column' }}
+      >
+        <input type="hidden" name="nextStep" value={STEP + 1} />
+      </Form>
+    </Box>
   );
 }

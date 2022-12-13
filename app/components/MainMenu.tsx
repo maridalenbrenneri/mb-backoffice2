@@ -46,10 +46,10 @@ export default function MainMenu() {
               <ListItem
                 button
                 component={Link}
-                to={'/wizard'}
+                to={'/packing'}
                 onClick={() => setIsDrawerOpen(false)}
               >
-                <ListItemText primary="Wizard" />
+                <ListItemText primary="Packing" />
               </ListItem>
 
               <Divider />
