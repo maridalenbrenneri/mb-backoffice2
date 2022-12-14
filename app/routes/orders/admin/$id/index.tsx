@@ -15,6 +15,7 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
+  Paper,
   Select,
   TextField,
 } from '@mui/material';
@@ -58,55 +59,62 @@ export default function NewOrderItem() {
   if (!order || order.wooOrderId) return null;
 
   return (
-    <Box
-      sx={{
-        '& .MuiTextField-root': { m: 1, minWidth: 250 },
-      }}
-    >
-      <Typography variant="h4">Add Order Item</Typography>
-      <Form method="post">
-        <input type="hidden" name="orderId" value={order.id} />
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id="coffee-label">Coffee</InputLabel>
-          <Select
-            labelId="coffee-label"
-            name="coffeeId"
-            defaultValue={coffees[0].id}
-            sx={{ minWidth: 250 }}
-          >
-            {coffees.map((coffee: Coffee) => (
-              <MenuItem value={coffee.id} key={coffee.id}>
-                {coffee.productCode} - {coffee.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl>
-          <TextField
-            name="variation"
-            label="Size"
-            variant="outlined"
-            error={errors?.variation}
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            name="quantity"
-            label="Quantity"
-            variant="outlined"
-            error={errors?.quantity}
-          />
-        </FormControl>
-
-        <div>
+    <Paper sx={{ p: 2 }}>
+      <Box
+        sx={{
+          '& .MuiTextField-root': { m: 1, minWidth: 250 },
+        }}
+      >
+        <Typography variant="h4">Add Order Item</Typography>
+        <Form method="post">
+          <input type="hidden" name="orderId" value={order.id} />
           <FormControl sx={{ m: 1 }}>
-            <Button type="submit" disabled={isCreating}>
-              {isCreating ? 'Adding...' : 'Add Item'}
-            </Button>
+            <InputLabel id="coffee-label">Coffee</InputLabel>
+            <Select
+              labelId="coffee-label"
+              name="coffeeId"
+              defaultValue={coffees[0].id}
+              sx={{ minWidth: 250 }}
+            >
+              {coffees.map((coffee: Coffee) => (
+                <MenuItem value={coffee.id} key={coffee.id}>
+                  {coffee.productCode} - {coffee.name}
+                </MenuItem>
+              ))}
+            </Select>
           </FormControl>
-        </div>
-      </Form>
-    </Box>
+
+          <FormControl>
+            <InputLabel id="variation-label">Size</InputLabel>
+            <Select
+              labelId="variation-label"
+              name="variation"
+              defaultValue={'_250'}
+              sx={{ minWidth: 250, my: 1 }}
+            >
+              <MenuItem value={'_250'}>250g</MenuItem>
+              <MenuItem value={'_500'}>500g</MenuItem>
+              <MenuItem value={'_1200'}>1,2kg</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl>
+            <TextField
+              name="quantity"
+              label="Quantity"
+              variant="outlined"
+              error={errors?.quantity}
+            />
+          </FormControl>
+
+          <div>
+            <FormControl sx={{ m: 1 }}>
+              <Button type="submit" disabled={isCreating} variant="contained">
+                {isCreating ? 'Adding...' : 'Add Item'}
+              </Button>
+            </FormControl>
+          </div>
+        </Form>
+      </Box>
+    </Paper>
   );
 }

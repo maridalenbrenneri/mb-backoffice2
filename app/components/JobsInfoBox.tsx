@@ -15,12 +15,13 @@ export default function JobsInfoBox(props: {
       <Typography variant="subtitle1">Scheduled jobs (last run)</Typography>
       <Box sx={{ m: 1 }}>
         <DataLabel
-          label="Woo import, subscriptions"
-          data={toPrettyDateTime(subscriptions?.createdAt) || 'Not available'}
-        />
-        <DataLabel
           label="Woo import, orders"
           data={toPrettyDateTime(orders?.createdAt) || 'Not available'}
+        />
+
+        <DataLabel
+          label="Woo import, subscription stats"
+          data={toPrettyDateTime(subscriptions?.createdAt) || 'Not available'}
         />
 
         <DataLabel

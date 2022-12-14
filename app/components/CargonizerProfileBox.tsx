@@ -12,11 +12,11 @@ export default function CargonizerProfileBox(props: { profile: any }) {
     <Box sx={{ m: 2 }}>
       <Typography variant="subtitle1">Cargonizer profile</Typography>
       <Box sx={{ m: 1 }}>
-        <DataLabel label="Username" data={profile.user.username} />
+        {/* <DataLabel label="Username" data={profile.user.username} />
         <DataLabel
           label="Manager id"
           data={profile.user.managerships.managership.id}
-        />
+        /> */}
         <DataLabel label="Plan" data={plan.name} />
         <DataLabel label="Limit" data={plan.item_limit} />
         <DataLabel label="Count" data={plan.item_counter} />

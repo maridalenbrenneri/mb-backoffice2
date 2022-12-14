@@ -47,13 +47,19 @@ export default function RoastOverviewBox(props: {
   useEffect(() => {
     if (!delivery) return;
 
-    const overview =
-      delivery.type === 'MONTHLY'
-        ? getRoastOverview(stats.bagCounterMonthly, delivery)
-        : getRoastOverview(emptyBagCounter(), delivery);
+    const resolve = () => {
+      if (delivery.type === 'MONTHLY')
+        return getRoastOverview(stats.bagCounterMonthly, delivery);
+      if (delivery.type === 'MONTHLY_3RD')
+        return getRoastOverview(stats.bagCounterMonthly3rd, delivery);
+
+      return getRoastOverview(emptyBagCounter(), delivery);
+    };
+
+    const overview = resolve();
 
     setOverview(overview);
-  }, [delivery, stats.bagCounterMonthly]);
+  }, [delivery, stats.bagCounterMonthly, stats.bagCounterMonthly3rd]);
 
   if (!stats) {
     return <Box>Data not available :(</Box>;

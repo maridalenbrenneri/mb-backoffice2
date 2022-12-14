@@ -29,7 +29,7 @@ import {
 } from '@mui/material';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
-import type { OrderItem } from '@prisma/client';
+import type { Coffee, OrderItem } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
@@ -38,6 +38,7 @@ import { completeOrderAction, upsertOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
 import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { coffeeVariationToLabel } from '~/_libs/core/utils/labels';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
@@ -72,8 +73,14 @@ export const action: ActionFunction = async ({ request }) => {
   return null;
 };
 
+function resolveCoffeeCode(coffeeId: number, coffees: Coffee[]) {
+  const coffee = coffees.find((c) => c.id === coffeeId);
+
+  return coffee?.productCode || `${coffeeId}`;
+}
+
 export default function UpdateOrder() {
-  const { order } = useLoaderData() as unknown as LoaderData;
+  const { order, coffees } = useLoaderData() as unknown as LoaderData;
 
   const errors = useActionData();
   const transition = useTransition();
@@ -82,6 +89,13 @@ export default function UpdateOrder() {
   if (!order) return null;
 
   const isReadOnly = !!order.wooOrderId;
+
+  const canComplete =
+    order.status === OrderStatus.ACTIVE &&
+    (order.orderItems.length > 0 ||
+      order.quantity250 ||
+      order.quantity500 ||
+      order.quantity1200);
 
   return (
     <Box
@@ -128,6 +142,7 @@ export default function UpdateOrder() {
                 name="_action"
                 value="send-order"
                 variant="contained"
+                disabled={!canComplete}
               >
                 <LocalShippingIcon sx={{ mx: 1 }} /> Ship Order
               </Button>
@@ -349,8 +364,12 @@ export default function UpdateOrder() {
                     key={item.id}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
-                    <TableCell>{item.coffeeId}</TableCell>
-                    <TableCell>{item.variation}</TableCell>
+                    <TableCell>
+                      {resolveCoffeeCode(item.coffeeId, coffees)}
+                    </TableCell>
+                    <TableCell>
+                      {coffeeVariationToLabel(item.variation)}
+                    </TableCell>
                     <TableCell>{item.quantity}</TableCell>
                   </TableRow>
                 ))}

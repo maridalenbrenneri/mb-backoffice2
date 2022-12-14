@@ -24,9 +24,8 @@ export interface SubscriptionStats {
   monthlyCount: number;
   fortnightlyCount: number;
   bagCounterMonthly: BagCounter;
+  bagCounterMonthly3rd: BagCounter;
   bagCounterFortnightly: BagCounter;
-
-  // WIP: bagCounterMonthlyMiddleOfMonth: BagCounter; HANDLE B2B ON LILL-ABO
 }
 
 function resolveBagCount(

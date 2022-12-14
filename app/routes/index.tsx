@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 
 import {
   OrderStatus,
+  SubscriptionFrequency,
   SubscriptionStatus,
   SubscriptionType,
 } from '@prisma/client';
@@ -28,7 +29,7 @@ type LoaderData = {
   wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
   wooOrderImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
   updateGaboStatusResult: Awaited<ReturnType<typeof getLastImportResult>>;
-  activeSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
+  allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   deliveries: Awaited<ReturnType<typeof getDeliveries>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
@@ -42,7 +43,7 @@ export const loader = async () => {
     'update-status-on-gift-subscriptions'
   );
 
-  const activeSubscriptions = await getSubscriptions({
+  const allActiveSubscriptions = await getSubscriptions({
     where: {
       status: SubscriptionStatus.ACTIVE,
     },
@@ -89,7 +90,7 @@ export const loader = async () => {
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
-    activeSubscriptions,
+    allActiveSubscriptions,
     deliveries,
     cargonizerProfile,
   });
@@ -97,27 +98,42 @@ export const loader = async () => {
 
 function resolveAboStats(
   woo: SubscriptionStats,
-  activeSubscriptions: Subscription[]
+  allActiveSubscriptions: Subscription[]
 ): SubscriptionStats {
-  // AGGREGATE GIFT AND B2B SUBSCRIPTIONS TO WOO SUBSCRIPTION BAG COUNT
-  const bagCounterMonthly = countBags(
-    activeSubscriptions,
-    woo.bagCounterMonthly
+  const activeMonthly = allActiveSubscriptions.filter(
+    (s) => s.frequency === SubscriptionFrequency.MONTHLY
   );
-  const bagCounterFortnightly = woo.bagCounterFortnightly;
 
-  // TODO: ADD MONTHLY WITH 3rd WEEK DELIVERY AS OWN bagCounter
+  const activeMonthly3rd = allActiveSubscriptions.filter(
+    (s) => s.frequency === SubscriptionFrequency.MONTHLY_3RD
+  );
+
+  const activeFortnightly = allActiveSubscriptions.filter(
+    (s) => s.frequency === SubscriptionFrequency.FORTNIGHTLY
+  );
+
+  // AGGREGATE GIFT AND B2B SUBSCRIPTIONS WITH WOO SUBSCRIPTION BAG COUNT
+
+  const bagCounterMonthly = countBags(activeMonthly, woo.bagCounterMonthly);
+
+  const bagCounterMonthly3rd = countBags(activeMonthly3rd); // No Monthly3rd comes from Woo
+
+  const bagCounterFortnightly = countBags(
+    activeFortnightly,
+    woo.bagCounterFortnightly
+  );
 
   const gifts =
-    activeSubscriptions.filter(
+    allActiveSubscriptions.filter(
       (s) => s.type === SubscriptionType.PRIVATE_GIFT
     ) || [];
 
   const B2Bs =
-    activeSubscriptions.filter((s) => s.type === SubscriptionType.B2B) || [];
+    allActiveSubscriptions.filter((s) => s.type === SubscriptionType.B2B) || [];
 
   return {
     bagCounterMonthly,
+    bagCounterMonthly3rd,
     bagCounterFortnightly,
     totalCount: woo.totalCount + gifts.length,
     giftSubscriptionCount: gifts.length,
@@ -133,7 +149,7 @@ export default function Index() {
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
-    activeSubscriptions,
+    allActiveSubscriptions,
     deliveries,
     cargonizerProfile,
   } = useLoaderData() as unknown as LoaderData;
@@ -148,7 +164,7 @@ export default function Index() {
     wooSubscriptionImportResult[0].result as string
   ) as SubscriptionStats;
 
-  const aboStats = resolveAboStats(wooStats, activeSubscriptions);
+  const aboStats = resolveAboStats(wooStats, allActiveSubscriptions);
 
   return (
     <main>

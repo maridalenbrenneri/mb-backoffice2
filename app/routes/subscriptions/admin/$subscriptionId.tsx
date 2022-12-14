@@ -82,8 +82,17 @@ export default function UpdateSubscription() {
   const transition = useTransition();
   const { subscription } = useLoaderData() as unknown as LoaderData;
 
-  const isUpdating = Boolean(transition.submission);
-  const isCreatingOrder = Boolean(transition.submission);
+  const isUpdating =
+    transition.state === 'submitting' &&
+    transition.submission.formData.get('_action') === '';
+
+  const isCreatingOrder =
+    transition.state === 'submitting' &&
+    transition.submission.formData.get('_action') === 'create-order';
+
+  const isCreatingCustomOrder =
+    transition.state === 'submitting' &&
+    transition.submission.formData.get('_action') === 'create-custom-order';
 
   if (!subscription) return null;
 
@@ -339,6 +348,13 @@ export default function UpdateSubscription() {
               }}
             >
               <Typography variant="h3">Create New Custom Order</Typography>
+              <p>
+                <small>
+                  New order to this customer with custom coffees. Use{' '}
+                  <em>Create New Order</em> to create order with subscription
+                  coffee mix.
+                </small>
+              </p>
               <Form method="post">
                 <input type="hidden" name="id" value={subscription.id} />
                 <FormControl sx={{ m: 1 }}>
@@ -347,9 +363,9 @@ export default function UpdateSubscription() {
                     name="_action"
                     value="create-custom-order"
                     variant="contained"
-                    disabled={isCreatingOrder || isSystemSubscription}
+                    disabled={isCreatingCustomOrder || isSystemSubscription}
                   >
-                    {isCreatingOrder ? 'Creating...' : 'Create =>'}
+                    {isCreatingCustomOrder ? 'Creating...' : 'Create =>'}
                   </Button>
                 </FormControl>
               </Form>

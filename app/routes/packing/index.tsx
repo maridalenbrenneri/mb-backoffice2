@@ -99,6 +99,7 @@ export default function Packing() {
       <Grid container spacing={2}>
         <Grid item md={12}>
           <Typography variant="h1">Packing overview</Typography>
+          <p>Active orders ready to be packed and shipped.</p>
         </Grid>
         <Grid item md={12}>
           <TableContainer component={Paper}>
@@ -111,7 +112,9 @@ export default function Packing() {
                 <TableRow>
                   <TableCell>Custom - local pick-up</TableCell>
                   <TableCell>
-                    <small>{customPickUpOrders.length}</small>
+                    <Link to={resolveOrdersUri(customPickUpOrders)}>
+                      {customPickUpOrders.length}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Button
@@ -126,7 +129,9 @@ export default function Packing() {
                 <TableRow>
                   <TableCell>ABO's - local pick-up</TableCell>
                   <TableCell>
-                    <small>{renewalPickUpOrders.length}</small>
+                    <Link to={resolveOrdersUri(renewalPickUpOrders)}>
+                      {renewalPickUpOrders.length}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Button
@@ -166,7 +171,9 @@ export default function Packing() {
                 <TableRow>
                   <TableCell>ABO1</TableCell>
                   <TableCell>
-                    <small>{renewalABO1Orders.length}</small>
+                    <Link to={resolveOrdersUri(renewalABO1Orders)}>
+                      {renewalABO1Orders.length}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Form method="post">
@@ -212,7 +219,9 @@ export default function Packing() {
                 <TableRow>
                   <TableCell>ABO3</TableCell>
                   <TableCell>
-                    <small>{renewalABO3Orders.length}</small>
+                    <Link to={resolveOrdersUri(renewalABO3Orders)}>
+                      {renewalABO3Orders.length}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Button
@@ -226,7 +235,9 @@ export default function Packing() {
                 <TableRow>
                   <TableCell>ABO4</TableCell>
                   <TableCell>
-                    <small>{renewalABO4Orders.length}</small>
+                    <Link to={resolveOrdersUri(renewalABO4Orders)}>
+                      {renewalABO4Orders.length}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Button
@@ -240,7 +251,9 @@ export default function Packing() {
                 <TableRow>
                   <TableCell>ABO5</TableCell>
                   <TableCell>
-                    <small>{renewalABO5Orders.length}</small>
+                    <Link to={resolveOrdersUri(renewalABO2Orders)}>
+                      {renewalABO2Orders.length}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Button
@@ -254,7 +267,9 @@ export default function Packing() {
                 <TableRow>
                   <TableCell>ABO6</TableCell>
                   <TableCell>
-                    <small>{renewalABO6Orders.length}</small>
+                    <Link to={resolveOrdersUri(renewalABO6Orders)}>
+                      {renewalABO6Orders.length}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Button
@@ -268,7 +283,9 @@ export default function Packing() {
                 <TableRow>
                   <TableCell>ABO7</TableCell>
                   <TableCell>
-                    <small>{renewalABO7Orders.length}</small>
+                    <Link to={resolveOrdersUri(renewalABO7Orders)}>
+                      {renewalABO7Orders.length}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Button

@@ -101,6 +101,7 @@ export default function Orders() {
               defaultValue={status}
               onChange={handleSelectStatus}
               sx={{ minWidth: 250 }}
+              size="small"
             >
               {Object.keys(OrderStatus).map((status: any) => (
                 <MenuItem value={status} key={status}>
@@ -119,7 +120,7 @@ export default function Orders() {
           >
             <TableHead>
               <TableRow>
-                <TableCell colSpan={6}>
+                <TableCell colSpan={7}>
                   <small>{orders.length} orders</small>
                 </TableCell>
               </TableRow>
@@ -128,6 +129,7 @@ export default function Orders() {
                 <TableCell>Status</TableCell>
                 <TableCell>Type</TableCell>
                 <TableCell>Created</TableCell>
+                <TableCell>Updated</TableCell>
                 <TableCell>Customer</TableCell>
                 <TableCell>Woo id</TableCell>
               </TableRow>
@@ -147,7 +149,12 @@ export default function Orders() {
                   <TableCell>
                     <small>{order.type}</small>
                   </TableCell>
-                  <TableCell>{toPrettyDateTime(order.createdAt)}</TableCell>
+                  <TableCell>
+                    <small>{toPrettyDateTime(order.createdAt, true)}</small>
+                  </TableCell>
+                  <TableCell>
+                    <small>{toPrettyDateTime(order.updatedAt, true)}</small>
+                  </TableCell>
                   <TableCell>{order.name}</TableCell>
                   <TableCell>{order.wooOrderId}</TableCell>
                 </TableRow>
