@@ -43,7 +43,15 @@ function buildFilter(search: URLSearchParams) {
 
   const getStatusFilter = search.get('status') || defaultStatus;
 
+  const getOrderIdsFilter = search.get('orderIds');
+
   if (getStatusFilter !== '_all') filter.where.status = getStatusFilter;
+
+  console.log(getOrderIdsFilter);
+  if (getOrderIdsFilter) {
+    const orderIds = getOrderIdsFilter.split(',').map((id) => +id);
+    filter.where.id = { in: orderIds };
+  }
 
   filter.take = TAKE_MAX_ROWS;
 

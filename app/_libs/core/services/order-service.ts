@@ -8,7 +8,7 @@ import { sendConsignment } from '~/_libs/cargonizer';
 import { updateOrderStatus } from '../models/order.server';
 import { getOrder, upsertOrder } from '../models/order.server';
 import { getSubscription } from '../models/subscription.server';
-import { WEIGHT_STANDARD_PACKAGING } from '../settings';
+import { COMPLETE_ORDERS_DELAY, WEIGHT_STANDARD_PACKAGING } from '../settings';
 import { getNextOrCreateDelivery } from './delivery-service';
 
 import * as woo from '~/_libs/woo';
@@ -152,27 +152,37 @@ export async function completeOrder(orderId: number) {
     });
   }
 
+  let wooResult;
   if (order.wooOrderId) {
-    await woo.completeWooOrder(order.wooOrderId);
+    wooResult = await woo.completeWooOrder(order.wooOrderId);
   }
 
   await updateOrderStatus(order.id, OrderStatus.COMPLETED);
 
   return {
-    data: `Completed ${orderId}`,
-    printResult: cargonizer ? cargonizer.printResult : null,
-    printError: cargonizer ? cargonizer.error : null,
+    result: `Completed`,
+    orderId,
+    printRequested: cargonizer?.printRequested || false,
+    printError: cargonizer?.error || null,
+    wooOrderId: wooResult?.orderId || null,
+    wooOrderStatus: wooResult?.orderStatus || null,
+    wooError: wooResult?.error || null,
   };
 }
 
 export async function completeOrders(orderIds: number[]) {
-  const GRACE_PERIOD_MS = 300;
+  if (!orderIds.length) return [];
 
-  const result = [];
+  const delay = () =>
+    new Promise((resolve) => setTimeout(resolve, COMPLETE_ORDERS_DELAY));
+
+  const result: any[] = [];
 
   for (const orderId of orderIds) {
     const res = await completeOrder(orderId);
     result.push(res);
+
+    await delay();
   }
 
   console.table(result);

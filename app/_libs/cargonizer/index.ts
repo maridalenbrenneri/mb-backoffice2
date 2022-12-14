@@ -56,8 +56,8 @@ export const sendConsignment = async (
       orderId: input.order.id,
       consignmentId: 0,
       trackingUrl: '',
-      printResult: input.print ? 'Requested' : 'Not requested',
-      error: 'Cargonizer not enabled in settings, didnt do anything',
+      printRequested: input.print,
+      error: 'Cargonizer not enabled',
     };
 
   const order = input.order;
@@ -103,7 +103,7 @@ export const sendConsignment = async (
     orderId: input.order.id,
     consignmentId: consignment.id,
     trackingUrl: consignment['tracking-url'],
-    printResult: input.print ? printResult?.result : 'Not requested',
+    printRequested: input.print,
     error,
   };
 };

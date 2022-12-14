@@ -1,7 +1,7 @@
 import { WOO_API_BASE_URL } from './constants';
 
 export default async function completeWooOrder(wooOrderId: number) {
-  if (!process.env.WOO_ALLOW_UPDATE) return null;
+  if (!process.env.WOO_ALLOW_UPDATE) return { error: 'Woo Update not enabled' };
 
   const url = `${WOO_API_BASE_URL}orders/${wooOrderId}?${process.env.WOO_SECRET_PARAM}`;
 
@@ -22,9 +22,9 @@ export default async function completeWooOrder(wooOrderId: number) {
   const json = await response.json();
 
   if (response.status !== 200) {
-    throw new Error(
-      `Error when trying to update Woo order ${wooOrderId}. Message: "${json.message}" Status: ${json.data?.status} `
-    );
+    return {
+      error: `Woo Update failed: ${json.message}`,
+    };
   }
 
   return { orderId: json.id, orderStatus: json.status };
