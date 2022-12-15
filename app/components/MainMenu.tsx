@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from '@remix-run/react';
+import { Form, Link } from '@remix-run/react';
 
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -10,22 +10,26 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Divider, Drawer, List, ListItem, ListItemText } from '@mui/material';
 
-export default function MainMenu() {
+export default function MainMenu(props: { loggedIn: boolean }) {
+  const { loggedIn } = props;
+
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            sx={{ mr: 2 }}
-            onClick={() => setIsDrawerOpen(true)}
-          >
-            <MenuIcon />
-          </IconButton>
+          {loggedIn && (
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              sx={{ mr: 2 }}
+              onClick={() => setIsDrawerOpen(true)}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             MB Backoffice
           </Typography>
@@ -111,8 +115,15 @@ export default function MainMenu() {
               </ListItem>
             </List>
           </Drawer>
-
-          <Button color="inherit">Login</Button>
+          {loggedIn && (
+            <div>
+              <Form action="/logout" method="post">
+                <Button sx={{ color: '#000' }} type="submit">
+                  Logout
+                </Button>
+              </Form>
+            </div>
+          )}
         </Toolbar>
       </AppBar>
     </Box>

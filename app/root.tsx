@@ -1,4 +1,5 @@
 import type { MetaFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import {
   Links,
   LiveReload,
@@ -7,6 +8,7 @@ import {
   Scripts,
   ScrollRestoration,
   useCatch,
+  useLoaderData,
 } from '@remix-run/react';
 
 import { Box, ThemeProvider, CssBaseline, Typography } from '@mui/material';
@@ -18,12 +20,32 @@ import '@fontsource/roboto/700.css';
 
 import MainMenu from './components/MainMenu';
 import { theme } from './style/theme';
+import { requireUserId } from './utils/session.server';
 
 export const meta: MetaFunction = () => ({
   charset: 'utf-8',
   title: 'MB Backoffice',
   viewport: 'width=device-width,initial-scale=1',
 });
+
+type LoaderData = {
+  userId: string | null;
+};
+
+export const loader = async ({ request }) => {
+  const url = new URL(request.url);
+
+  if (url.pathname === '/login')
+    return json<LoaderData>({
+      userId: null,
+    });
+
+  const userId = await requireUserId(request);
+
+  return json<LoaderData>({
+    userId,
+  });
+};
 
 function Document({ children }: { children: React.ReactNode; title?: string }) {
   return (
@@ -44,10 +66,12 @@ function Document({ children }: { children: React.ReactNode; title?: string }) {
 }
 
 export default function App() {
+  const { userId } = useLoaderData() as unknown as LoaderData;
+
   return (
     <ThemeProvider theme={theme}>
       <Document>
-        <MainMenu />
+        <MainMenu loggedIn={!!userId} />
         <Box m={2}>
           <Outlet />
         </Box>
