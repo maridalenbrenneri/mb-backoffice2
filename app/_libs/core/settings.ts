@@ -37,11 +37,12 @@ export const WOO_ABO_PRODUCT_VARIATION_7_2 = 31053;
 
 export const WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS = 7;
 
-// TECHNICAL
+// SYSADMIN
 export const TAKE_MAX_ROWS = 500;
 export const TAKE_DEFAULT_ROWS = 30;
 
 export const COMPLETE_ORDERS_DELAY = 300; // milliseconds. being gentle with requests to Cargonizer and Woo on completeing multiple orders
+export const COMPLETE_ORDERS_BATCH_MAX = 50;
 
 export const WOO_RENEWALS_SUBSCRIPTION_ID = 1;
 export const WOO_NON_RECURRENT_SUBSCRIPTION_ID = 2;
