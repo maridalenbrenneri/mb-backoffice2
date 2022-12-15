@@ -63,6 +63,7 @@ export async function getSubscription(id: number) {
       orders: {
         include: {
           delivery: true,
+          orderItems: true,
         },
         take: TAKE_MAX_ROWS,
         orderBy: {

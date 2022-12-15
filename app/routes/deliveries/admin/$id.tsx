@@ -19,7 +19,7 @@ import {
   MenuItem,
 } from '@mui/material';
 
-import { getDeliveryById } from '~/_libs/core/models/delivery.server';
+import { getDeliveries } from '~/_libs/core/models/delivery.server';
 import type { Delivery } from '~/_libs/core/models/delivery.server';
 import { upsertAction } from './_shared';
 import type { Coffee } from '~/_libs/core/models/coffee.server';
@@ -32,7 +32,31 @@ type LoaderData = { delivery: Delivery; coffees: Coffee[] };
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
 
-  const delivery = await getDeliveryById(+params.id);
+  const deliveries = await getDeliveries({
+    where: { id: +params.id },
+    include: {
+      coffee1: true,
+      coffee2: true,
+      coffee3: true,
+      coffee4: true,
+      orders: {
+        include: {
+          orderItems: {
+            select: {
+              id: true,
+              variation: true,
+              quantity: true,
+              coffee: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
+    },
+  });
+  const delivery = deliveries?.length ? deliveries[0] : null;
   invariant(delivery, `Delivery not found: ${params.id}`);
 
   const coffees = await getCoffees();

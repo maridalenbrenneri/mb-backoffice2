@@ -25,7 +25,7 @@ import {
   renderTypes,
   upsertAction,
 } from './_shared';
-import { getSubscription } from '~/_libs/core/models/subscription.server';
+import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import type { Subscription } from '~/_libs/core/models/subscription.server';
 import { getCustomer } from '~/_libs/fiken';
 import GiftSubscriptionWooData from '~/components/GiftSubscriptionWooData';
@@ -67,7 +67,27 @@ export const action: ActionFunction = async ({ request }) => {
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.subscriptionId, `params.id is required`);
 
-  const subscription = await getSubscription(+params.subscriptionId);
+  const subscriptions = await getSubscriptions({
+    where: { id: +params.subscriptionId },
+    include: {
+      orders: {
+        include: {
+          delivery: true,
+          orderItems: {
+            select: {
+              id: true,
+              variation: true,
+              quantity: true,
+              coffee: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const subscription = subscriptions?.length ? subscriptions[0] : null;
+
   invariant(subscription, `Subscription not found: ${params.subscriptionId}`);
 
   const customer = !subscription.fikenContactId

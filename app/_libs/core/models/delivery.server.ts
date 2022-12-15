@@ -29,24 +29,6 @@ export async function getDelivery(filter: any) {
   return await prisma.delivery.findFirst(filter);
 }
 
-export async function getDeliveryById(id: number) {
-  return prisma.delivery.findUnique({
-    where: { id },
-    include: {
-      coffee1: true,
-      coffee2: true,
-      coffee3: true,
-      coffee4: true,
-      orders: {
-        orderBy: {
-          createdAt: 'desc',
-        },
-        take: TAKE_MAX_ROWS,
-      },
-    },
-  });
-}
-
 export async function upsertDelivery(
   id: number | null,
   data: DeliveryUpsertData

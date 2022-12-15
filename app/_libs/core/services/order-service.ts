@@ -28,7 +28,7 @@ async function _createOrder(
     _1200: 0,
   }
 ): Promise<Order> {
-  const subscription = await getSubscription(subscriptionId);
+  const subscription = await getSubscription(subscriptionId); // TODO: USE FILTER IN QUERY AND FETCH ONLY WHAT WE NEED
 
   if (!subscription) {
     console.warn(
@@ -111,17 +111,21 @@ export function generateReference(order: Order) {
   let reference = '';
 
   for (const item of order.orderItems) {
-    reference = `${reference} ${item.quantity}${item.mbProductCode}`;
+    if (item.variation === '_250')
+      reference = `${reference} ${item.quantity}${item.coffee.productCode}`;
+    if (item.variation === '_500')
+      reference = `${reference} ${item.quantity}${item.coffee.productCode}x500g`;
+    if (item.variation === '_1200')
+      reference = `${reference} ${item.quantity}${item.coffee.productCode}x1.2kg`;
   }
 
-  if (order.quantity250)
-    reference = `${reference} ${order.quantity250}${'TEST'}`;
+  if (order.quantity250) reference = `${reference} ABO${order.quantity250}`;
 
   if (order.quantity500)
-    reference = `${reference} ${order.quantity500}${'TEST'}-500gr`;
+    reference = `${reference} ABO${order.quantity500}x500g`;
 
   if (order.quantity1200)
-    reference = `${reference} ${order.quantity1200}${'TEST'}-1,2kg`;
+    reference = `${reference} ABO${order.quantity1200}x1,2kg`;
 
   return reference;
 }

@@ -13,6 +13,7 @@ import type { Order } from '@prisma/client';
 
 import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { TableFooter } from '@mui/material';
+import { generateReference } from '~/_libs/core/services/order-service';
 
 export default function Orders(props: { orders: Order[] }) {
   const { orders } = props;
@@ -25,7 +26,7 @@ export default function Orders(props: { orders: Order[] }) {
         <Table sx={{ minWidth: 650 }} aria-label="orders table" size="small">
           <TableHead>
             <TableRow>
-              <TableCell colSpan={8}>
+              <TableCell colSpan={6}>
                 <small>{orders.length} orders</small>
               </TableCell>
             </TableRow>
@@ -35,9 +36,7 @@ export default function Orders(props: { orders: Order[] }) {
               <TableCell>Type</TableCell>
               <TableCell>Created</TableCell>
               <TableCell>Delivery</TableCell>
-              <TableCell>250g</TableCell>
-              <TableCell>500g</TableCell>
-              <TableCell>1,2kg</TableCell>
+              <TableCell>Item summary</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -61,9 +60,7 @@ export default function Orders(props: { orders: Order[] }) {
                     {toPrettyDate(order.delivery?.date)}
                   </Link>
                 </TableCell>
-                <TableCell>{order.quantity250}</TableCell>
-                <TableCell>{order.quantity500}</TableCell>
-                <TableCell>{order.quantity1200}</TableCell>
+                <TableCell>{generateReference(order)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

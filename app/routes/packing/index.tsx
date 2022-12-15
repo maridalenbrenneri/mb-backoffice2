@@ -1,37 +1,50 @@
-import {
-  Box,
-  Button,
-  Grid,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableFooter,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material';
 import type { ActionFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
   Form,
-  Link,
   useActionData,
   useLoaderData,
   useTransition,
 } from '@remix-run/react';
 import { useEffect, useState } from 'react';
+
+import type { Order } from '@prisma/client';
+
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  Modal,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 import { completeOrders } from '~/_libs/core/services/order-service';
 import { generatePreview } from '~/_libs/core/services/wizard-service';
+import Orders from '../../components/Orders';
 
-// enum PACKING_GROUPS {
-//   CUSTOM_PICKUP,
-//   CUSTOM_RENEWAL,
-//   CUSTOM,
-//   ABO1,
-//   ABO2,
-// }
+const modalStyle = {
+  position: 'absolute' as 'absolute',
+  top: '25%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '90%',
+  bgcolor: 'background.paper',
+  border: '1px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 type LoaderData = {
   preview: Awaited<ReturnType<typeof generatePreview>>;
@@ -49,6 +62,8 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { ...values } = Object.fromEntries(formData);
 
+  // TODO: Check if more than 50, only take first 50 if so
+
   const orderIds = values.orderIds
     .toString()
     .split(',')
@@ -64,19 +79,39 @@ export default function Packing() {
 
   const isWorking = Boolean(transition.submission);
 
-  const [customPickUpOrders, setPickUpCustomOrders] = useState<number[]>([]);
-  const [renewalPickUpOrders, setPickUpRenewalOrders] = useState<number[]>([]);
-  const [customOrders, setCustomOrders] = useState<number[]>([]);
+  const [customPickUpOrders, setPickUpCustomOrders] = useState<Order[]>([]);
+  const [renewalPickUpOrders, setPickUpRenewalOrders] = useState<Order[]>([]);
+  const [customOrders, setCustomOrders] = useState<Order[]>([]);
 
-  const [renewalABO1Orders, setRenewalABO1Orders] = useState<number[]>([]);
-  const [renewalABO2Orders, setRenewalABO2Orders] = useState<number[]>([]);
-  const [renewalABO3Orders, setRenewalABO3Orders] = useState<number[]>([]);
-  const [renewalABO4Orders, setRenewalABO4Orders] = useState<number[]>([]);
-  const [renewalABO5Orders, setRenewalABO5Orders] = useState<number[]>([]);
-  const [renewalABO6Orders, setRenewalABO6Orders] = useState<number[]>([]);
-  const [renewalABO7Orders, setRenewalABO7Orders] = useState<number[]>([]);
+  const [resultData, setResultData] = useState<string | false>(false);
 
-  //  const [b2bCusomOrders, setB2bCusomOrders] = useState<number[]>([]);
+  const [expanded, setExpanded] = useState<string | false>(false);
+
+  useEffect(() => {
+    setResultData(data);
+  }, [data]);
+
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (_event: any, reason: string) => {
+    if (reason === 'closeBtnClick') {
+      setResultData(false);
+      setOpen(false);
+    }
+  };
+
+  const [renewalABO1Orders, setRenewalABO1Orders] = useState<Order[]>([]);
+  const [renewalABO2Orders, setRenewalABO2Orders] = useState<Order[]>([]);
+  const [renewalABO3Orders, setRenewalABO3Orders] = useState<Order[]>([]);
+  const [renewalABO4Orders, setRenewalABO4Orders] = useState<Order[]>([]);
+  const [renewalABO5Orders, setRenewalABO5Orders] = useState<Order[]>([]);
+  const [renewalABO6Orders, setRenewalABO6Orders] = useState<Order[]>([]);
+  const [renewalABO7Orders, setRenewalABO7Orders] = useState<Order[]>([]);
+
+  //  const [b2bCusomOrders, setB2bCusomOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     setPickUpCustomOrders(preview.orders.privates.custom.pickUp);
@@ -91,8 +126,42 @@ export default function Packing() {
     setRenewalABO7Orders(preview.orders.privates.renewal.ship.ABO7);
   }, [preview]);
 
-  const resolveOrdersUri = (orderIds: number[]) =>
-    `/orders?status=_all&orderIds=${orderIds.join()}`;
+  const handleChange =
+    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpanded(isExpanded ? panel : false);
+    };
+
+  const renderAccordian = (title: string, orders: Order[]) => {
+    return (
+      <Accordion expanded={expanded === title} onChange={handleChange(title)}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography sx={{ width: '25%', flexShrink: 0 }}>{title}</Typography>
+          <Typography sx={{ color: 'text.secondary' }}>
+            {orders.length} <small>order(s)</small>
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Form method="post">
+            <input
+              type="hidden"
+              name="orderIds"
+              value={orders.map((o) => o.id).join()}
+            />
+            <Button
+              variant="contained"
+              type="submit"
+              disabled={!orders.length || isWorking}
+              onClick={handleOpen}
+              sx={{ marginBottom: 2, minWidth: 200 }}
+            >
+              {isWorking ? 'Completing...' : 'Complete order(s)'}
+            </Button>
+          </Form>
+          {!!orders.length && <Orders orders={orders} />}
+        </AccordionDetails>
+      </Accordion>
+    );
+  };
 
   return (
     <Box>
@@ -101,236 +170,58 @@ export default function Packing() {
           <Typography variant="h1">Packing overview</Typography>
           <p>Active orders ready to be packed and shipped.</p>
         </Grid>
-        <Grid item md={12}>
-          <TableContainer component={Paper}>
-            <Table
-              sx={{ minWidth: 650 }}
-              aria-label="subscription table"
-              size="small"
-            >
-              <TableBody>
-                <TableRow>
-                  <TableCell>Custom - local pick-up</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(customPickUpOrders)}>
-                      {customPickUpOrders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      disabled={!customPickUpOrders.length || isWorking}
-                    >
-                      {isWorking ? 'Working...' : 'Complete'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-
-                <TableRow>
-                  <TableCell>ABO's - local pick-up</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(renewalPickUpOrders)}>
-                      {renewalPickUpOrders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      disabled={!renewalPickUpOrders.length || isWorking}
-                    >
-                      {isWorking ? 'Working...' : 'Complete'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-
-                <TableRow>
-                  <TableCell>Custom orders</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(customOrders)}>
-                      {customOrders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="orderIds"
-                        value={customOrders.join()}
-                      />
-                      <Button
-                        variant="contained"
-                        type="submit"
-                        disabled={!customOrders.length || isWorking}
-                      >
-                        {isWorking ? 'Working...' : 'Complete'}
-                      </Button>
-                    </Form>
-                  </TableCell>
-                </TableRow>
-
-                <TableRow>
-                  <TableCell>ABO1</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(renewalABO1Orders)}>
-                      {renewalABO1Orders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="orderIds"
-                        value={renewalABO1Orders.join()}
-                      />
-                      <Button
-                        variant="contained"
-                        type="submit"
-                        disabled={!renewalABO1Orders.length || isWorking}
-                      >
-                        {isWorking ? 'Working...' : 'Complete'}
-                      </Button>
-                    </Form>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>ABO2</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(renewalABO2Orders)}>
-                      {renewalABO2Orders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="orderIds"
-                        value={renewalABO2Orders.join()}
-                      />
-                      <Button
-                        variant="contained"
-                        type="submit"
-                        disabled={!renewalABO2Orders.length || isWorking}
-                      >
-                        {isWorking ? 'Working...' : 'Complete'}
-                      </Button>
-                    </Form>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>ABO3</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(renewalABO3Orders)}>
-                      {renewalABO3Orders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      disabled={!renewalABO3Orders.length || isWorking}
-                    >
-                      {isWorking ? 'Working...' : 'Complete'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>ABO4</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(renewalABO4Orders)}>
-                      {renewalABO4Orders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      disabled={!renewalABO4Orders.length || isWorking}
-                    >
-                      {isWorking ? 'Working...' : 'Complete'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>ABO5</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(renewalABO2Orders)}>
-                      {renewalABO2Orders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      disabled={!renewalABO5Orders.length || isWorking}
-                    >
-                      {isWorking ? 'Working...' : 'Complete'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>ABO6</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(renewalABO6Orders)}>
-                      {renewalABO6Orders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      disabled={!renewalABO6Orders.length || isWorking}
-                    >
-                      {isWorking ? 'Working...' : 'Complete'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>ABO7</TableCell>
-                  <TableCell>
-                    <Link to={resolveOrdersUri(renewalABO7Orders)}>
-                      {renewalABO7Orders.length}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      disabled={!renewalABO7Orders.length || isWorking}
-                    >
-                      {isWorking ? 'Working...' : 'Complete'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell>
-                    {preview.totalCount} orders to be packed
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </TableContainer>
+        <Grid item xs={12}>
+          {renderAccordian(`Custom - local pick-up`, customPickUpOrders)}
+          {renderAccordian(`ABO's - local pick-up`, renewalPickUpOrders)}
+          {renderAccordian(`Custom orders`, customOrders)}
+          {renderAccordian(`ABO1`, renewalABO1Orders)}
+          {renderAccordian(`ABO2`, renewalABO2Orders)}
+          {renderAccordian(`ABO3`, renewalABO3Orders)}
+          {renderAccordian(`ABO4`, renewalABO4Orders)}
+          {renderAccordian(`ABO5`, renewalABO5Orders)}
+          {renderAccordian(`ABO6`, renewalABO6Orders)}
+          {renderAccordian(`ABO7`, renewalABO7Orders)}
         </Grid>
-        <Grid item md={12}>
-          {data && (
-            <Box>
-              <Typography variant="h2">Last result</Typography>
-
-              <TableContainer component={Paper}>
-                <Table
-                  sx={{ minWidth: 650 }}
-                  aria-label="subscription table"
-                  size="small"
-                >
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Result</TableCell>
-                      <TableCell>Order</TableCell>
-                      <TableCell>Woo id/status</TableCell>
-                      <TableCell>Woo error</TableCell>
-                      <TableCell>Cargonizer Print requested</TableCell>
-                      <TableCell>Cargonizer Print error</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {data?.length &&
-                      data.map((row: any, index: number) => (
+        <Grid item md={12}></Grid>
+      </Grid>
+      <div>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={modalStyle}>
+            {!resultData && (
+              <Grid container>
+                <Grid item xs={12} style={{ textAlign: 'center' }}>
+                  <CircularProgress color="primary" />
+                  <Typography>Completing orders...</Typography>
+                  <p>
+                    <small>This can take a while if many orders.</small>
+                  </p>
+                </Grid>
+              </Grid>
+            )}
+            {resultData && (
+              <Box>
+                <Typography variant="h6" component="h2">
+                  Orders completed
+                </Typography>
+                <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+                  <Table sx={{ minWidth: 650 }} size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Result</TableCell>
+                        <TableCell>Order</TableCell>
+                        <TableCell>Woo id/status</TableCell>
+                        <TableCell>Woo error</TableCell>
+                        <TableCell>Cargonizer Print requested</TableCell>
+                        <TableCell>Cargonizer Print error</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {resultData.map((row: any, index: number) => (
                         <TableRow key={index}>
                           <TableCell>{row.result}</TableCell>
                           <TableCell>{row.orderId}</TableCell>
@@ -344,13 +235,26 @@ export default function Packing() {
                           <TableCell>{row.printError}</TableCell>
                         </TableRow>
                       ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Box>
-          )}
-        </Grid>
-      </Grid>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Grid container>
+                  <Grid item xs={12} style={{ textAlign: 'right' }}>
+                    <Button
+                      variant="contained"
+                      onClick={() => handleClose(null, 'closeBtnClick')}
+                      sx={{ m: 2, marginTop: 4 }}
+                    >
+                      Close
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+          </Box>
+        </Modal>
+      </div>
     </Box>
   );
 }

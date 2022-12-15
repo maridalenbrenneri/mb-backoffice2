@@ -13,19 +13,19 @@ export type WizardPreviewGroup = {
   orders: {
     privates: {
       custom: {
-        pickUp: number[];
-        ship: number[];
+        pickUp: Order[];
+        ship: Order[];
       };
       renewal: {
-        pickUp: number[];
+        pickUp: Order[];
         ship: {
-          ABO1: number[];
-          ABO2: number[];
-          ABO3: number[];
-          ABO4: number[];
-          ABO5: number[];
-          ABO6: number[];
-          ABO7: number[];
+          ABO1: Order[];
+          ABO2: Order[];
+          ABO3: Order[];
+          ABO4: Order[];
+          ABO5: Order[];
+          ABO6: Order[];
+          ABO7: Order[];
         };
       };
     };
@@ -49,7 +49,14 @@ export async function generatePreview() {
       status: OrderStatus.ACTIVE,
     },
     include: {
-      orderItems: true,
+      orderItems: {
+        select: {
+          id: true,
+          variation: true,
+          quantity: true,
+          coffee: true,
+        },
+      },
       subscription: {
         select: {
           type: true,
@@ -93,61 +100,54 @@ export async function generatePreview() {
   //     (o) => o.subscription.type === SubscriptionType.B2B
   //   );
 
-  preview.orders.privates.custom.pickUp = privates
-    .filter(
-      (o) =>
-        o.type === OrderType.CUSTOM &&
-        o.shippingType === ShippingType.LOCAL_PICK_UP
-    )
-    .map((o) => o.id);
-
-  preview.orders.privates.custom.ship = privates
-    .filter(
-      (o) => o.type === OrderType.CUSTOM && o.shippingType === ShippingType.SHIP
-    )
-    .map((o) => o.id);
-
-  preview.orders.privates.renewal.pickUp = privates
-    .filter(
-      (o) =>
-        (o.type === OrderType.RECURRING ||
-          o.type === OrderType.NON_RECURRING) &&
-        o.shippingType === ShippingType.LOCAL_PICK_UP
-    )
-    .map((o) => o.id);
-
-  console.log(
-    'preview.orders.privates.custom.ship',
-    preview.orders.privates.custom.ship
+  preview.orders.privates.custom.pickUp = privates.filter(
+    (o) =>
+      o.type === OrderType.CUSTOM &&
+      o.shippingType === ShippingType.LOCAL_PICK_UP
   );
 
-  preview.orders.privates.renewal.ship.ABO1 = privates
-    .filter((o) => filterPrivateAboQuantity(o, 1))
-    .map((o) => o.id);
+  preview.orders.privates.custom.ship = privates.filter(
+    (o) => o.type === OrderType.CUSTOM && o.shippingType === ShippingType.SHIP
+  );
 
-  preview.orders.privates.renewal.ship.ABO2 = privates
-    .filter((o) => filterPrivateAboQuantity(o, 2))
-    .map((o) => o.id);
+  preview.orders.privates.renewal.pickUp = privates.filter(
+    (o) =>
+      (o.type === OrderType.RECURRING || o.type === OrderType.NON_RECURRING) &&
+      o.shippingType === ShippingType.LOCAL_PICK_UP
+  );
 
-  preview.orders.privates.renewal.ship.ABO3 = privates
-    .filter((o) => filterPrivateAboQuantity(o, 3))
-    .map((o) => o.id);
+  // console.log(
+  //   'preview.orders.privates.custom.ship',
+  //   preview.orders.privates.custom.ship
+  // );
 
-  preview.orders.privates.renewal.ship.ABO4 = privates
-    .filter((o) => filterPrivateAboQuantity(o, 4))
-    .map((o) => o.id);
+  preview.orders.privates.renewal.ship.ABO1 = privates.filter((o) =>
+    filterPrivateAboQuantity(o, 1)
+  );
 
-  preview.orders.privates.renewal.ship.ABO5 = privates
-    .filter((o) => filterPrivateAboQuantity(o, 5))
-    .map((o) => o.id);
+  preview.orders.privates.renewal.ship.ABO2 = privates.filter((o) =>
+    filterPrivateAboQuantity(o, 2)
+  );
 
-  preview.orders.privates.renewal.ship.ABO6 = privates
-    .filter((o) => filterPrivateAboQuantity(o, 6))
-    .map((o) => o.id);
+  preview.orders.privates.renewal.ship.ABO3 = privates.filter((o) =>
+    filterPrivateAboQuantity(o, 3)
+  );
 
-  preview.orders.privates.renewal.ship.ABO7 = privates
-    .filter((o) => filterPrivateAboQuantity(o, 7))
-    .map((o) => o.id);
+  preview.orders.privates.renewal.ship.ABO4 = privates.filter((o) =>
+    filterPrivateAboQuantity(o, 4)
+  );
+
+  preview.orders.privates.renewal.ship.ABO5 = privates.filter((o) =>
+    filterPrivateAboQuantity(o, 5)
+  );
+
+  preview.orders.privates.renewal.ship.ABO6 = privates.filter((o) =>
+    filterPrivateAboQuantity(o, 6)
+  );
+
+  preview.orders.privates.renewal.ship.ABO7 = privates.filter((o) =>
+    filterPrivateAboQuantity(o, 7)
+  );
 
   preview.totalCount =
     preview.orders.privates.custom.pickUp.length +
