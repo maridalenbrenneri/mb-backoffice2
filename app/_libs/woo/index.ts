@@ -1,11 +1,11 @@
 import completeWooOrder from './complete-woo-order';
 import importWooGiftSubscriptions from './import-woo-gift-subscriptions';
-import importWooSubscriptionStats from './import-woo-subscription-stats';
+import importWooSubscriptions from './import-woo-subscriptions';
 import importWooOrders from './import-woo.orders';
 
 export {
   completeWooOrder,
-  importWooSubscriptionStats,
+  importWooSubscriptions,
   importWooGiftSubscriptions,
   importWooOrders,
 };

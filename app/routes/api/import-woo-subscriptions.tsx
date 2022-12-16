@@ -9,11 +9,11 @@ export const action: ActionFunction = async ({ request }) => {
   if (request.method !== 'POST')
     return json({ message: 'Method not allowed' }, 405);
 
-  const name = 'woo-import-subscription-stats';
+  const name = 'woo-import-subscriptions';
   const importStartedAt = DateTime.now().toJSDate();
 
   try {
-    const result = await woo.importWooSubscriptionStats();
+    const result = await woo.importWooSubscriptions();
 
     await createImportResult({
       importStartedAt,

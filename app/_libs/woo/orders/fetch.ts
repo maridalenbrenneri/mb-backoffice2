@@ -11,11 +11,7 @@ import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
 async function _fetchOrders(page: number = 1, updatedAfter: string) {
   const url = `${WOO_API_BASE_URL}orders?page=${page}&per_page=${WOO_API_DEFAULT_PER_PAGE}&modified_after=${updatedAfter}&${process.env.WOO_SECRET_PARAM}`;
 
-  console.debug(`Fetching woo orders from page ${page}`);
-
   const response = await fetch(url);
-
-  const data = await response.json();
 
   if (response.status !== 200) {
     throw new Error(
@@ -23,9 +19,13 @@ async function _fetchOrders(page: number = 1, updatedAfter: string) {
     );
   }
 
+  const data = await response.json();
+
+  const totalPages = Number(response.headers.get('x-wp-totalpages'));
+  const nextPage = !totalPages || totalPages === page ? null : page + 1;
+
   return {
-    nextPage:
-      response.headers.get('x-wp-totalpages') === `${page}` ? null : page + 1,
+    nextPage,
     orders: data,
   };
 }
@@ -40,17 +40,19 @@ async function _fetchGiftSubscriptionOrders(page: number = 1) {
 
   const response = await fetch(url);
 
-  const data = await response.json();
-
   if (response.status !== 200) {
     throw new Error(
       `Fetch Woo orders (gift subscriptions) failed. ${response.status} ${response.statusText}`
     );
   }
 
+  const data = await response.json();
+
+  const totalPages = Number(response.headers.get('x-wp-totalpages'));
+  const nextPage = !totalPages || totalPages === page ? null : page + 1;
+
   return {
-    nextPage:
-      response.headers.get('x-wp-totalpages') === `${page}` ? null : page + 1,
+    nextPage,
     orders: data,
   };
 }

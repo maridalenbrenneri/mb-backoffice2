@@ -36,8 +36,7 @@ export default function ImportResult() {
 
   const isRunningImportWooSubscriptions =
     fetcher.state === 'submitting' &&
-    fetcher.submission.formData.get('_action') ===
-      'import-woo-subscription-stats';
+    fetcher.submission.formData.get('_action') === 'import-woo-subscriptions';
 
   const isRunningUpdateStatusOnGiftSubscriptions =
     fetcher.state === 'submitting' &&
@@ -65,18 +64,18 @@ export default function ImportResult() {
           </FormControl>
         </fetcher.Form>
 
-        <fetcher.Form method="post" action="/api/import-woo-subscription-stats">
+        <fetcher.Form method="post" action="/api/import-woo-subscriptions">
           <FormControl sx={{ m: 1 }}>
             <Button
               type="submit"
               name="_action"
-              value="import-woo-subscription-stats"
+              value="import-woo-subscriptions"
               variant="contained"
               disabled={isRunningImportWooSubscriptions}
             >
               {isRunningImportWooSubscriptions
                 ? 'Running...'
-                : 'Run "Import Woo Subscription Stats"'}
+                : 'Run "Import Woo Subscriptions"'}
             </Button>
           </FormControl>
         </fetcher.Form>

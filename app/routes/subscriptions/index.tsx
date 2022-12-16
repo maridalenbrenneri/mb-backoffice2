@@ -149,6 +149,7 @@ export default function Subscriptions() {
               <MenuItem value={'_all'}>Active & Passive</MenuItem>
               <MenuItem value={SubscriptionStatus.ACTIVE}>Active</MenuItem>
               <MenuItem value={SubscriptionStatus.PASSIVE}>Passive</MenuItem>
+              <MenuItem value={SubscriptionStatus.ON_HOLD}>On hold</MenuItem>
               <MenuItem value={SubscriptionStatus.NOT_STARTED}>
                 Not started
               </MenuItem>

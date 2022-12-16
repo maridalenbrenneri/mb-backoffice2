@@ -1,11 +1,13 @@
 import { prisma } from '~/db.server';
 
-import { ShippingType, Subscription } from '@prisma/client';
+import type { Subscription } from '@prisma/client';
+import { ShippingType } from '@prisma/client';
 import {
   SubscriptionType,
   SubscriptionStatus,
   SubscriptionFrequency,
 } from '@prisma/client';
+
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 
 export type { Subscription };
@@ -105,6 +107,32 @@ export async function createGiftSubscription(
       shippingType: ShippingType.SHIP,
       recipientCountry: 'NO',
       ...input,
+    },
+  });
+}
+
+// SPECIAL UPSERT USED BY WOO IMPORT
+export async function upsertSubscriptionByWooSubscriptionId(data: any) {
+  return prisma.subscription.upsert({
+    where: {
+      wooSubscriptionId: data.wooSubscriptionId || 0,
+    },
+    update: data,
+    create: {
+      type: data.type,
+      wooSubscriptionId: data.wooSubscriptionId,
+      status: data.status,
+      shippingType: data.shippingType,
+      frequency: data.frequency,
+      quantity250: data.quantity250,
+      recipientName: data.recipientName,
+      recipientAddress1: data.recipientAddress1,
+      recipientAddress2: data.recipientAddress2,
+      recipientPostalCode: data.recipientPostalCode,
+      recipientPostalPlace: data.recipientPostalCode,
+      recipientEmail: data.recipientEmail,
+      recipientMobile: data.recipientMobile,
+      recipientCountry: 'NO',
     },
   });
 }

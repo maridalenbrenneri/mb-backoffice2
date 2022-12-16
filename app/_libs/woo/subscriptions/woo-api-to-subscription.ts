@@ -1,12 +1,14 @@
-import {
-  WOO_STATUS_ACTIVE,
-  WOO_STATUS_CANCELLED,
-  WOO_STATUS_ON_HOLD,
-} from '../constants';
+import { WOO_STATUS_ACTIVE, WOO_STATUS_ON_HOLD } from '../constants';
 
 import * as settings from '../../core/settings';
 
 import { SubscriptionFrequency } from '~/_libs/core/models/subscription.server';
+import { WOO_NO_SHIPPING_COUPON } from '../../core/settings';
+import {
+  ShippingType,
+  SubscriptionStatus,
+  SubscriptionType,
+} from '@prisma/client';
 
 interface IWooSubscriptionProduct {
   name: string;
@@ -67,18 +69,25 @@ const resolveSubscriptionVariation = (
   }
 };
 
-const resolveSubscriptionStatus = (wooStatus: string): string => {
+const resolveSubscriptionStatus = (wooStatus: string): SubscriptionStatus => {
   switch (wooStatus) {
     case WOO_STATUS_ACTIVE:
-      return 'ACTIVE';
+      return SubscriptionStatus.ACTIVE;
     case WOO_STATUS_ON_HOLD:
-      return 'ON_HOLD';
-    case WOO_STATUS_CANCELLED:
-      return 'CANCELLED';
+      return SubscriptionStatus.ON_HOLD;
     default:
-      return 'DELETED';
+      return SubscriptionStatus.DELETED;
   }
 };
+
+function resolveShippingType(wooSubscription: any) {
+  const couponLines = wooSubscription.coupon_lines;
+
+  if (couponLines?.some((d: any) => d.code === WOO_NO_SHIPPING_COUPON))
+    return ShippingType.LOCAL_PICK_UP;
+
+  return ShippingType.SHIP;
+}
 
 const wooApiToSubscription = (subscription: any): any => {
   if (!subscription.line_items?.length)
@@ -97,10 +106,23 @@ const wooApiToSubscription = (subscription: any): any => {
     variationId: subscription.line_items[0].variation_id,
   });
 
+  const status = resolveSubscriptionStatus(subscription.status);
+  console.log('STATUS', subscription.status, status, subscription.id);
+
   return {
-    status: resolveSubscriptionStatus(subscription.status),
+    wooSubscriptionId: subscription.id,
+    type: SubscriptionType.PRIVATE,
+    status,
+    shippingType: resolveShippingType(subscription),
     frequency: variation.frequency,
     quantity250: variation.bagCount250,
+    recipientName: `${subscription.shipping.first_name} ${subscription.shipping.last_name} `,
+    recipientAddress1: subscription.shipping.address_1,
+    recipientAddress2: subscription.shipping.address_2,
+    recipientPostalCode: subscription.shipping.postcode,
+    recipientPostalPlace: subscription.shipping.city,
+    recipientEmail: subscription.billing.email,
+    recipientMobile: subscription.billing.phone,
   };
 };
 

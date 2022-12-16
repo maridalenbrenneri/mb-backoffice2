@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 import {
+  Delivery,
   OrderStatus,
   SubscriptionFrequency,
   SubscriptionStatus,
@@ -23,20 +24,21 @@ import RoastOverviewBox from '~/components/RoastOverviewBox';
 import { getCargonizerProfile } from '~/_libs/cargonizer';
 import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
-import { Grid, Paper } from '@mui/material';
+import { CircularProgress, Grid, Paper } from '@mui/material';
+import { useEffect, useState } from 'react';
 
 type LoaderData = {
   wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
   wooOrderImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
   updateGaboStatusResult: Awaited<ReturnType<typeof getLastImportResult>>;
   allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
-  deliveries: Awaited<ReturnType<typeof getDeliveries>>;
+  currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
 export const loader = async () => {
   const wooSubscriptionImportResult = await getLastImportResult(
-    'woo-import-subscription-stats'
+    'woo-import-subscriptions'
   );
   const wooOrderImportResult = await getLastImportResult('woo-import-orders');
   const updateGaboStatusResult = await getLastImportResult(
@@ -57,7 +59,7 @@ export const loader = async () => {
     },
   });
 
-  const deliveries = await getDeliveries({
+  const currentDeliveries = await getDeliveries({
     include: {
       coffee1: { select: { id: true, productCode: true } },
       coffee2: { select: { id: true, productCode: true } },
@@ -91,13 +93,12 @@ export const loader = async () => {
     wooOrderImportResult,
     updateGaboStatusResult,
     allActiveSubscriptions,
-    deliveries,
+    currentDeliveries,
     cargonizerProfile,
   });
 };
 
 function resolveAboStats(
-  woo: SubscriptionStats,
   allActiveSubscriptions: Subscription[]
 ): SubscriptionStats {
   const activeMonthly = allActiveSubscriptions.filter(
@@ -112,16 +113,9 @@ function resolveAboStats(
     (s) => s.frequency === SubscriptionFrequency.FORTNIGHTLY
   );
 
-  // AGGREGATE GIFT AND B2B SUBSCRIPTIONS WITH WOO SUBSCRIPTION BAG COUNT
-
-  const bagCounterMonthly = countBags(activeMonthly, woo.bagCounterMonthly);
-
+  const bagCounterMonthly = countBags(activeMonthly);
   const bagCounterMonthly3rd = countBags(activeMonthly3rd); // No Monthly3rd comes from Woo
-
-  const bagCounterFortnightly = countBags(
-    activeFortnightly,
-    woo.bagCounterFortnightly
-  );
+  const bagCounterFortnightly = countBags(activeFortnightly);
 
   const gifts =
     allActiveSubscriptions.filter(
@@ -135,11 +129,11 @@ function resolveAboStats(
     bagCounterMonthly,
     bagCounterMonthly3rd,
     bagCounterFortnightly,
-    totalCount: woo.totalCount + gifts.length,
+    totalCount: allActiveSubscriptions.length,
+    monthlyCount: activeMonthly.length,
+    fortnightlyCount: activeFortnightly.length,
+    subscriptionCount: allActiveSubscriptions.length,
     giftSubscriptionCount: gifts.length,
-    monthlyCount: woo.monthlyCount + gifts.length,
-    fortnightlyCount: woo.fortnightlyCount,
-    subscriptionCount: woo.subscriptionCount,
     b2bSubscriptionCount: B2Bs.length,
   };
 }
@@ -150,27 +144,46 @@ export default function Index() {
     wooOrderImportResult,
     updateGaboStatusResult,
     allActiveSubscriptions,
-    deliveries,
+    currentDeliveries,
     cargonizerProfile,
   } = useLoaderData() as unknown as LoaderData;
 
-  if (!wooSubscriptionImportResult?.length) {
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>();
+  const [deliveries, setDeliveries] = useState<Delivery[]>();
+  const [cargonizer, setCargonizer] = useState();
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (allActiveSubscriptions && currentDeliveries && cargonizerProfile) {
+      setSubscriptions(allActiveSubscriptions);
+      setDeliveries(currentDeliveries);
+      setCargonizer(cargonizerProfile);
+      setLoading(false);
+    }
+  }, [allActiveSubscriptions, currentDeliveries, cargonizerProfile]);
+
+  if (loading)
     return (
-      <Box>Couldn't load dashboard. No imported data from Woo was found </Box>
+      <main>
+        <Grid container>
+          <Grid item xs={12} style={{ textAlign: 'center' }}>
+            <Box sx={{ m: 10 }}>
+              <CircularProgress color="primary" />
+              <Typography>Loading dashboard...</Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </main>
     );
-  }
 
-  const wooStats = JSON.parse(
-    wooSubscriptionImportResult[0].result as string
-  ) as SubscriptionStats;
-
-  const aboStats = resolveAboStats(wooStats, allActiveSubscriptions);
+  const aboStats = resolveAboStats(subscriptions || []);
 
   return (
     <main>
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h2">Roast overview</Typography>
-        <RoastOverviewBox stats={aboStats} deliveries={deliveries} />
+        <RoastOverviewBox stats={aboStats} deliveries={deliveries || []} />
       </Box>
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h2">Subscription overview</Typography>
@@ -190,7 +203,7 @@ export default function Index() {
         </Grid>
         <Grid item md={4} xl={3}>
           <Paper sx={{ p: 1 }}>
-            <CargonizerProfileBox profile={cargonizerProfile} />
+            <CargonizerProfileBox profile={cargonizer} />
           </Paper>
         </Grid>
       </Grid>

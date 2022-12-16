@@ -34,7 +34,7 @@ export default function SubscriptionStatsBox(props: {
             <DataLabel label="B2B" data={stats.b2bSubscriptionCount} />
           </Grid>
           <Grid item md={3} xl={2}>
-            <DataLabel label="Monthly, ABO" data={stats.monthlyCount} />
+            <DataLabel label="Monthly, ABO/GABO" data={stats.monthlyCount} />
             <DataLabel label="Fortnightly, ABO" data={stats.fortnightlyCount} />
           </Grid>
         </Grid>

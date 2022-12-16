@@ -1,21 +1,29 @@
 import * as constants from '../constants';
 import wooApiToSubscription from './woo-api-to-subscription';
 
-async function _fetchSubscriptions(status: string, page: number = 1) {
-  const url = `${constants.WOO_SUBSCRIPTION_API_BASE_URL}subscriptions?page=${page}&per_page=${constants.WOO_API_DEFAULT_PER_PAGE}&${process.env.WOO_SECRET_PARAM}&status=${status}`;
+async function _fetchSubscriptions(page: number = 1): Promise<any> {
+  console.debug(`Fetching woo subscriptions from page ${page}`);
+
+  // const after = DateTime.now()
+  //   .startOf('day')
+  //   .minus({ days: 15 })
+  //   .toISO({ suppressMilliseconds: true, includeOffset: false });
+  // &after=${after}
+
+  const url = `${constants.WOO_SUBSCRIPTION_API_BASE_URL}subscriptions?page=${page}&per_page=${constants.WOO_API_DEFAULT_PER_PAGE}&${process.env.WOO_SECRET_PARAM}`;
 
   const response = await fetch(url);
-  const data = await response.json();
 
-  if (!response.body) {
-    return {
-      nextPage: null,
-      abos: [],
-    };
+  if (response.status !== 200) {
+    throw new Error(
+      `Fetch Woo subscriptions failed. ${response.status} ${response.statusText}`
+    );
   }
 
-  const nextPage =
-    response.headers.get('x-wp-totalpages') === `${page}` ? null : page + 1;
+  const data = await response.json();
+
+  const totalPages = Number(response.headers.get('x-wp-totalpages'));
+  const nextPage = !totalPages || totalPages === page ? null : page + 1;
 
   return {
     nextPage,
@@ -24,30 +32,14 @@ async function _fetchSubscriptions(status: string, page: number = 1) {
 }
 
 export default async function fetchSubscriptions(): Promise<any[]> {
-  let subscriptionActive: Array<any> = [];
-  let subscriptionOnHold: Array<any> = [];
+  let subscriptions: Array<any> = [];
   let page: number | null = 1;
 
   do {
-    const result = (await _fetchSubscriptions(
-      constants.WOO_STATUS_ACTIVE,
-      page
-    )) as any;
+    const result: any = await _fetchSubscriptions(page);
     page = result.nextPage;
-    subscriptionActive = subscriptionActive.concat(result.abos);
+    subscriptions = subscriptions.concat(result.abos);
   } while (page);
 
-  page = 1;
-  do {
-    const result2 = (await _fetchSubscriptions(
-      constants.WOO_STATUS_ON_HOLD,
-      page
-    )) as any;
-    page = result2.nextPage;
-    subscriptionOnHold = subscriptionOnHold.concat(result2.abos);
-  } while (page);
-
-  const allSubscriptions = subscriptionActive.concat(subscriptionOnHold);
-
-  return allSubscriptions.map(wooApiToSubscription);
+  return subscriptions.map(wooApiToSubscription);
 }

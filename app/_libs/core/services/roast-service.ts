@@ -95,8 +95,6 @@ function fromItems(orders: Order[]) {
     }
   }
 
-  console.log('MAP', data);
-
   return data;
 }
 

@@ -53,8 +53,9 @@ enum SubscriptionType {
 enum SubscriptionStatus {
   NOT_STARTED // ONLY USED FOR GIFT SUBSCRIPTIONS, NO ORDERS CAN BE CREATED
   ACTIVE    // RECURRING ORDERS ACTIVE 
-  PASSIVE   // ORDERS CAN BE MANUALLY TRIGGERED
-  COMPLETED // ORDERS CANNOT BE TRIGGERED
+  PASSIVE   // ORDERS CAN BE MANUALLY CREATED
+  ON_HOLD   // ORDERS CANNOT BE CREATED
+  COMPLETED // ORDERS CANNOT BE CREATED
   DELETED
 }
 
@@ -82,6 +83,9 @@ model Subscription {
   
   // Set on B2B
   fikenContactId      Int? @unique
+
+  // Set on PRIVATE imported from Woo
+  wooSubscriptionId   Int? @unique
 
   // Set on PRIVATE_GIFT (created from Woo order)
   gift_wooOrderId          Int?

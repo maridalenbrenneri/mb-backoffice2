@@ -20,8 +20,6 @@ function calculateSubscriptionWeight(subscription: Subscription) {
   if (subscription.quantity500) weight += subscription.quantity500 * 500;
   if (subscription.quantity250) weight += subscription.quantity1200 * 1200;
 
-  console.log(subscription);
-
   return weight / 1000;
 }
 
