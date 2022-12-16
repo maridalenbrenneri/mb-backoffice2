@@ -2,6 +2,10 @@ import type { Order } from '@prisma/client';
 import { OrderType, ShippingType, SubscriptionType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { getOrders } from '../models/order.server';
+import {
+  WOO_NON_RECURRENT_SUBSCRIPTION_ID,
+  WOO_RENEWALS_SUBSCRIPTION_ID,
+} from '../settings';
 
 export type WizardOrdersSent = {
   orders: Order[];
@@ -29,7 +33,16 @@ export type WizardPreviewGroup = {
         };
       };
     };
-    b2bs: {};
+    b2bs: {
+      custom: {
+        pickUp: Order[];
+        ship: Order[];
+      };
+      renewal: {
+        pickUp: Order[];
+        ship: Order[];
+      };
+    };
   };
 };
 
@@ -41,6 +54,13 @@ function filterPrivateAboQuantity(o: Order, quantity: number) {
     return false;
 
   return o.quantity250 === quantity;
+}
+
+function isSystemSubscription(subscriptionId: number) {
+  return (
+    subscriptionId === WOO_RENEWALS_SUBSCRIPTION_ID ||
+    subscriptionId === WOO_NON_RECURRENT_SUBSCRIPTION_ID
+  );
 }
 
 export async function generatePreview() {
@@ -86,19 +106,26 @@ export async function generatePreview() {
           },
         },
       },
-      b2bs: {},
+      b2bs: {
+        custom: {
+          pickUp: [],
+          ship: [],
+        },
+        renewal: {
+          pickUp: [],
+          ship: [],
+        },
+      },
     },
   };
+
+  // PRIVATE
 
   const privates = orders.filter(
     (o) =>
       o.subscription.type === SubscriptionType.PRIVATE ||
       SubscriptionType.PRIVATE_GIFT
   );
-
-  //   const b2bs = orders.filter(
-  //     (o) => o.subscription.type === SubscriptionType.B2B
-  //   );
 
   preview.orders.privates.custom.pickUp = privates.filter(
     (o) =>
@@ -115,11 +142,6 @@ export async function generatePreview() {
       (o.type === OrderType.RECURRING || o.type === OrderType.NON_RECURRING) &&
       o.shippingType === ShippingType.LOCAL_PICK_UP
   );
-
-  // console.log(
-  //   'preview.orders.privates.custom.ship',
-  //   preview.orders.privates.custom.ship
-  // );
 
   preview.orders.privates.renewal.ship.ABO1 = privates.filter((o) =>
     filterPrivateAboQuantity(o, 1)
@@ -149,6 +171,36 @@ export async function generatePreview() {
     filterPrivateAboQuantity(o, 7)
   );
 
+  // B2B
+  const b2bs = orders.filter(
+    (o) =>
+      o.subscription.type === SubscriptionType.B2B &&
+      !isSystemSubscription(o.subscriptionId)
+  );
+
+  preview.orders.b2bs.custom.pickUp = b2bs.filter(
+    (o) =>
+      o.type === OrderType.CUSTOM &&
+      o.shippingType === ShippingType.LOCAL_PICK_UP
+  );
+
+  preview.orders.b2bs.custom.ship = b2bs.filter(
+    (o) => o.type === OrderType.CUSTOM && o.shippingType === ShippingType.SHIP
+  );
+
+  preview.orders.b2bs.renewal.pickUp = b2bs.filter(
+    (o) =>
+      (o.type === OrderType.RECURRING || o.type === OrderType.NON_RECURRING) &&
+      o.shippingType === ShippingType.LOCAL_PICK_UP
+  );
+
+  preview.orders.b2bs.renewal.ship = b2bs.filter(
+    (o) =>
+      (o.type === OrderType.RECURRING || o.type === OrderType.NON_RECURRING) &&
+      o.shippingType === ShippingType.SHIP
+  );
+
+  // TOTAL
   preview.totalCount =
     preview.orders.privates.custom.pickUp.length +
     preview.orders.privates.custom.ship.length +
@@ -159,7 +211,11 @@ export async function generatePreview() {
     preview.orders.privates.renewal.ship.ABO4.length +
     preview.orders.privates.renewal.ship.ABO5.length +
     preview.orders.privates.renewal.ship.ABO6.length +
-    preview.orders.privates.renewal.ship.ABO7.length;
+    preview.orders.privates.renewal.ship.ABO7.length +
+    preview.orders.b2bs.custom.pickUp.length +
+    preview.orders.b2bs.custom.ship.length +
+    preview.orders.b2bs.renewal.pickUp.length +
+    preview.orders.b2bs.renewal.ship.length;
 
   return preview;
 }

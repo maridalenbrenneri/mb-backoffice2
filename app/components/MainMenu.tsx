@@ -8,7 +8,17 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Divider, Drawer, List, ListItem, ListItemText } from '@mui/material';
+import {
+  Divider,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemText,
+} from '@mui/material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import LocalPostOfficeIcon from '@mui/icons-material/LocalPostOffice';
+import CoffeeIcon from '@mui/icons-material/Coffee';
+import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 
 export default function MainMenu(props: { loggedIn: boolean }) {
   const { loggedIn } = props;
@@ -35,84 +45,88 @@ export default function MainMenu(props: { loggedIn: boolean }) {
           </Typography>
 
           <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-            <List>
-              <ListItem
-                button
+            <List
+              sx={{
+                '& .MuiTypography-root': {
+                  m: 0.25,
+                  marginLeft: 1,
+                  minWidth: 250,
+                },
+              }}
+            >
+              <ListItemButton
                 component={Link}
                 to={'/'}
                 onClick={() => setIsDrawerOpen(false)}
               >
+                <DashboardIcon />
                 <ListItemText primary="Dashboard" />
-              </ListItem>
+              </ListItemButton>
 
               <Divider />
 
-              <ListItem
-                button
+              <ListItemButton
                 component={Link}
                 to={'/packing'}
                 onClick={() => setIsDrawerOpen(false)}
               >
-                <ListItemText primary="Packing" />
-              </ListItem>
+                <LocalPostOfficeIcon />
+                <ListItemText primary="Packing & Shipping" />
+              </ListItemButton>
 
-              <Divider />
-
-              <ListItem
-                button
-                component={Link}
-                to={'/orders'}
-                onClick={() => setIsDrawerOpen(false)}
-              >
-                <ListItemText primary="Orders" />
-              </ListItem>
-
-              <ListItem
-                button
+              <ListItemButton
                 component={Link}
                 to={'/subscriptions'}
                 onClick={() => setIsDrawerOpen(false)}
               >
+                <SubscriptionsIcon />
                 <ListItemText primary="Subscriptions" />
-              </ListItem>
+              </ListItemButton>
 
-              <ListItem
-                button
+              <ListItemButton
                 component={Link}
                 to={'/coffees'}
                 onClick={() => setIsDrawerOpen(false)}
               >
+                <CoffeeIcon />
                 <ListItemText primary="Coffees" />
-              </ListItem>
+              </ListItemButton>
 
-              <ListItem
-                button
+              <Divider />
+
+              <ListItemButton
+                component={Link}
+                to={'/orders'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
+                <ListItemText secondary="Orders" />
+              </ListItemButton>
+
+              <ListItemButton
                 component={Link}
                 to={'/deliveries'}
                 onClick={() => setIsDrawerOpen(false)}
               >
-                <ListItemText primary="Deliveries" />
-              </ListItem>
+                <ListItemText secondary="Deliveries" />
+              </ListItemButton>
 
               <Divider />
 
-              <ListItem
-                button
+              <ListItemButton
                 component={Link}
                 to={'/b2b'}
                 onClick={() => setIsDrawerOpen(false)}
               >
-                <ListItemText primary="Fiken customers" />
-              </ListItem>
+                <ListItemText secondary="Fiken customers" />
+              </ListItemButton>
 
-              <ListItem
-                button
+              <ListItemButton
                 component={Link}
                 to={'/scheduled-jobs'}
                 onClick={() => setIsDrawerOpen(false)}
               >
-                <ListItemText primary="Scheduled jobs" />
-              </ListItem>
+                <ListItemText secondary="Scheduled jobs" />
+              </ListItemButton>
             </List>
           </Drawer>
           {loggedIn && (
