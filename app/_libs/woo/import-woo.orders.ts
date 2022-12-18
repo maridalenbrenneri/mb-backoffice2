@@ -59,6 +59,10 @@ export default async function importWooOrders() {
     let included = false;
 
     // GIFT SUBSCRIPTIONS
+    if (info.gifts.length)
+      console.debug(
+        `Creating ${info.gifts.length} gift subscription(s) from Woo order ${info.wooOrderId}`
+      );
     for (const gift of info.gifts) {
       await createGiftSubscription(gift);
       included = true;
@@ -69,7 +73,7 @@ export default async function importWooOrders() {
       await upsertOrderFromWoo(info.order.wooOrderId as number, info.order);
       included = true;
 
-      // SINGLE ORDERS (IF ONLY GIFT, ITEMS IS EMPTY, ALREADY HADNLED ABOVE)
+      // SINGLE ORDERS (IF ONLY GIFT, ITEMS IS EMPTY, ALREADY HANDLED ABOVE)
     } else if (info.items.length) {
       if (!verifyThatItemsAreValid(info.items, info.order.wooOrderId)) continue;
 

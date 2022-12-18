@@ -10,6 +10,7 @@ import {
 import invariant from 'tiny-invariant';
 
 import {
+  Alert,
   Box,
   Button,
   FormControl,
@@ -270,7 +271,11 @@ export default function UpdateSubscription() {
                     <Button
                       type="submit"
                       variant="contained"
-                      disabled={isUpdating || isSystemSubscription}
+                      disabled={
+                        isUpdating ||
+                        isSystemSubscription ||
+                        !!subscription.wooSubscriptionId
+                      }
                       name="_action"
                       value="update"
                     >
@@ -294,6 +299,17 @@ export default function UpdateSubscription() {
                   data={subscription.fikenContactId}
                   dataLinkUrl={`https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`}
                 />
+              )}
+              {subscription.wooSubscriptionId && (
+                <Alert severity="info">
+                  This subscription is imported from Woo and cannot be updated
+                  here. Update of status, customer data and quantity must be
+                  done in Woo, but you can create new orders on this customer.
+                  <DataLabel
+                    label="Woo subscription id"
+                    data={subscription.wooSubscriptionId}
+                  />
+                </Alert>
               )}
             </Paper>
           </Grid>

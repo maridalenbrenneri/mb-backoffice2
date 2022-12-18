@@ -72,10 +72,6 @@ export default async function wooApiToOrder(
     throw new Error(`No line items on order. Woo order id ${wooApiOrder.id}`);
   }
 
-  // if (wooApiOrder.id === 41066) {
-  //   console.debug('BJADA', wooApiOrder);
-  // }
-
   const items: any[] = wooApiOrder.line_items.map((item: any) => {
     return {
       wooOrderItemId: item.id,
@@ -127,7 +123,6 @@ export default async function wooApiToOrder(
     (i) => i.wooProductId !== WOO_GABO_PRODUCT_ID
   );
 
-  // TODO: Create Order Items for items in "normalItems". Resolve coffees...
   return {
     gifts: hasGifts ? wooApiToGiftSubscriptions([wooApiOrder]) : [],
     order: {

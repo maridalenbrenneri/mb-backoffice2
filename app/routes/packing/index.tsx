@@ -35,6 +35,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import { completeOrders } from '~/_libs/core/services/order-service';
 import { generatePreview } from '~/_libs/core/services/wizard-service';
 import Orders from '../../components/Orders';
+import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
 
 const modalStyle = {
   position: 'absolute' as 'absolute',
@@ -64,12 +65,15 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { ...values } = Object.fromEntries(formData);
 
-  // TODO: Check if more than 50, only take first 50 if so
-
-  const orderIds = values.orderIds
+  const allOrderIds = values.orderIds
     .toString()
     .split(',')
     .map((s) => +s);
+
+  const orderIds =
+    allOrderIds.length > COMPLETE_ORDERS_BATCH_MAX
+      ? allOrderIds.slice(0, COMPLETE_ORDERS_BATCH_MAX - 1)
+      : allOrderIds;
 
   return await completeOrders(orderIds);
 };
@@ -81,7 +85,7 @@ export default function Packing() {
 
   const isWorking = Boolean(transition.submission);
 
-  const [resultData, setResultData] = useState<string | false>(false);
+  const [resultData, setResultData] = useState<[] | null>(null);
 
   const [expanded, setExpanded] = useState<string | false>(false);
 
@@ -96,7 +100,7 @@ export default function Packing() {
 
   const handleClose = (_event: any, reason: string) => {
     if (reason === 'closeBtnClick') {
-      setResultData(false);
+      setResultData(null);
       setOpen(false);
     }
   };

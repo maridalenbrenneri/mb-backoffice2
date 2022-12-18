@@ -1,4 +1,10 @@
-import { WOO_STATUS_ACTIVE, WOO_STATUS_ON_HOLD } from '../constants';
+import {
+  WOO_STATUS_ACTIVE,
+  WOO_STATUS_CANCELLED,
+  WOO_STATUS_DELETED,
+  WOO_STATUS_ON_HOLD,
+  WOO_STATUS_PENDING_CANCEL,
+} from '../constants';
 
 import * as settings from '../../core/settings';
 
@@ -72,11 +78,17 @@ const resolveSubscriptionVariation = (
 const resolveSubscriptionStatus = (wooStatus: string): SubscriptionStatus => {
   switch (wooStatus) {
     case WOO_STATUS_ACTIVE:
+    case WOO_STATUS_PENDING_CANCEL:
       return SubscriptionStatus.ACTIVE;
     case WOO_STATUS_ON_HOLD:
       return SubscriptionStatus.ON_HOLD;
-    default:
+    case WOO_STATUS_CANCELLED:
+    case WOO_STATUS_DELETED:
       return SubscriptionStatus.DELETED;
+    default: {
+      console.debug('Unknown Woo Status, setting to DELETED', wooStatus);
+      return SubscriptionStatus.DELETED;
+    }
   }
 };
 
@@ -107,7 +119,6 @@ const wooApiToSubscription = (subscription: any): any => {
   });
 
   const status = resolveSubscriptionStatus(subscription.status);
-  console.log('STATUS', subscription.status, status, subscription.id);
 
   return {
     wooSubscriptionId: subscription.id,

@@ -4,8 +4,8 @@ import { useLoaderData } from '@remix-run/react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
+import type { Delivery } from '@prisma/client';
 import {
-  Delivery,
   OrderStatus,
   SubscriptionFrequency,
   SubscriptionStatus,
@@ -26,6 +26,7 @@ import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
 import { CircularProgress, Grid, Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 
 type LoaderData = {
   wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
@@ -57,6 +58,7 @@ export const loader = async () => {
       quantity500: true,
       quantity1200: true,
     },
+    take: TAKE_MAX_ROWS,
   });
 
   const currentDeliveries = await getDeliveries({

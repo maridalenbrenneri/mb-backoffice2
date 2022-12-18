@@ -6,8 +6,9 @@ export default async function importWooSubscriptionStats() {
 
   const subscriptions = await fetchSubscriptions();
 
+  console.debug(`Upserting ${subscriptions.length} subscriptions from Woo`);
+
   for (const subscription of subscriptions) {
-    console.debug('UPSERTING WOO SUBSCRIPTION', subscription);
     await upsertSubscriptionByWooSubscriptionId(subscription);
   }
 
