@@ -127,6 +127,16 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               >
                 <ListItemText secondary="Scheduled jobs" />
               </ListItemButton>
+
+              <Divider />
+
+              <ListItemButton
+                component={Link}
+                to={'/help'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
+                <ListItemText secondary="Help" />
+              </ListItemButton>
             </List>
           </Drawer>
           {loggedIn && (

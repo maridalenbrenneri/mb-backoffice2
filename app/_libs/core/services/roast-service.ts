@@ -104,8 +104,6 @@ function aggregateCoffeesFromNonRecurringOrders(orders: Order[]) {
   let _500 = 0;
   let _1200 = 0;
 
-  console.dir(orders);
-
   orders.map((o: Order) => (_250 += o.quantity250 || 0));
   orders.map((o: Order) => (_500 += o.quantity500 || 0));
   orders.map((o: Order) => (_1200 += o.quantity1200 || 0));
@@ -162,8 +160,6 @@ export function getRoastOverview(
       _1200.coffee2 += aggOrders._1200.coffee2;
       _1200.coffee3 += aggOrders._1200.coffee3;
       _1200.coffee4 += aggOrders._1200.coffee4;
-
-      console.log('AGG', aggOrders);
     }
 
     if (customOrders.length) {
