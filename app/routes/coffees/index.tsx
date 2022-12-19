@@ -93,6 +93,7 @@ export default function Coffees() {
             defaultValue={status}
             onChange={handleSelectStatus}
             sx={{ minWidth: 250 }}
+            size="small"
           >
             <MenuItem value={'_all'}>All</MenuItem>
             <MenuItem value={CoffeeStatus.ACTIVE}>Active</MenuItem>

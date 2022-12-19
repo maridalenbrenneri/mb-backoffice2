@@ -67,6 +67,7 @@ export default function UpdateCoffee() {
               variant="outlined"
               defaultValue={coffee.name}
               error={errors?.name}
+              size="small"
             />
           </FormControl>
           <FormControl>
@@ -76,6 +77,7 @@ export default function UpdateCoffee() {
               variant="outlined"
               defaultValue={coffee.productCode}
               error={errors?.productCode}
+              size="small"
             />
           </FormControl>
           <FormControl>
@@ -85,6 +87,7 @@ export default function UpdateCoffee() {
               variant="outlined"
               defaultValue={coffee.country}
               error={errors?.country}
+              size="small"
             />
           </FormControl>
           <FormControl sx={{ m: 1 }}>
@@ -94,6 +97,7 @@ export default function UpdateCoffee() {
               name="status"
               defaultValue={coffee.status}
               sx={{ minWidth: 250 }}
+              size="small"
             >
               <MenuItem value={CoffeeStatus.ACTIVE}>Active</MenuItem>
               <MenuItem value={CoffeeStatus.SOLD_OUT}>Sold out</MenuItem>

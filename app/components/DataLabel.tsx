@@ -1,4 +1,4 @@
-import { Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { Link } from '@remix-run/react';
 import { colors } from '~/style/colors';
 
@@ -23,19 +23,20 @@ export default function DataLabel(props: {
 
     const dataString = data === undefined || data === null ? '' : data;
 
-    return <span>{dataString}</span>;
+    return <Typography>{dataString}</Typography>;
   };
 
   return (
-    <Grid container spacing={1} sx={{ marginBottom: 0 }}>
-      <Grid item xs={12} md={4} lg={3}>
-        <Typography sx={{ color: colors.COLOR_GREY0, fontSize: 12 }}>
+    <Box sx={{ marginBottom: 0 }}>
+      <div style={{ display: 'flex' }}>
+        <Typography
+          sx={{ color: colors.COLOR_GREY0, fontSize: 12, marginRight: 2 }}
+        >
           {label}:
         </Typography>
-      </Grid>
-      <Grid item xs={12} md={8} lg={3}>
+
         {renderData()}
-      </Grid>
-    </Grid>
+      </div>
+    </Box>
   );
 }
