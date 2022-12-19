@@ -90,7 +90,9 @@ export default function Deliveries() {
                 <TableCell component="th" scope="row">
                   <Link to={`admin/${delivery.id}`}>{delivery.id}</Link>
                 </TableCell>
-                <TableCell>{toPrettyDate(delivery.date)}</TableCell>
+                <TableCell>
+                  <small>{toPrettyDate(delivery.date)}</small>
+                </TableCell>
                 <TableCell>
                   <small>{delivery.type}</small>
                 </TableCell>

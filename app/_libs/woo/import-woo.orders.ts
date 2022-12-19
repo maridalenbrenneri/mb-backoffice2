@@ -14,10 +14,10 @@ import {
   WOO_RENEWALS_SUBSCRIPTION_ID,
 } from '../core/settings';
 import { getCoffees } from '../core/models/coffee.server';
-import { OrderType, SubscriptionStatus } from '@prisma/client';
+import { OrderStatus, OrderType, SubscriptionStatus } from '@prisma/client';
 
 async function resolveSubscription(wooOrder: any) {
-  console.debug('Resolving subscription for order', wooOrder.wooOrderId);
+  // console.debug('Resolving subscription for order', wooOrder.wooOrderId);
   if (!wooOrder.wooCustomerId) {
     // ORDER PLACED AS "GUEST" IN VIEW. CANNOT BE SUBSCRIPTION RENEWAL.
     return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
@@ -51,7 +51,7 @@ async function resolveSubscription(wooOrder: any) {
     return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
   }
 
-  console.debug('Resolved subscription', subscription.id);
+  // console.debug('Resolved subscription', subscription.id);
   return subscription.id;
 }
 
@@ -65,8 +65,6 @@ export default async function importWooOrders() {
   const allWooOrders = await fetchOrders();
 
   wooOrders = allWooOrders.filter((order) => hasSupportedStatus(order));
-
-  // console.log(wooOrders.map((w) => w.line_items));
 
   console.debug(`=> DONE (${wooOrders.length} fetched)`);
 
@@ -96,6 +94,16 @@ export default async function importWooOrders() {
     orderInfos.push(mapped);
   }
 
+  console.debug(
+    'Orders from Woo, ACTIVE COUNT',
+    orderInfos.filter((o) => o.order.status === OrderStatus.ACTIVE).length
+  );
+
+  console.debug(
+    'Orders from Woo, NON-ACTIVE COUNT',
+    orderInfos.filter((o) => o.order.status !== OrderStatus.ACTIVE).length
+  );
+
   for (const info of orderInfos) {
     let included = false;
 
@@ -106,6 +114,7 @@ export default async function importWooOrders() {
       );
     for (const gift of info.gifts) {
       await createGiftSubscription(gift);
+      // TODO: Set order to complete in Woo when imported. OBS: Handle if order has other items!
       included = true;
     }
 
@@ -131,19 +140,22 @@ export default async function importWooOrders() {
         info.order
       );
 
-      for (const item of info.items) {
-        const coffeeId = getCoffeeIdFromCode(
-          item.productCode
-        ) as unknown as number;
+      // IF ORDER NOT CREATED IT'S LIKELY A COMLETED ORDER NOT PREVIOSLY IMPORTED, SHOULD BE IGNORED
+      if (orderCreated) {
+        for (const item of info.items) {
+          const coffeeId = getCoffeeIdFromCode(
+            item.productCode
+          ) as unknown as number;
 
-        await upsertOrderItemFromWoo(item.wooOrderItemId, {
-          orderId: orderCreated.id,
-          coffeeId,
-          variation: '_250',
-          quantity: item.quantity,
-        });
+          await upsertOrderItemFromWoo(item.wooOrderItemId, {
+            orderId: orderCreated.id,
+            coffeeId,
+            variation: '_250',
+            quantity: item.quantity,
+          });
+        }
+        included = true;
       }
-      included = true;
     }
 
     if (included) ordersUpsertedCount++;

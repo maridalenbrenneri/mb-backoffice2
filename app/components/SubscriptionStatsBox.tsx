@@ -6,7 +6,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Grid } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 
 import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
 import DataLabel from './DataLabel';
@@ -22,23 +22,30 @@ export default function SubscriptionStatsBox(props: {
 
   return (
     <Box>
-      <Paper sx={{ p: 1, my: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item md={3} xl={2}>
-            <DataLabel
-              label="Total"
-              data={stats.totalCount + stats.b2bSubscriptionCount}
-            />
-            <DataLabel label="ABO" data={stats.subscriptionCount} />
-            <DataLabel label="GABO" data={stats.giftSubscriptionCount} />
-            <DataLabel label="B2B" data={stats.b2bSubscriptionCount} />
-          </Grid>
-          <Grid item md={3} xl={2}>
-            <DataLabel label="Monthly, ABO/GABO" data={stats.monthlyCount} />
-            <DataLabel label="Fortnightly, ABO" data={stats.fortnightlyCount} />
-          </Grid>
+      <Grid container spacing={2} sx={{ marginBottom: 2 }}>
+        <Grid item xs={6} style={{ textAlign: 'center' }}>
+          <Paper sx={{ p: 1, paddingBottom: 3.5 }}>
+            <Typography variant="h2" sx={{ m: 3, marginBottom: 0 }}>
+              {stats.totalCount + stats.b2bSubscriptionCount}
+            </Typography>
+            <Typography variant="subtitle2">active subscriptions</Typography>
+          </Paper>
         </Grid>
-      </Paper>
+        <Grid item xs={6}>
+          <Paper sx={{ p: 1 }}>
+            <DataLabel
+              label="Monthly, ABO/GABO"
+              data={stats.monthlyCount || 0}
+            />
+            <DataLabel
+              label="Fortnightly, ABO"
+              data={stats.fortnightlyCount || 0}
+            />
+            <DataLabel label="GABO" data={stats.giftSubscriptionCount || 0} />
+            <DataLabel label="B2B" data={stats.b2bSubscriptionCount || 0} />
+          </Paper>
+        </Grid>
+      </Grid>
 
       <TableContainer component={Paper}>
         <Table

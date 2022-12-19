@@ -194,7 +194,7 @@ export default function RoastOverviewBox(props: {
               <TableCell colSpan={5}>
                 <big>
                   <Link to={`deliveries/admin/${delivery.id}`}>
-                    Edit coffees for Delivery
+                    Edit coffees for Delivery / View orders
                   </Link>
                 </big>
               </TableCell>

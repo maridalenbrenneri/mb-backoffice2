@@ -87,6 +87,7 @@ export default function UpdateDelivery() {
           name={`coffee${coffeeNr}`}
           defaultValue={defaultValue}
           sx={{ minWidth: 250 }}
+          size="small"
         >
           {coffees.map((coffee: Coffee) => (
             <MenuItem value={coffee.id} key={coffee.id}>
@@ -126,6 +127,7 @@ export default function UpdateDelivery() {
                 }`}
                 error={errors?.date}
                 disabled={true}
+                size="small"
               />
             </FormControl>
 

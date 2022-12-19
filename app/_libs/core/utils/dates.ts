@@ -11,12 +11,12 @@ export interface DeliveryDate {
 export function toPrettyDate(date: Date | undefined | null) {
   if (!date) return null;
 
-  // if (date.toLocaleDateString) {
-  //   return date.toLocaleDateString();
-  // }
+  if (date.toLocaleDateString) {
+    return date.toLocaleDateString();
+  }
 
-  // return date.toString();
-  return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
+  return date.toString();
+  // return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
 }
 
 export function toPrettyDateTime(
@@ -27,13 +27,13 @@ export function toPrettyDateTime(
 
   const seconds = includeSeconds ? ':ss' : '';
 
-  // if (date.toLocaleString) {
-  //   return date.toLocaleString();
-  // }
+  if (date.toLocaleString) {
+    return date.toLocaleString();
+  }
 
-  // return date.toString();
+  return date.toString();
 
-  return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
+  // return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
 }
 
 function getFirstTuesdayOfMonth(date: DateTime) {

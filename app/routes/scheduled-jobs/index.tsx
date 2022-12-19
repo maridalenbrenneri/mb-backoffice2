@@ -86,7 +86,9 @@ export default function JobResult() {
                 hour.
               </TableCell>
               <TableCell>
-                {toPrettyDateTime(importWooOrders?.createdAt, true)}
+                <small>
+                  {toPrettyDateTime(importWooOrders?.createdAt, true)}
+                </small>
               </TableCell>
               <TableCell>
                 <fetcher.Form method="post" action="/api/import-woo-orders">
@@ -112,7 +114,9 @@ export default function JobResult() {
                 with Backoffice. Runs once a day.
               </TableCell>
               <TableCell>
-                {toPrettyDateTime(importWooSubscriptions?.createdAt, true)}
+                <small>
+                  {toPrettyDateTime(importWooSubscriptions?.createdAt, true)}
+                </small>
               </TableCell>
               <TableCell>
                 <fetcher.Form
@@ -143,10 +147,12 @@ export default function JobResult() {
                 expired or should be started . Runs once a day.
               </TableCell>
               <TableCell>
-                {toPrettyDateTime(
-                  updateStatusOnGiftSubscriptions?.createdAt,
-                  true
-                )}
+                <small>
+                  {toPrettyDateTime(
+                    updateStatusOnGiftSubscriptions?.createdAt,
+                    true
+                  )}
+                </small>
               </TableCell>
               <TableCell>
                 <fetcher.Form
@@ -177,7 +183,9 @@ export default function JobResult() {
                 Runs every Thursday.
               </TableCell>
               <TableCell>
-                {toPrettyDateTime(createRenewalOrders?.createdAt, true)}
+                <small>
+                  {toPrettyDateTime(createRenewalOrders?.createdAt, true)}
+                </small>
               </TableCell>
               <TableCell>
                 <fetcher.Form method="post" action="/api/create-renewal-orders">
@@ -220,7 +228,7 @@ export default function JobResult() {
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
                   <TableCell>
-                    {toPrettyDateTime(result.createdAt, true)}
+                    <small>{toPrettyDateTime(result.createdAt, true)}</small>
                   </TableCell>
                   <TableCell>{result.name}</TableCell>
                   <TableCell>{result.errors}</TableCell>

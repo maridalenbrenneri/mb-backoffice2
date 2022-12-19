@@ -1,6 +1,7 @@
 import { prisma } from '~/db.server';
 
-import { Order, OrderItem, OrderStatus, ShippingType } from '@prisma/client';
+import type { Order, OrderItem } from '@prisma/client';
+import { OrderStatus, ShippingType } from '@prisma/client';
 
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 
@@ -115,15 +116,36 @@ export async function upsertOrderFromWoo(
   wooOrderId: number,
   data: OrderUpsertData
 ) {
-  return prisma.order.upsert({
+  const existingOrder = await prisma.order.findFirst({
     where: {
       wooOrderId,
     },
-    update: {
-      // WE ONLY UPDATE STATUS FROM WOO, NOTHING ELSE IS OVERWRITTEN
-      status: data.status,
-    },
-    create: {
+  });
+
+  // WE ONLY UPDATE STATUS FROM WOO ON EXISTING ORDERS, NOTHING ELSE IS OVERWRITTEN
+  if (existingOrder) {
+    return prisma.order.update({
+      where: { id: existingOrder.id },
+      data: {
+        status: data.status,
+      },
+    });
+  }
+
+  console.log('Creating order id status active', data.wooOrderId, data.status);
+
+  // NEVER INSERT NOT ACTIVE ORDERS
+  if (data.status !== OrderStatus.ACTIVE) {
+    console.debug(
+      "Upsert Order From Woo: Order does not exist and not active, won't create",
+      data.wooOrderId,
+      data.status
+    );
+    return null;
+  }
+
+  return prisma.order.create({
+    data: {
       wooOrderId,
       type: data.type,
       status: data.status,
