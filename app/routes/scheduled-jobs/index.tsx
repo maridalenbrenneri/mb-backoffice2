@@ -12,21 +12,21 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Box, Button, FormControl } from '@mui/material';
 
-import { getImportResults } from '~/_libs/core/models/import-result.server';
+import { getJobResults } from '~/_libs/core/models/job-result.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 
 type LoaderData = {
-  results: Awaited<ReturnType<typeof getImportResults>>;
+  results: Awaited<ReturnType<typeof getJobResults>>;
 };
 
 export const loader = async () => {
-  const results = await getImportResults();
+  const results = await getJobResults();
   return json<LoaderData>({
     results,
   });
 };
 
-export default function ImportResult() {
+export default function JobResult() {
   const { results } = useLoaderData() as unknown as LoaderData;
   const fetcher = useFetcher();
 

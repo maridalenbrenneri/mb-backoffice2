@@ -12,7 +12,7 @@ import {
   SubscriptionType,
 } from '@prisma/client';
 
-import { getLastImportResult } from '~/_libs/core/models/import-result.server';
+import { getLastJobResult } from '~/_libs/core/models/job-result.server';
 import type { Subscription } from '~/_libs/core/models/subscription.server';
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
@@ -29,24 +29,24 @@ import { useEffect, useState } from 'react';
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 
 type LoaderData = {
-  wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
-  wooOrderImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
-  updateGaboStatusResult: Awaited<ReturnType<typeof getLastImportResult>>;
-  createRenewalOrdersResult: Awaited<ReturnType<typeof getLastImportResult>>;
+  wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
+  wooOrderImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
+  updateGaboStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
+  createRenewalOrdersResult: Awaited<ReturnType<typeof getLastJobResult>>;
   allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
 export const loader = async () => {
-  const wooSubscriptionImportResult = await getLastImportResult(
+  const wooSubscriptionImportResult = await getLastJobResult(
     'woo-import-subscriptions'
   );
-  const wooOrderImportResult = await getLastImportResult('woo-import-orders');
-  const updateGaboStatusResult = await getLastImportResult(
+  const wooOrderImportResult = await getLastJobResult('woo-import-orders');
+  const updateGaboStatusResult = await getLastJobResult(
     'update-status-on-gift-subscriptions'
   );
-  const createRenewalOrdersResult = await getLastImportResult(
+  const createRenewalOrdersResult = await getLastJobResult(
     'create-renewal-orders'
   );
 

@@ -217,14 +217,14 @@ model Order {
   updatedAt DateTime @updatedAt
 }
 
-model ImportResult {
+model JobResult {
   id Int @id @default(autoincrement())
 
   name String
   result String?
   errors String?
 
-  importStartedAt DateTime
+  jobStartedAt DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

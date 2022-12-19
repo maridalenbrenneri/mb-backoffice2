@@ -8,7 +8,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Box, Button, FormControl } from '@mui/material';
 
-export default function ImportResult() {
+export default function JobResult() {
   return (
     <main>
       <Typography variant="h1">Help</Typography>

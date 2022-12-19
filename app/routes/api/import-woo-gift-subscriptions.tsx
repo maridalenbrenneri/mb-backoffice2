@@ -2,7 +2,7 @@ import { json } from '@remix-run/node';
 import type { ActionFunction } from '@remix-run/node';
 import { DateTime } from 'luxon';
 
-import { createImportResult } from '~/_libs/core/models/import-result.server';
+import { createJobResult } from '~/_libs/core/models/job-result.server';
 import * as woo from '~/_libs/woo';
 
 // IMPORTS ALL GIFT SUBSCRIPTION FROM UPDATE AFTER TODAY - 13 MONTHS
@@ -12,13 +12,13 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ message: 'Method not allowed' }, 405);
 
   const name = 'woo-import-gift-subscriptions';
-  const importStartedAt = DateTime.now().toJSDate();
+  const jobStartedAt = DateTime.now().toJSDate();
 
   try {
     const result = await woo.importWooGiftSubscriptions();
 
-    await createImportResult({
-      importStartedAt,
+    await createJobResult({
+      jobStartedAt,
       name,
       result: JSON.stringify(result),
       errors: null,
@@ -26,8 +26,8 @@ export const action: ActionFunction = async ({ request }) => {
 
     return json(result);
   } catch (err) {
-    await createImportResult({
-      importStartedAt,
+    await createJobResult({
+      jobStartedAt,
       name,
       result: null,
       errors: err.message,
