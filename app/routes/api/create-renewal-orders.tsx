@@ -11,8 +11,13 @@ export const action: ActionFunction = async ({ request }) => {
   const name = 'create-renewal-orders';
   const jobStartedAt = DateTime.now().toJSDate();
 
+  const url = new URL(request.url);
+  const search = new URLSearchParams(url.search);
+
+  const ignoreRenewalDay = search.get('ignoreRenewalDay') === 'true';
+
   try {
-    const result = await createRenewalOrders();
+    const result = await createRenewalOrders(ignoreRenewalDay);
 
     await createJobResult({
       jobStartedAt,

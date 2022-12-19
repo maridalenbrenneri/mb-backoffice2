@@ -188,7 +188,10 @@ export default function JobResult() {
                 </small>
               </TableCell>
               <TableCell>
-                <fetcher.Form method="post" action="/api/create-renewal-orders">
+                <fetcher.Form
+                  method="post"
+                  action="/api/create-renewal-orders?ignoreRenewalDay=true"
+                >
                   <FormControl sx={{ m: 1 }}>
                     <Button
                       type="submit"

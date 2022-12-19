@@ -18,14 +18,18 @@ function isTimeToCreateRenewalOrders() {
   return DateTime.now().weekday === SUBSCRIPTION_RENEWAL_WEEKDAY;
 }
 
-async function getActiveSubscriptions(frequency: SubscriptionFrequency) {
+// B2B MONTHTLY_3RD AND FORTNIGHTLY
+async function getActiveSubscriptions3RD() {
   return await getSubscriptions({
     where: {
-      type: {
-        in: [SubscriptionType.B2B, SubscriptionType.PRIVATE_GIFT],
-      },
+      type: SubscriptionType.B2B,
       status: SubscriptionStatus.ACTIVE,
-      frequency,
+      frequency: {
+        in: [
+          SubscriptionFrequency.FORTNIGHTLY,
+          SubscriptionFrequency.MONTHLY_3RD,
+        ],
+      },
     },
     include: {
       orders: {
@@ -42,8 +46,48 @@ async function getActiveSubscriptions(frequency: SubscriptionFrequency) {
   });
 }
 
-export async function createRenewalOrders() {
-  if (!isTimeToCreateRenewalOrders())
+// GET MONTHLY AND B2B FORTNIGHTLY
+async function getActiveSubscriptionsMonthly() {
+  return await getSubscriptions({
+    where: {
+      OR: [
+        {
+          AND: [
+            { type: SubscriptionType.PRIVATE_GIFT },
+            { frequency: SubscriptionFrequency.MONTHLY },
+          ],
+        },
+        {
+          AND: {
+            type: SubscriptionType.B2B,
+            frequency: {
+              in: [
+                SubscriptionFrequency.MONTHLY,
+                SubscriptionFrequency.FORTNIGHTLY,
+              ],
+            },
+          },
+        },
+      ],
+      status: SubscriptionStatus.ACTIVE,
+    },
+    include: {
+      orders: {
+        where: {
+          type: OrderType.RECURRING,
+        },
+        select: {
+          createdAt: true,
+          deliveryId: true,
+        },
+      },
+    },
+    take: TAKE_MAX_ROWS,
+  });
+}
+
+export async function createRenewalOrders(ignoreRenewalDay: boolean = false) {
+  if (!ignoreRenewalDay && !isTimeToCreateRenewalOrders())
     return 'Today is not the weekday for creating renewal orders';
 
   const delivery = await getNextOrCreateDelivery();
@@ -55,15 +99,9 @@ export async function createRenewalOrders() {
   let subscriptions;
 
   if (delivery.type === 'MONTHLY') {
-    subscriptions = await getActiveSubscriptions(SubscriptionFrequency.MONTHLY);
-  } else if (delivery.type === 'FORTNIGHTLY') {
-    subscriptions = await getActiveSubscriptions(
-      SubscriptionFrequency.FORTNIGHTLY
-    );
+    subscriptions = await getActiveSubscriptionsMonthly();
   } else if (delivery.type === 'MONTHLY_3RD') {
-    subscriptions = await getActiveSubscriptions(
-      SubscriptionFrequency.MONTHLY_3RD
-    );
+    subscriptions = await getActiveSubscriptions3RD();
   }
 
   if (!subscriptions) {

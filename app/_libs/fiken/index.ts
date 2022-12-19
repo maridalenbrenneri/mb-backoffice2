@@ -38,7 +38,7 @@ function mapToFikenCustomer(api: any): FikenCustomer {
   };
 }
 
-export async function getCustomer(customerId: number): Promise<FikenCustomer> {
+export async function getCustomer(customerId: string): Promise<FikenCustomer> {
   const contacts_uri = `${fiken_uri}/contacts/${customerId}`;
   const auth = { authorization: `Bearer ${process.env.FIKEN_API_TOKEN}` };
 

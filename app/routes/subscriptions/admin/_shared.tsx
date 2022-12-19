@@ -10,11 +10,7 @@ import {
 } from '@prisma/client';
 
 import { upsertSubscription } from '~/_libs/core/models/subscription.server';
-import {
-  isUnsignedInt,
-  parseIntOrNull,
-  parseIntOrZero,
-} from '~/_libs/core/utils/numbers';
+import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
 
 type ActionData =
   | {
@@ -91,12 +87,34 @@ export const renderFrequency = (
   );
 };
 
-function validateQuantities(values: any) {}
+export const renderShippingTypes = (
+  shippingType: ShippingType = ShippingType.SHIP
+) => {
+  return (
+    <FormControl sx={{ m: 1 }}>
+      <InputLabel id={`shipping-type-label`}>Shipping type</InputLabel>
+      <Select
+        labelId={`shipping-type-label`}
+        name={`shippingType`}
+        defaultValue={shippingType}
+        sx={{ minWidth: 250 }}
+        size="small"
+      >
+        {Object.keys(ShippingType).map((type: any) => (
+          <MenuItem value={type} key={type}>
+            {type}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+};
 
 export const upsertAction = async (values: any) => {
   const errors = {
     status: values.status ? null : 'Status is required',
     type: values.type ? null : 'Type is required',
+    shippingType: values.shippingType ? null : 'Shipping type is required',
     quantity250: isUnsignedInt(values.quantity250)
       ? null
       : 'Must be a number greater or equal to zero',
@@ -120,10 +138,10 @@ export const upsertAction = async (values: any) => {
   const id = +values.id;
 
   const data = {
-    fikenContactId: parseIntOrNull(values.fikenContactId),
+    fikenContactId: values.fikenContactId,
     type: values.type,
     status: values.status,
-    shippingType: ShippingType.SHIP,
+    shippingType: values.shippingType,
     frequency: values.frequency,
     quantity250: parseIntOrZero(values.quantity250),
     quantity500: parseIntOrZero(values.quantity500),

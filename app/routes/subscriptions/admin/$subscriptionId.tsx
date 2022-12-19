@@ -22,6 +22,7 @@ import {
 
 import {
   renderFrequency,
+  renderShippingTypes,
   renderStatus,
   renderTypes,
   upsertAction,
@@ -262,6 +263,7 @@ export default function UpdateSubscription() {
                   {renderTypes(subscription.type)}
                   {renderStatus(subscription.status)}
                   {renderFrequency(subscription.frequency)}
+                  {renderShippingTypes(subscription.shippingType)}
                 </Box>
                 <Box>
                   <FormControl>

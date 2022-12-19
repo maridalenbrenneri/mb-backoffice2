@@ -156,6 +156,8 @@ async function printLabel(consignmentId: number) {
     const xml = await response.text();
     const json = new XMLParser().parse(xml);
 
+    console.debug('PRINT RESULT', json);
+
     throwIfAnyError(json.errors);
 
     // TODO: IS THERE A RESULT WE CAN USE ON SUCCESS? TEST/CHANGE WHEN PRINT ACTUALLY WORKS...

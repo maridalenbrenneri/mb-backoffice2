@@ -23,6 +23,7 @@ import { SubscriptionType } from '@prisma/client';
 
 import {
   renderFrequency,
+  renderShippingTypes,
   renderStatus,
   renderTypes,
   upsertAction,
@@ -44,6 +45,8 @@ export const loader = async () => {
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { ...values } = Object.fromEntries(formData);
+
+  console.log(values);
 
   return await upsertAction(values);
 };
@@ -107,6 +110,7 @@ export default function NewSubscription() {
             defaultValue={customer.contactId}
             onChange={handleSelectCustomer}
             sx={{ minWidth: 250 }}
+            size="small"
           >
             {customers.map((customer) => (
               <MenuItem value={customer.contactId} key={customer.contactId}>
@@ -121,6 +125,7 @@ export default function NewSubscription() {
         <div>
           {renderStatus()}
           {renderFrequency()}
+          {renderShippingTypes()}
         </div>
 
         <FormControl>
@@ -130,6 +135,7 @@ export default function NewSubscription() {
             variant="outlined"
             defaultValue={0}
             error={errors?.quantity250}
+            size="small"
           />
         </FormControl>
         <FormControl>
@@ -137,6 +143,7 @@ export default function NewSubscription() {
             name="quantity500"
             label="Quantity, 500g"
             variant="outlined"
+            size="small"
             defaultValue={0}
             error={errors?.quantity500}
           />
@@ -146,6 +153,7 @@ export default function NewSubscription() {
             name="quantity1200"
             label="Quantity, 1,2kg"
             variant="outlined"
+            size="small"
             defaultValue={0}
             error={errors?.quantity1200}
           />
@@ -156,6 +164,7 @@ export default function NewSubscription() {
               name="internalNote"
               label="Note"
               variant="outlined"
+              size="small"
               multiline
             />
           </FormControl>

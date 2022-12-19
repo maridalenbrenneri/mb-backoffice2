@@ -1,6 +1,6 @@
 // BUSINESS SETTINGS
 export const WEIGHT_STANDARD_PACKAGING = 150; // grams
-export const SUBSCRIPTION_RENEWAL_WEEKDAY = 7; // 1 is Monday and 7 is Sunday
+export const SUBSCRIPTION_RENEWAL_WEEKDAY = 4; // 1 is Monday and 7 is Sunday
 
 // CARGONIZER
 export const CARGONIZER_API_URL = 'https://cargonizer.no';

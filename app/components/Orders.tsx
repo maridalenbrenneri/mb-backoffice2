@@ -28,8 +28,6 @@ export default function Orders(props: {
     return !!ignoreFields.find((f) => f === field);
   };
 
-  console.debug('ignoreFields', ignoreFields);
-
   return (
     <Box>
       <TableContainer component={Paper}>

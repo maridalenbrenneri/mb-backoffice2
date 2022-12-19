@@ -82,7 +82,7 @@ model Subscription {
   internalNote String?
   
   // Set on B2B
-  fikenContactId      Int? @unique
+  fikenContactId      String? @unique
 
   // Set on PRIVATE imported from Woo
   wooSubscriptionId   Int? @unique

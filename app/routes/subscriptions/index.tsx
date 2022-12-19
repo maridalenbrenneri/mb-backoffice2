@@ -255,6 +255,7 @@ export default function Subscriptions() {
                 <TableCell>ID</TableCell>
                 <TableCell>Type</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Frequency</TableCell>
                 <TableCell>Recipient</TableCell>
                 <TableCell>Recipient, email</TableCell>
                 <TableCell>Abo type</TableCell>
@@ -273,6 +274,9 @@ export default function Subscriptions() {
                   </TableCell>
                   <TableCell>
                     <small>{subscription.status}</small>
+                  </TableCell>
+                  <TableCell>
+                    <small>{subscription.frequency}</small>
                   </TableCell>
                   <TableCell>{subscription.recipientName}</TableCell>
                   <TableCell>{subscription.recipientEmail}</TableCell>
