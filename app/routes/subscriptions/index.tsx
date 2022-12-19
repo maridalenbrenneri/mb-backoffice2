@@ -189,6 +189,7 @@ export default function Subscriptions() {
             >
               <MenuItem value={'_all'}>All</MenuItem>
               <MenuItem value={SubscriptionType.B2B}>B2B</MenuItem>
+              <MenuItem value={SubscriptionType.PRIVATE}>ABO</MenuItem>
               <MenuItem value={SubscriptionType.PRIVATE_GIFT}>GABO</MenuItem>
             </Select>
           </FormControl>
