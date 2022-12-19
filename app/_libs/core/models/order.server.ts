@@ -33,12 +33,7 @@ export type OrderItemUpsertData = Pick<
 >;
 
 export async function getOrders(filter?: any) {
-  filter = filter || {
-    include: {
-      orderItems: true,
-      delivery: true,
-    },
-  };
+  filter = filter || {};
 
   // ADD DEFAULT FILTER VALUES IF NOT OVERIDDEN IN FILTER INPUT
   if (!filter.orderBy) filter.orderBy = { updatedAt: 'desc' };

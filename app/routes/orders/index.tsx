@@ -31,6 +31,7 @@ import {
 } from '@mui/material';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
+import { generateReference } from '~/_libs/core/services/order-service';
 
 const defaultStatus = OrderStatus.ACTIVE;
 
@@ -53,6 +54,15 @@ function buildFilter(search: URLSearchParams) {
     filter.where.id = { in: orderIds };
   }
 
+  filter.include = {
+    orderItems: {
+      select: {
+        variation: true,
+        quantity: true,
+        coffee: true,
+      },
+    },
+  };
   filter.take = TAKE_MAX_ROWS;
 
   return filter;
@@ -65,6 +75,7 @@ export const loader = async ({ request }) => {
   const filter = buildFilter(search);
 
   const orders = await getOrders(filter);
+
   return json<LoaderData>({
     orders,
   });
@@ -120,7 +131,7 @@ export default function Orders() {
           >
             <TableHead>
               <TableRow>
-                <TableCell colSpan={7}>
+                <TableCell colSpan={8}>
                   <small>{orders.length} orders</small>
                 </TableCell>
               </TableRow>
@@ -131,6 +142,7 @@ export default function Orders() {
                 <TableCell>Created</TableCell>
                 <TableCell>Updated</TableCell>
                 <TableCell>Customer</TableCell>
+                <TableCell>Item summary</TableCell>
                 <TableCell>Woo id</TableCell>
               </TableRow>
             </TableHead>
@@ -156,6 +168,7 @@ export default function Orders() {
                     <small>{toPrettyDateTime(order.updatedAt, true)}</small>
                   </TableCell>
                   <TableCell>{order.name}</TableCell>
+                  <TableCell>{generateReference(order)}</TableCell>
                   <TableCell>{order.wooOrderId}</TableCell>
                 </TableRow>
               ))}

@@ -120,13 +120,15 @@ export function calculateWeight(
 export function generateReference(order: Order) {
   let reference = '';
 
-  for (const item of order.orderItems) {
-    if (item.variation === '_250')
-      reference = `${reference} ${item.quantity}${item.coffee.productCode}`;
-    if (item.variation === '_500')
-      reference = `${reference} ${item.quantity}${item.coffee.productCode}x500g`;
-    if (item.variation === '_1200')
-      reference = `${reference} ${item.quantity}${item.coffee.productCode}x1.2kg`;
+  if (order.orderItems) {
+    for (const item of order.orderItems) {
+      if (item.variation === '_250')
+        reference = `${reference} ${item.quantity}${item.coffee.productCode}`;
+      if (item.variation === '_500')
+        reference = `${reference} ${item.quantity}${item.coffee.productCode}x500g`;
+      if (item.variation === '_1200')
+        reference = `${reference} ${item.quantity}${item.coffee.productCode}x1.2kg`;
+    }
   }
 
   if (order.quantity250) reference = `${reference} ABO${order.quantity250}`;
