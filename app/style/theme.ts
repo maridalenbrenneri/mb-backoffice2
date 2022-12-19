@@ -4,6 +4,18 @@ import font_dtl_nobel from '../../public/fonts/dtl-nobel.woff';
 import font_dtl_nobel_bold from '../../public/fonts/dtl-nobel-bold.woff';
 import { colors } from './colors';
 
+export const modalStyle = {
+  position: 'absolute' as 'absolute',
+  top: '25%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '90%',
+  bgcolor: 'background.paper',
+  border: '1px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
+
 export const theme = createTheme({
   palette: {
     primary: {

@@ -80,7 +80,7 @@ export const sendConsignment = async (
 
   const xml = await createConsignmentXml(consignmentCreate, servicePartner);
 
-  console.debug('CONSIGNMENT XML TO BE SENT TO CARGONIZER', xml);
+  // console.debug('CONSIGNMENT XML TO BE SENT TO CARGONIZER', xml);
 
   const consignment = await requestConsignment(xml);
   if (consignment.error) {
@@ -155,8 +155,6 @@ async function printLabel(consignmentId: number) {
     const response = await fetch(url, { method: 'post', headers });
     const xml = await response.text();
     const json = new XMLParser().parse(xml);
-
-    console.debug('PRINT RESULT', json);
 
     throwIfAnyError(json.errors);
 

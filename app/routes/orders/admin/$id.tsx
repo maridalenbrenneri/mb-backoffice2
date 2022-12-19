@@ -12,10 +12,12 @@ import invariant from 'tiny-invariant';
 import {
   Box,
   Button,
+  CircularProgress,
   FormControl,
   Grid,
   InputLabel,
   MenuItem,
+  Modal,
   Paper,
   Select,
   Table,
@@ -34,11 +36,14 @@ import { ShippingType } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
 import { getOrder } from '~/_libs/core/models/order.server';
-import { completeOrderAction, upsertOrderAction } from './_shared';
+import { upsertOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
 import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { coffeeVariationToLabel } from '~/_libs/core/utils/labels';
+import { useEffect, useState } from 'react';
+import { modalStyle } from '~/style/theme';
+import { completeOrders } from '~/_libs/core/services/order-service';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
@@ -67,7 +72,7 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  if (_action === 'send-order') return await completeOrderAction(+values.id);
+  if (_action === 'send-order') return await completeOrders([+values.id]);
   else if (_action === 'update') return await upsertOrderAction(values);
 
   return null;
@@ -81,9 +86,18 @@ function resolveCoffeeCode(coffeeId: number, coffees: Coffee[]) {
 
 export default function UpdateOrder() {
   const { order, coffees } = useLoaderData() as unknown as LoaderData;
+  const data = useActionData();
+
+  const [resultData, setResultData] = useState<[] | null>(null);
+  const [open, setOpen] = useState(false);
 
   const errors = useActionData();
   const transition = useTransition();
+
+  useEffect(() => {
+    setResultData(data);
+  }, [data]);
+
   const isUpdating = Boolean(transition.submission);
 
   if (!order) return null;
@@ -96,6 +110,17 @@ export default function UpdateOrder() {
       order.quantity250 ||
       order.quantity500 ||
       order.quantity1200);
+
+  const handleClose = (_event: any, reason: string) => {
+    if (reason === 'closeBtnClick') {
+      setResultData(null);
+      setOpen(false);
+    }
+  };
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
   return (
     <Box
@@ -142,6 +167,7 @@ export default function UpdateOrder() {
                 name="_action"
                 value="send-order"
                 variant="contained"
+                onClick={handleOpen}
                 disabled={!canComplete}
               >
                 <LocalShippingIcon sx={{ mx: 1 }} /> Ship Order
@@ -382,6 +408,74 @@ export default function UpdateOrder() {
           </Box>
         </Box>
       )}
+      <div>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={modalStyle}>
+            {!resultData && (
+              <Grid container>
+                <Grid item xs={12} style={{ textAlign: 'center' }}>
+                  <CircularProgress color="primary" />
+                  <Typography>Completing order...</Typography>
+                </Grid>
+              </Grid>
+            )}
+            {resultData && (
+              <Box>
+                <Typography variant="h6" component="h2">
+                  Order completed
+                </Typography>
+                <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+                  <Table sx={{ minWidth: 650 }} size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Result</TableCell>
+                        <TableCell>Order</TableCell>
+                        <TableCell>Woo id/status</TableCell>
+                        <TableCell>Woo error</TableCell>
+                        <TableCell>Cargonizer Print requested</TableCell>
+                        <TableCell>Cargonizer Print error</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {resultData.map((row: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell>{row.result}</TableCell>
+                          <TableCell>{row.orderId}</TableCell>
+                          <TableCell>
+                            {row.wooOrderId || ''} {row.wooOrderStatus || ''}
+                          </TableCell>
+                          <TableCell>{row.wooError}</TableCell>
+                          <TableCell>
+                            {row.printRequested ? 'Yes' : 'No'}
+                          </TableCell>
+                          <TableCell>{row.printError}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Grid container>
+                  <Grid item xs={12} style={{ textAlign: 'right' }}>
+                    <Button
+                      variant="contained"
+                      onClick={() => handleClose(null, 'closeBtnClick')}
+                      sx={{ m: 2, marginTop: 4 }}
+                    >
+                      Close
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+          </Box>
+        </Modal>
+      </div>
     </Box>
   );
 }

@@ -82,8 +82,9 @@ export default function JobResult() {
             >
               <TableCell>woo-import-orders</TableCell>
               <TableCell>
-                Import of orders from Woo updated in last 7 days. Runs every
-                hour.
+                Import of orders from Woo updated in last 7 days. Status changes
+                are synced with Backoffice, but no other changes are updated
+                after first import. Runs every hour.
               </TableCell>
               <TableCell>
                 <small>
@@ -110,8 +111,7 @@ export default function JobResult() {
             >
               <TableCell>woo-import-subscriptions</TableCell>
               <TableCell>
-                Import of all subscriptions from Woo, status changes are synced
-                with Backoffice. Runs once a day.
+                Import of all subscriptions from Woo. Runs once a day.
               </TableCell>
               <TableCell>
                 <small>

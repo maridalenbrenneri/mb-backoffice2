@@ -148,7 +148,11 @@ export async function completeOrder(orderId: number) {
     },
     include: {
       subscription: true,
-      orderItems: true,
+      orderItems: {
+        include: {
+          coffee: true,
+        },
+      },
     },
   });
 

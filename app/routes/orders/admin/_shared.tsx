@@ -98,11 +98,3 @@ export const upsertOrderItemAction = async (values: any) => {
 
   return redirect(`/orders/admin/${values.orderId}`);
 };
-
-export const completeOrderAction = async (orderId: number) => {
-  const completed = await completeOrder(orderId);
-
-  console.debug('Order completed', completed);
-
-  return redirect(`/orders/admin/${orderId}`);
-};
