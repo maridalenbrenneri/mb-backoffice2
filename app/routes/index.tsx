@@ -227,7 +227,7 @@ export default function Index() {
 
       <Typography variant="h2">Other stuff</Typography>
       <Grid container spacing={2}>
-        <Grid item md={5} xl={4}>
+        <Grid item md={7} xl={5}>
           <Paper sx={{ p: 1 }}>
             <JobsInfoBox
               subscriptions={wooSubscriptionImportResult[0]}
@@ -237,7 +237,7 @@ export default function Index() {
             />
           </Paper>
         </Grid>
-        <Grid item md={4} xl={3}>
+        <Grid item md={5} xl={3}>
           <Paper sx={{ p: 1 }}>
             <CargonizerProfileBox profile={cargonizer} />
           </Paper>

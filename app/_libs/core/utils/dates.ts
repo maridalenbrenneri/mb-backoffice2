@@ -11,11 +11,15 @@ export interface DeliveryDate {
 export function toPrettyDate(date: Date | undefined | null) {
   if (!date) return null;
 
-  if (date.toLocaleDateString) {
-    return date.toLocaleDateString();
+  const d = new Date(date);
+
+  if (d.toLocaleDateString) {
+    return d.toLocaleDateString();
   }
 
-  return date.toString();
+  //return `${date.getDate()}.${date.getMonth()}.${date.getFullYear()}`;
+
+  return d.toString();
   // return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
 }
 
@@ -27,11 +31,18 @@ export function toPrettyDateTime(
 
   const seconds = includeSeconds ? ':ss' : '';
 
-  if (date.toLocaleString) {
-    return date.toLocaleString();
+  // const formatted = DateTime.fromISO(date.toString()).toFormat(
+  //   `dd.MM.yy HH:mm${seconds}`
+  // );
+  // console.log('toPrettyDateTime, formatted', formatted);
+
+  const d = new Date(date);
+
+  if (d.toLocaleString) {
+    return d.toLocaleString();
   }
 
-  return date.toString();
+  return d.toString();
 
   // return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
 }
