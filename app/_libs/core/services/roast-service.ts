@@ -1,4 +1,4 @@
-import type { Delivery, Order } from '@prisma/client';
+import type { Coffee, Delivery, Order } from '@prisma/client';
 import { OrderType } from '@prisma/client';
 import type { BagCounter, BagCounterItem } from './subscription-stats';
 
@@ -104,6 +104,8 @@ function aggregateCoffeesFromNonRecurringOrders(orders: Order[]) {
   let _500 = 0;
   let _1200 = 0;
 
+  console.dir(orders);
+
   orders.map((o: Order) => (_250 += o.quantity250 || 0));
   orders.map((o: Order) => (_500 += o.quantity500 || 0));
   orders.map((o: Order) => (_1200 += o.quantity1200 || 0));
@@ -115,12 +117,17 @@ function aggregateCoffeesFromNonRecurringOrders(orders: Order[]) {
   };
 }
 
+function resolveCoffee(coffees: Coffee[], coffeeId: number) {
+  return coffees.find((c) => c.id === coffeeId);
+}
+
 // RESOLVES QUANTITES OF EACH COFFEE TYPES AND BAG SIZES
 // COFFEES IN ORDERS FROM SELECTED DELIVERY IS INCLUDED.
 // BASE IS A BAG COUNTER (CREATED FROM CURRENT ABO STATS IF STOR-ABO DELIVERY)
 export function getRoastOverview(
   counter: BagCounter,
-  delivery: Delivery | undefined = undefined
+  delivery: Delivery | undefined = undefined,
+  coffees: Coffee[] = []
 ) {
   const _250 = getCountByQuantity(counter._250);
   const _500 = getCountByQuantity(counter._500);
@@ -209,8 +216,10 @@ export function getRoastOverview(
           key !== delivery.coffee3Id &&
           key !== delivery.coffee4Id
         ) {
+          const coffee = resolveCoffee(coffees, key);
           notSetOnDelivery.push({
             coffeeId: key,
+            productCode: coffee?.productCode || `${key}`,
             totalKg:
               (value._250 * 250 + value._500 * 500 + value._1200 * 1200) / 1000,
             _250: value._250,

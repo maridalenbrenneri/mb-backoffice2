@@ -9,7 +9,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-import type { Delivery } from '@prisma/client';
+import type { Coffee, Delivery } from '@prisma/client';
 
 import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
 import { emptyBagCounter } from '~/_libs/core/services/subscription-stats';
@@ -21,15 +21,18 @@ import {
   MenuItem,
   Select,
   TableFooter,
+  Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { getNextDeliveryFromList } from '~/_libs/core/services/delivery-service';
+import { roundTotalKg } from '~/_libs/core/utils/numbers';
 
 export default function RoastOverviewBox(props: {
   stats: SubscriptionStats;
   deliveries: Delivery[];
+  coffees: Coffee[];
 }) {
-  const { stats, deliveries } = props;
+  const { stats, deliveries, coffees } = props;
   const [delivery, setDelivery] = useState<Delivery>();
   const [overview, setOverview] = useState<any>();
 
@@ -49,17 +52,17 @@ export default function RoastOverviewBox(props: {
 
     const resolve = () => {
       if (delivery.type === 'MONTHLY')
-        return getRoastOverview(stats.bagCounterMonthly, delivery);
+        return getRoastOverview(stats.bagCounterMonthly, delivery, coffees);
       if (delivery.type === 'MONTHLY_3RD')
-        return getRoastOverview(stats.bagCounterMonthly3rd, delivery);
+        return getRoastOverview(stats.bagCounterMonthly3rd, delivery, coffees);
 
-      return getRoastOverview(emptyBagCounter(), delivery);
+      return getRoastOverview(emptyBagCounter(), delivery, coffees);
     };
 
     const overview = resolve();
 
     setOverview(overview);
-  }, [delivery, stats.bagCounterMonthly, stats.bagCounterMonthly3rd]);
+  }, [delivery, coffees, stats.bagCounterMonthly, stats.bagCounterMonthly3rd]);
 
   if (!stats) {
     return <Box>Data not available :(</Box>;
@@ -120,8 +123,11 @@ export default function RoastOverviewBox(props: {
                   <FormControl></FormControl>
                 </Form>
               </TableCell>
-              <TableCell colSpan={4}>
-                Total <big>{overview.totalKg}</big>kg
+              <TableCell colSpan={4} style={{ textAlign: 'center' }}>
+                <Typography variant="h2" sx={{ m: 3, marginBottom: 0 }}>
+                  {roundTotalKg(overview.totalKg)}
+                </Typography>
+                <Typography variant="subtitle2">kg in total</Typography>
               </TableCell>
             </TableRow>
             <TableRow>
@@ -181,7 +187,7 @@ export default function RoastOverviewBox(props: {
             )}
             {overview.notSetOnDelivery.map((i: any) => (
               <TableRow key={i.coffeeId}>
-                <TableCell>{i.coffeeId}</TableCell>
+                <TableCell>{i.productCode}</TableCell>
                 <TableCell>{i.totalKg}</TableCell>
                 <TableCell>{i._250}</TableCell>
                 <TableCell>{i._500}</TableCell>

@@ -17,3 +17,10 @@ export function parseIntOrZero(value: string | null | undefined) {
   const parsed = parseInt(value);
   return isNaN(parsed) ? 0 : parsed;
 }
+
+// ROUND TO CEILING
+export function roundTotalKg(value: number) {
+  if (!value) return 0;
+
+  return Math.ceil(value);
+}

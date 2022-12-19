@@ -32,7 +32,7 @@ export default function SubscriptionStatsBox(props: {
           </Paper>
         </Grid>
         <Grid item xs={6}>
-          <Paper sx={{ p: 1 }}>
+          <Paper sx={{ p: 2 }}>
             <DataLabel
               label="Monthly, ABO/GABO"
               data={stats.monthlyCount || 0}
@@ -46,6 +46,10 @@ export default function SubscriptionStatsBox(props: {
           </Paper>
         </Grid>
       </Grid>
+
+      <Typography variant="subtitle1" sx={{ mx: 1 }}>
+        ABO/GABO bag distribution
+      </Typography>
 
       <TableContainer component={Paper}>
         <Table

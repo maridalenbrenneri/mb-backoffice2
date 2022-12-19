@@ -4,7 +4,7 @@ import { useLoaderData } from '@remix-run/react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-import type { Delivery } from '@prisma/client';
+import type { Coffee, Delivery } from '@prisma/client';
 import {
   OrderStatus,
   SubscriptionFrequency,
@@ -16,6 +16,7 @@ import { getLastJobResult } from '~/_libs/core/models/job-result.server';
 import type { Subscription } from '~/_libs/core/models/subscription.server';
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
+import { getCoffees } from '~/_libs/core/models/coffee.server';
 
 import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
 import { countBags } from '~/_libs/core/services/subscription-stats';
@@ -35,6 +36,7 @@ type LoaderData = {
   createRenewalOrdersResult: Awaited<ReturnType<typeof getLastJobResult>>;
   allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
+  currentCoffees: Awaited<ReturnType<typeof getCoffees>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
@@ -78,6 +80,9 @@ export const loader = async () => {
         select: {
           id: true,
           type: true,
+          quantity250: true,
+          quantity500: true,
+          quantity1200: true,
           orderItems: {
             select: {
               coffeeId: true,
@@ -92,6 +97,14 @@ export const loader = async () => {
     take: 5,
   });
 
+  const currentCoffees = await getCoffees({
+    select: {
+      id: true,
+      productCode: true,
+    },
+    take: 10,
+  });
+
   const cargonizerProfile = await getCargonizerProfile();
 
   return json<LoaderData>({
@@ -101,6 +114,7 @@ export const loader = async () => {
     createRenewalOrdersResult,
     allActiveSubscriptions,
     currentDeliveries,
+    currentCoffees,
     cargonizerProfile,
   });
 };
@@ -153,11 +167,13 @@ export default function Index() {
     createRenewalOrdersResult,
     allActiveSubscriptions,
     currentDeliveries,
+    currentCoffees,
     cargonizerProfile,
   } = useLoaderData() as unknown as LoaderData;
 
   const [subscriptions, setSubscriptions] = useState<Subscription[]>();
   const [deliveries, setDeliveries] = useState<Delivery[]>();
+  const [coffees, setCoffees] = useState<Coffee[]>();
   const [cargonizer, setCargonizer] = useState();
 
   const [loading, setLoading] = useState(true);
@@ -166,10 +182,17 @@ export default function Index() {
     if (allActiveSubscriptions && currentDeliveries && cargonizerProfile) {
       setSubscriptions(allActiveSubscriptions);
       setDeliveries(currentDeliveries);
+      setCoffees(currentCoffees);
       setCargonizer(cargonizerProfile);
+
       setLoading(false);
     }
-  }, [allActiveSubscriptions, currentDeliveries, cargonizerProfile]);
+  }, [
+    allActiveSubscriptions,
+    currentDeliveries,
+    currentCoffees,
+    cargonizerProfile,
+  ]);
 
   if (loading)
     return (
@@ -191,7 +214,11 @@ export default function Index() {
     <main>
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h2">Roast overview</Typography>
-        <RoastOverviewBox stats={aboStats} deliveries={deliveries || []} />
+        <RoastOverviewBox
+          stats={aboStats}
+          deliveries={deliveries || []}
+          coffees={coffees || []}
+        />
       </Box>
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h2">Subscription overview</Typography>
