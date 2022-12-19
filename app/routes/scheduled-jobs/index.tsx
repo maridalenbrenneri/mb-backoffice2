@@ -30,75 +30,179 @@ export default function ImportResult() {
   const { results } = useLoaderData() as unknown as LoaderData;
   const fetcher = useFetcher();
 
+  if (!results) return <div>Loading...</div>;
+
   const isRunningImportWooOrders =
     fetcher.state === 'submitting' &&
-    fetcher.submission.formData.get('_action') === 'import-woo-orders';
+    fetcher.submission.formData.get('_action') === 'woo-import-orders';
 
   const isRunningImportWooSubscriptions =
     fetcher.state === 'submitting' &&
-    fetcher.submission.formData.get('_action') === 'import-woo-subscriptions';
+    fetcher.submission.formData.get('_action') === 'woo-import-subscriptions';
 
   const isRunningUpdateStatusOnGiftSubscriptions =
     fetcher.state === 'submitting' &&
     fetcher.submission.formData.get('_action') ===
       'update-status-on-gift-subscriptions';
 
+  const isRunningCreateRenewalOrders =
+    fetcher.state === 'submitting' &&
+    fetcher.submission.formData.get('_action') === 'create-renewal-orders';
+
+  const importWooOrders = results.find((r) => r.name === 'woo-import-orders');
+  const importWooSubscriptions = results.find(
+    (r) => r.name === 'woo-import-subscriptions'
+  );
+  const updateStatusOnGiftSubscriptions = results.find(
+    (r) => r.name === 'update-status-on-gift-subscriptions'
+  );
+  const createRenewalOrders = results.find(
+    (r) => r.name === 'create-renewal-orders'
+  );
+
+  console.log(results);
+
   return (
     <main>
-      <Typography variant="h1">Scheduled jobs</Typography>
+      <Typography variant="h1" sx={{ m: 2 }}>
+        Scheduled jobs
+      </Typography>
 
-      <Box>
-        <fetcher.Form method="post" action="/api/import-woo-orders">
-          <FormControl sx={{ m: 1 }}>
-            <Button
-              type="submit"
-              name="_action"
-              value="import-woo-orders"
-              variant="contained"
-              disabled={isRunningImportWooOrders}
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Last run</TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              {isRunningImportWooOrders
-                ? 'Running...'
-                : 'Run "Import Woo Orders"'}
-            </Button>
-          </FormControl>
-        </fetcher.Form>
+              <TableCell>import-woo-orders</TableCell>
+              <TableCell>
+                Import of orders from Woo updated in last 7 days. Runs every
+                hour.
+              </TableCell>
+              <TableCell>
+                {toPrettyDateTime(importWooOrders?.createdAt, true)}
+              </TableCell>
+              <TableCell>
+                <fetcher.Form method="post" action="/api/import-woo-orders">
+                  <FormControl sx={{ m: 1 }}>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="import-woo-orders"
+                      disabled={isRunningImportWooOrders}
+                    >
+                      {isRunningImportWooOrders ? 'Running...' : 'Run now'}
+                    </Button>
+                  </FormControl>
+                </fetcher.Form>
+              </TableCell>
+            </TableRow>
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell>import-woo-subscriptions</TableCell>
+              <TableCell>
+                Import of all subscriptions from Woo, status changes are synced
+                with Backoffice. Runs once a day.
+              </TableCell>
+              <TableCell>
+                {toPrettyDateTime(importWooSubscriptions?.createdAt, true)}
+              </TableCell>
+              <TableCell>
+                <fetcher.Form
+                  method="post"
+                  action="/api/import-woo-subscriptions"
+                >
+                  <FormControl sx={{ m: 1 }}>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="woo-import-subscriptions"
+                      disabled={isRunningImportWooSubscriptions}
+                    >
+                      {isRunningImportWooSubscriptions
+                        ? 'Running...'
+                        : 'Run now '}
+                    </Button>
+                  </FormControl>
+                </fetcher.Form>
+              </TableCell>
+            </TableRow>
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell>update-status-on-gift-subscriptions</TableCell>
+              <TableCell>
+                Resolves and updates status on any gift subscription that has
+                expired or should be started . Runs once a day.
+              </TableCell>
+              <TableCell>
+                {toPrettyDateTime(
+                  updateStatusOnGiftSubscriptions?.createdAt,
+                  true
+                )}
+              </TableCell>
+              <TableCell>
+                <fetcher.Form
+                  method="post"
+                  action="/api/update-status-on-gift-subscriptions"
+                >
+                  <FormControl sx={{ m: 1 }}>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="update-status-on-gift-subscriptions"
+                      disabled={isRunningUpdateStatusOnGiftSubscriptions}
+                    >
+                      {isRunningUpdateStatusOnGiftSubscriptions
+                        ? 'Running...'
+                        : 'Run now'}
+                    </Button>
+                  </FormControl>
+                </fetcher.Form>
+              </TableCell>
+            </TableRow>
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell>create-renewal-orders</TableCell>
+              <TableCell>
+                Creates renewal orders for active gift and B2B subscriptions.
+                Runs every Thursday.
+              </TableCell>
+              <TableCell>
+                {toPrettyDateTime(createRenewalOrders?.createdAt, true)}
+              </TableCell>
+              <TableCell>
+                <fetcher.Form method="post" action="/api/create-renewal-orders">
+                  <FormControl sx={{ m: 1 }}>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="create-renewal-orders"
+                      disabled={isRunningCreateRenewalOrders}
+                    >
+                      {isRunningCreateRenewalOrders ? 'Running...' : 'Run now'}
+                    </Button>
+                  </FormControl>
+                </fetcher.Form>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        <fetcher.Form method="post" action="/api/import-woo-subscriptions">
-          <FormControl sx={{ m: 1 }}>
-            <Button
-              type="submit"
-              name="_action"
-              value="import-woo-subscriptions"
-              variant="contained"
-              disabled={isRunningImportWooSubscriptions}
-            >
-              {isRunningImportWooSubscriptions
-                ? 'Running...'
-                : 'Run "Import Woo Subscriptions"'}
-            </Button>
-          </FormControl>
-        </fetcher.Form>
-
-        <fetcher.Form
-          method="post"
-          action="/api/update-status-on-gift-subscriptions"
-        >
-          <FormControl sx={{ m: 1 }}>
-            <Button
-              type="submit"
-              name="_action"
-              value="update-status-on-gift-subscriptions"
-              variant="contained"
-              disabled={isRunningUpdateStatusOnGiftSubscriptions}
-            >
-              {isRunningUpdateStatusOnGiftSubscriptions
-                ? 'Running...'
-                : 'Run "Update Status On Gift Subscriptions"'}
-            </Button>
-          </FormControl>
-        </fetcher.Form>
-      </Box>
+      <Typography variant="h2" sx={{ m: 2 }}>
+        Job history
+      </Typography>
 
       <Box sx={{ my: 2 }}>
         <TableContainer component={Paper}>

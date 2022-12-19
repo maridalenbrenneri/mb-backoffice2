@@ -1,4 +1,9 @@
-import { ShippingType, OrderStatus, OrderType } from '@prisma/client';
+import {
+  ShippingType,
+  OrderStatus,
+  OrderType,
+  SubscriptionType,
+} from '@prisma/client';
 import { DateTime } from 'luxon';
 import { createOrders } from '../models/order.server';
 import {
@@ -16,6 +21,9 @@ function isTimeToCreateRenewalOrders() {
 async function getActiveSubscriptions(frequency: SubscriptionFrequency) {
   return await getSubscriptions({
     where: {
+      type: {
+        in: [SubscriptionType.B2B, SubscriptionType.PRIVATE_GIFT],
+      },
       status: SubscriptionStatus.ACTIVE,
       frequency,
     },
@@ -34,9 +42,9 @@ async function getActiveSubscriptions(frequency: SubscriptionFrequency) {
   });
 }
 
-export async function resolveRenewals() {
+export async function createRenewalOrders() {
   if (!isTimeToCreateRenewalOrders())
-    return { result: 'Today is not the weekday for creating renewal orders' };
+    return 'Today is not the weekday for creating renewal orders';
 
   const delivery = await getNextOrCreateDelivery();
 
@@ -48,6 +56,10 @@ export async function resolveRenewals() {
 
   if (delivery.type === 'MONTHLY') {
     subscriptions = await getActiveSubscriptions(SubscriptionFrequency.MONTHLY);
+  } else if (delivery.type === 'FORTNIGHTLY') {
+    subscriptions = await getActiveSubscriptions(
+      SubscriptionFrequency.FORTNIGHTLY
+    );
   } else if (delivery.type === 'MONTHLY_3RD') {
     subscriptions = await getActiveSubscriptions(
       SubscriptionFrequency.MONTHLY_3RD
@@ -62,7 +74,7 @@ export async function resolveRenewals() {
 
   // EXCLUDE ALL SUBSCRIPTIONS THAT ALREADY HAS A RECURRENT ORDER ON CURRENT DELIVERY
   const subscriptionsToCreateOrderOn = subscriptions.filter((s) => {
-    return s.orders.some((order: any) => order.deliveryId === delivery.id);
+    return !s.orders.some((order: any) => order.deliveryId === delivery.id);
   });
 
   const newOrders = subscriptionsToCreateOrderOn.map((s: any) => {
@@ -87,7 +99,7 @@ export async function resolveRenewals() {
 
   const result = await createOrders(newOrders);
 
-  console.debug('Created renewal orders for subscriptions', result);
+  console.debug('Created renewal order(s) for subscriptions', result);
 
-  return { result: `${newOrders.length} renewal orders were created` };
+  return `${newOrders.length} renewal order(s) were created`;
 }

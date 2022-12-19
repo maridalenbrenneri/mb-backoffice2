@@ -24,6 +24,7 @@ import {
   MenuItem,
   Select,
   TableFooter,
+  TextField,
 } from '@mui/material';
 
 import type { Subscription } from '@prisma/client';
@@ -60,6 +61,20 @@ function buildFilter(search: URLSearchParams) {
   const getTypeFilter = search.get('type') || defaultType;
   if (getTypeFilter !== '_all') filter.where.type = getTypeFilter;
 
+  const getRecipientNameFilter = search.get('recipientName');
+  if (getRecipientNameFilter)
+    filter.where.recipientName = {
+      contains: getRecipientNameFilter,
+      mode: 'insensitive',
+    };
+
+  const getRecipientEmailFilter = search.get('recipientEmail');
+  if (getRecipientEmailFilter)
+    filter.where.recipientEmail = {
+      contains: getRecipientEmailFilter,
+      mode: 'insensitive',
+    };
+
   filter.orderBy = {
     id: 'desc',
   };
@@ -88,6 +103,12 @@ export default function Subscriptions() {
   const submit = useSubmit();
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
   const [type, setType] = useState(params.get('type') || defaultType);
+  const [recipientName, setRecipientName] = useState(
+    params.get('recipientName') || ''
+  );
+  const [recipientEmail, setRecipientEmail] = useState(
+    params.get('recipientEmail') || ''
+  );
 
   const doSubmit = (data: any) => {
     submit(data, { replace: true });
@@ -98,6 +119,8 @@ export default function Subscriptions() {
     doSubmit({
       status,
       type: e.target.value,
+      recipientName,
+      recipientEmail,
     });
   };
 
@@ -106,8 +129,41 @@ export default function Subscriptions() {
     doSubmit({
       status: e.target.value,
       type,
+      recipientName,
+      recipientEmail,
     });
   };
+
+  const handleSelectName = (e: any) => {
+    setRecipientName(e.target.value);
+    doSubmit({
+      recipientName: e.target.value,
+      recipientEmail,
+      type,
+      status,
+    });
+  };
+
+  const handleSelectEmail = (e: any) => {
+    if (e.target.value?.length === 1) return;
+    setRecipientEmail(e.target.value);
+    doSubmit({
+      recipientEmail: e.target.value,
+      type,
+      status,
+      recipientName,
+    });
+  };
+
+  // TODO: Does not clear content of form controls
+  // const clearFilters = () => {
+  //   setType(defaultType);
+  //   setStatus(defaultStatus);
+  //   setRecipientName('');
+  //   setRecipientEmail('');
+
+  //   doSubmit({});
+  // };
 
   return (
     <main>
@@ -158,6 +214,29 @@ export default function Subscriptions() {
               </MenuItem>
             </Select>
           </FormControl>
+          <FormControl sx={{ m: 1 }}>
+            <TextField
+              name="recipientName"
+              label="Name"
+              variant="outlined"
+              size="small"
+              defaultValue={recipientName}
+              onChange={handleSelectName}
+            />
+          </FormControl>
+          <FormControl sx={{ m: 1 }}>
+            <TextField
+              name="recipientEmail"
+              label="Email"
+              variant="outlined"
+              size="small"
+              defaultValue={recipientEmail}
+              onChange={handleSelectEmail}
+            />
+          </FormControl>
+          {/* <FormControl>
+            <Button onClick={clearFilters}>Clear filters</Button>
+          </FormControl> */}
         </Form>
 
         <TableContainer component={Paper}>
@@ -177,6 +256,7 @@ export default function Subscriptions() {
                 <TableCell>Type</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Recipient</TableCell>
+                <TableCell>Recipient, email</TableCell>
                 <TableCell>Abo type</TableCell>
               </TableRow>
             </TableHead>
@@ -195,6 +275,7 @@ export default function Subscriptions() {
                     <small>{subscription.status}</small>
                   </TableCell>
                   <TableCell>{subscription.recipientName}</TableCell>
+                  <TableCell>{subscription.recipientEmail}</TableCell>
                   <TableCell>{resolveSubscriptionCode(subscription)}</TableCell>
                 </TableRow>
               ))}

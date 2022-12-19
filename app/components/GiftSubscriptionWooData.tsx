@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Alert, Box, Typography } from '@mui/material';
 
 import type { Subscription } from '@prisma/client';
 import { SubscriptionType } from '@prisma/client';
@@ -16,8 +16,8 @@ export default function GiftSubscriptionWooData(props: {
   }
 
   return (
-    <Box sx={{ m: 2 }}>
-      <Typography variant="h4">Woo GABO data</Typography>
+    <Alert severity="info">
+      <Typography>Woo GABO data</Typography>
       <Box sx={{ m: 1 }}>
         <DataLabel
           label="First delivery"
@@ -32,6 +32,6 @@ export default function GiftSubscriptionWooData(props: {
           data={subscription.gift_messageToRecipient}
         />
       </Box>
-    </Box>
+    </Alert>
   );
 }

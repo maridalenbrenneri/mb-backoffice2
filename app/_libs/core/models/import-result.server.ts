@@ -20,7 +20,7 @@ export async function getImportResults() {
     orderBy: {
       createdAt: 'desc',
     },
-    take: 10,
+    take: 20,
   });
 }
 

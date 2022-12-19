@@ -7,8 +7,9 @@ export default function JobsInfoBox(props: {
   subscriptions: any;
   orders: any;
   gaboStatus: any;
+  createRenewalOrders: any;
 }) {
-  const { subscriptions, orders, gaboStatus } = props;
+  const { subscriptions, orders, gaboStatus, createRenewalOrders } = props;
 
   return (
     <Box sx={{ m: 2 }}>
@@ -23,6 +24,14 @@ export default function JobsInfoBox(props: {
           label="Woo import, subscriptions"
           data={
             toPrettyDateTime(subscriptions?.createdAt, true) || 'Not available'
+          }
+        />
+
+        <DataLabel
+          label="Create renewal orders"
+          data={
+            toPrettyDateTime(createRenewalOrders?.createdAt, true) ||
+            'Not available'
           }
         />
 

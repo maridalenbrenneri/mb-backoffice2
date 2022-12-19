@@ -61,7 +61,7 @@ export default async function importWooOrders() {
     // GIFT SUBSCRIPTIONS
     if (info.gifts.length)
       console.debug(
-        `Creating ${info.gifts.length} gift subscription(s) from Woo order ${info.wooOrderId}`
+        `Creating ${info.gifts.length} gift subscription(s) from Woo order ${info.order.wooOrderId}`
       );
     for (const gift of info.gifts) {
       await createGiftSubscription(gift);
@@ -70,6 +70,7 @@ export default async function importWooOrders() {
 
     // SUBSCRIPTION RENEWALS
     if (info.order.type === OrderType.RECURRING) {
+      // TODO: CONNECT ORDERS TO SUBSCRIPTIONS
       await upsertOrderFromWoo(info.order.wooOrderId as number, info.order);
       included = true;
 

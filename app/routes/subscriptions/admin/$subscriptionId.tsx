@@ -133,7 +133,117 @@ export default function UpdateSubscription() {
             <Typography variant="h1">Subscription Details</Typography>
           </Grid>
 
-          <Grid item md={9}>
+          {!subscription.wooSubscriptionId && (
+            <Grid item md={12}>
+              <Grid container spacing={2}>
+                <Grid item md={6}>
+                  <Paper
+                    sx={{
+                      p: 2,
+                      '& .MuiTextField-root': { minWidth: 50 },
+                    }}
+                  >
+                    <Typography variant="h3">Create New Order</Typography>
+                    <Form method="post">
+                      <input type="hidden" name="id" value={subscription.id} />
+                      <FormControl>
+                        <TextField
+                          sx={{
+                            width: { sm: 100 },
+                          }}
+                          name="quantity250"
+                          label="250g"
+                          variant="outlined"
+                          size="small"
+                          defaultValue={subscription.quantity250}
+                          error={errors?.quantity250}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <TextField
+                          sx={{
+                            width: { sm: 100 },
+                          }}
+                          name="quantity500"
+                          label="500g"
+                          variant="outlined"
+                          size="small"
+                          defaultValue={subscription.quantity500}
+                          error={errors?.quantity500}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <TextField
+                          sx={{
+                            width: { sm: 100 },
+                          }}
+                          name="quantity1200"
+                          label="1,2kg"
+                          variant="outlined"
+                          size="small"
+                          defaultValue={subscription.quantity1200}
+                          error={errors?.quantity1200}
+                        />
+                      </FormControl>
+                      <div>
+                        <FormControl sx={{ m: 1, marginTop: 2 }}>
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={isCreatingOrder || isSystemSubscription}
+                            name="_action"
+                            value="create-order"
+                          >
+                            {isCreatingOrder ? 'Creating...' : 'Create'}
+                          </Button>
+                        </FormControl>
+                      </div>
+                    </Form>
+                  </Paper>
+                </Grid>
+
+                <Grid item md={6}>
+                  <Paper
+                    sx={{
+                      p: 2,
+                    }}
+                  >
+                    <Typography variant="h3">
+                      Create New Custom Order
+                    </Typography>
+                    <p>
+                      <small>
+                        New order for this customer with custom coffees.
+                      </small>
+                      <br />
+                      <small>
+                        Use <em>Create New Order</em> to create order with
+                        subscription coffee mix.
+                      </small>
+                    </p>
+                    <Form method="post">
+                      <input type="hidden" name="id" value={subscription.id} />
+                      <FormControl sx={{ m: 1 }}>
+                        <Button
+                          type="submit"
+                          name="_action"
+                          value="create-custom-order"
+                          variant="contained"
+                          disabled={
+                            isCreatingCustomOrder || isSystemSubscription
+                          }
+                        >
+                          {isCreatingCustomOrder ? 'Creating...' : 'Create =>'}
+                        </Button>
+                      </FormControl>
+                    </Form>
+                  </Paper>
+                </Grid>
+              </Grid>
+            </Grid>
+          )}
+
+          <Grid item md={7}>
             <Paper
               sx={{
                 p: 2,
@@ -159,6 +269,7 @@ export default function UpdateSubscription() {
                       name="quantity250"
                       label="Quantity, 250g"
                       variant="outlined"
+                      size="small"
                       defaultValue={subscription.quantity250}
                       error={errors?.quantity250}
                     />
@@ -168,6 +279,7 @@ export default function UpdateSubscription() {
                       name="quantity500"
                       label="Quantity, 500g"
                       variant="outlined"
+                      size="small"
                       defaultValue={subscription.quantity500}
                       error={errors?.quantity500}
                     />
@@ -177,6 +289,7 @@ export default function UpdateSubscription() {
                       name="quantity1200"
                       label="Quantity, 1,2kg"
                       variant="outlined"
+                      size="small"
                       defaultValue={subscription.quantity1200}
                       error={errors?.quantity1200}
                     />
@@ -190,6 +303,7 @@ export default function UpdateSubscription() {
                         name="recipientName"
                         label="Name"
                         variant="outlined"
+                        size="small"
                         defaultValue={subscription.recipientName}
                         error={errors?.recipientName}
                       />
@@ -201,6 +315,7 @@ export default function UpdateSubscription() {
                         name="recipientAddress1"
                         label="Address1"
                         variant="outlined"
+                        size="small"
                         defaultValue={subscription.recipientAddress1}
                         error={errors?.recipientAddress1}
                       />
@@ -210,6 +325,7 @@ export default function UpdateSubscription() {
                         name="recipientAddress2"
                         label="Address2"
                         variant="outlined"
+                        size="small"
                         defaultValue={subscription.recipientAddress2}
                         error={errors?.recipientAddress2}
                       />
@@ -221,6 +337,7 @@ export default function UpdateSubscription() {
                         name="recipientPostalCode"
                         label="Postal code"
                         variant="outlined"
+                        size="small"
                         defaultValue={subscription.recipientPostalCode}
                         error={errors?.recipientPostcode}
                       />
@@ -230,6 +347,7 @@ export default function UpdateSubscription() {
                         name="recipientPostalPlace"
                         label="Place"
                         variant="outlined"
+                        size="small"
                         defaultValue={subscription.recipientPostalPlace}
                         error={errors?.recipientPlace}
                       />
@@ -241,6 +359,7 @@ export default function UpdateSubscription() {
                         name="recipientEmail"
                         label="Email"
                         variant="outlined"
+                        size="small"
                         defaultValue={subscription.recipientEmail}
                         error={errors?.recipientEmail}
                       />
@@ -250,6 +369,7 @@ export default function UpdateSubscription() {
                         name="recipientMobile"
                         label="Mobile"
                         variant="outlined"
+                        size="small"
                         defaultValue={subscription.recipientMobile}
                         error={errors?.recipientMobile}
                       />
@@ -286,125 +406,40 @@ export default function UpdateSubscription() {
               </Form>
             </Paper>
           </Grid>
-          <Grid item md={3}>
+          <Grid item md={5}>
             <Paper
               sx={{
-                p: 2,
+                p: 0,
               }}
             >
               <GiftSubscriptionWooData subscription={subscription} />
               {subscription.fikenContactId && (
-                <DataLabel
-                  label="Fiken contact id"
-                  data={subscription.fikenContactId}
-                  dataLinkUrl={`https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`}
-                />
+                <Alert severity="info">
+                  <DataLabel
+                    label="Fiken contact id"
+                    data={subscription.fikenContactId}
+                    dataLinkUrl={`https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`}
+                  />
+                </Alert>
               )}
               {subscription.wooSubscriptionId && (
                 <Alert severity="info">
                   This subscription is imported from Woo and cannot be updated
-                  here. Update of status, customer data and quantity must be
-                  done in Woo, but you can create new orders on this customer.
+                  here.
+                  <p>
+                    Update of status, customer data and quantity must be done in
+                    Woo.
+                  </p>
+                  <p>
+                    Renewal orders are automatically created (imported from
+                    Woo).
+                  </p>
                   <DataLabel
                     label="Woo subscription id"
                     data={subscription.wooSubscriptionId}
                   />
                 </Alert>
               )}
-            </Paper>
-          </Grid>
-
-          <Grid item md={6}>
-            <Paper
-              sx={{
-                p: 2,
-                '& .MuiTextField-root': { minWidth: 50 },
-              }}
-            >
-              <Typography variant="h3">Create New Order</Typography>
-              <Form method="post">
-                <input type="hidden" name="id" value={subscription.id} />
-                <FormControl>
-                  <TextField
-                    sx={{
-                      width: { sm: 100 },
-                    }}
-                    name="quantity250"
-                    label="250g"
-                    variant="outlined"
-                    defaultValue={subscription.quantity250}
-                    error={errors?.quantity250}
-                  />
-                </FormControl>
-                <FormControl>
-                  <TextField
-                    sx={{
-                      width: { sm: 100 },
-                    }}
-                    name="quantity500"
-                    label="500g"
-                    variant="outlined"
-                    defaultValue={subscription.quantity500}
-                    error={errors?.quantity500}
-                  />
-                </FormControl>
-                <FormControl>
-                  <TextField
-                    sx={{
-                      width: { sm: 100 },
-                    }}
-                    name="quantity1200"
-                    label="1,2kg"
-                    variant="outlined"
-                    defaultValue={subscription.quantity1200}
-                    error={errors?.quantity1200}
-                  />
-                </FormControl>
-                <div>
-                  <FormControl sx={{ m: 1 }}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      disabled={isCreatingOrder || isSystemSubscription}
-                      name="_action"
-                      value="create-order"
-                    >
-                      {isCreatingOrder ? 'Creating...' : 'Create'}
-                    </Button>
-                  </FormControl>
-                </div>
-              </Form>
-            </Paper>
-          </Grid>
-
-          <Grid item md={6}>
-            <Paper
-              sx={{
-                p: 2,
-              }}
-            >
-              <Typography variant="h3">Create New Custom Order</Typography>
-              <p>
-                <small>
-                  New order to this customer with custom coffees. Use{' '}
-                  <em>Create New Order</em> to create order with subscription
-                  coffee mix.
-                </small>
-              </p>
-              <Form method="post">
-                <input type="hidden" name="id" value={subscription.id} />
-                <FormControl sx={{ m: 1 }}>
-                  <Button
-                    type="submit"
-                    name="_action"
-                    value="create-custom-order"
-                    variant="contained"
-                    disabled={isCreatingCustomOrder || isSystemSubscription}
-                  >
-                    {isCreatingCustomOrder ? 'Creating...' : 'Create =>'}
-                  </Button>
-                </FormControl>
-              </Form>
             </Paper>
           </Grid>
 

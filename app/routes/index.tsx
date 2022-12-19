@@ -32,6 +32,7 @@ type LoaderData = {
   wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
   wooOrderImportResult: Awaited<ReturnType<typeof getLastImportResult>>;
   updateGaboStatusResult: Awaited<ReturnType<typeof getLastImportResult>>;
+  createRenewalOrdersResult: Awaited<ReturnType<typeof getLastImportResult>>;
   allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
@@ -44,6 +45,9 @@ export const loader = async () => {
   const wooOrderImportResult = await getLastImportResult('woo-import-orders');
   const updateGaboStatusResult = await getLastImportResult(
     'update-status-on-gift-subscriptions'
+  );
+  const createRenewalOrdersResult = await getLastImportResult(
+    'create-renewal-orders'
   );
 
   const allActiveSubscriptions = await getSubscriptions({
@@ -94,6 +98,7 @@ export const loader = async () => {
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
+    createRenewalOrdersResult,
     allActiveSubscriptions,
     currentDeliveries,
     cargonizerProfile,
@@ -145,6 +150,7 @@ export default function Index() {
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
+    createRenewalOrdersResult,
     allActiveSubscriptions,
     currentDeliveries,
     cargonizerProfile,
@@ -194,12 +200,13 @@ export default function Index() {
 
       <Typography variant="h2">Other stuff</Typography>
       <Grid container spacing={2}>
-        <Grid item md={4} xl={3}>
+        <Grid item md={5} xl={4}>
           <Paper sx={{ p: 1 }}>
             <JobsInfoBox
               subscriptions={wooSubscriptionImportResult[0]}
               orders={wooOrderImportResult[0]}
               gaboStatus={updateGaboStatusResult[0]}
+              createRenewalOrders={createRenewalOrdersResult[0]}
             />
           </Paper>
         </Grid>

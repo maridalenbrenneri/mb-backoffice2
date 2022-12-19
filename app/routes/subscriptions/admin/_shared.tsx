@@ -33,6 +33,7 @@ export const renderTypes = (type: SubscriptionType = SubscriptionType.B2B) => {
         defaultValue={type}
         sx={{ minWidth: 250 }}
         disabled
+        size="small"
       >
         {Object.keys(SubscriptionType).map((type: any) => (
           <MenuItem value={type} key={type}>
@@ -55,6 +56,7 @@ export const renderStatus = (
         name={`status`}
         defaultValue={status}
         sx={{ minWidth: 250 }}
+        size="small"
       >
         {Object.keys(SubscriptionStatus).map((status: any) => (
           <MenuItem value={status} key={status}>
@@ -77,6 +79,7 @@ export const renderFrequency = (
         name={`frequency`}
         defaultValue={frequency}
         sx={{ minWidth: 250 }}
+        size="small"
       >
         {Object.keys(SubscriptionFrequency).map((freq: any) => (
           <MenuItem value={freq} key={freq}>
