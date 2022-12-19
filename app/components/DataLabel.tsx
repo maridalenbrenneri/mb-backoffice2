@@ -28,12 +28,12 @@ export default function DataLabel(props: {
 
   return (
     <Grid container spacing={1} sx={{ marginBottom: 0 }}>
-      <Grid item xs={6} sm={3}>
+      <Grid item xs={12} md={4} lg={3}>
         <Typography sx={{ color: colors.COLOR_GREY0, fontSize: 12 }}>
           {label}:
         </Typography>
       </Grid>
-      <Grid item xs={6} sm={9}>
+      <Grid item xs={12} md={8} lg={3}>
         {renderData()}
       </Grid>
     </Grid>

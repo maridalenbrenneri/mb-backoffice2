@@ -8,18 +8,28 @@ export interface DeliveryDate {
 
 // TODO: Date hell
 
+export function toPrettyDate2(date: Date | undefined | null) {
+  if (!date) return null;
+  return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
+}
+
 export function toPrettyDate(date: Date | undefined | null) {
   if (!date) return null;
 
-  const d = new Date(date);
+  return date.toString();
 
-  if (d.toLocaleDateString) {
-    return d.toLocaleDateString();
-  }
+  // const d = new Date(date);
 
-  //return `${date.getDate()}.${date.getMonth()}.${date.getFullYear()}`;
+  // console.log('toPrettyDate', date);
 
-  return d.toString();
+  // if (d.toLocaleDateString) {
+  //   console.log('toPrettyDate. local', date.toLocaleDateString('no-NO'));
+  //   return d.toLocaleDateString('no-NO');
+  // }
+
+  // //return `${date.getDate()}.${date.getMonth()}.${date.getFullYear()}`;
+
+  // return d.toString();
   // return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
 }
 
@@ -28,21 +38,22 @@ export function toPrettyDateTime(
   includeSeconds = false
 ) {
   if (!date) return null;
+  return date.toString();
 
-  const seconds = includeSeconds ? ':ss' : '';
+  // const seconds = includeSeconds ? ':ss' : '';
 
-  // const formatted = DateTime.fromISO(date.toString()).toFormat(
-  //   `dd.MM.yy HH:mm${seconds}`
-  // );
-  // console.log('toPrettyDateTime, formatted', formatted);
+  // // const formatted = DateTime.fromISO(date.toString()).toFormat(
+  // //   `dd.MM.yy HH:mm${seconds}`
+  // // );
+  // // console.log('toPrettyDateTime, formatted', formatted);
 
-  const d = new Date(date);
+  // const d = new Date(date);
 
-  if (d.toLocaleString) {
-    return d.toLocaleString();
-  }
+  // if (d.toLocaleString) {
+  //   return d.toLocaleString('no-NO');
+  // }
 
-  return d.toString();
+  // return d.toString();
 
   // return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
 }

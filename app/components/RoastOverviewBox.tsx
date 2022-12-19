@@ -13,7 +13,7 @@ import type { Coffee, Delivery } from '@prisma/client';
 
 import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
 import { emptyBagCounter } from '~/_libs/core/services/subscription-stats';
-import { toPrettyDate } from '~/_libs/core/utils/dates';
+import { toPrettyDate, toPrettyDate2 } from '~/_libs/core/utils/dates';
 import { getRoastOverview } from '~/_libs/core/services/roast-service';
 import {
   FormControl,
@@ -115,7 +115,7 @@ export default function RoastOverviewBox(props: {
                     >
                       {deliveries.map((d) => (
                         <MenuItem value={d.id} key={d.id}>
-                          {toPrettyDate(d.date)} - {d.type}
+                          {toPrettyDate2(d.date)} - {d.type}
                         </MenuItem>
                       ))}
                     </Select>

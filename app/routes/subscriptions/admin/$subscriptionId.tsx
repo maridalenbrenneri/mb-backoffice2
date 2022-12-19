@@ -424,7 +424,7 @@ export default function UpdateSubscription() {
               {subscription.fikenContactId && (
                 <Alert severity="info">
                   <DataLabel
-                    label="Fiken contact id"
+                    label="Fiken id"
                     data={subscription.fikenContactId}
                     dataLinkUrl={`https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`}
                   />
