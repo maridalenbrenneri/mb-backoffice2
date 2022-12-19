@@ -60,8 +60,6 @@ export default function ImportResult() {
     (r) => r.name === 'create-renewal-orders'
   );
 
-  console.log(results);
-
   return (
     <main>
       <Typography variant="h1" sx={{ m: 2 }}>
@@ -82,7 +80,7 @@ export default function ImportResult() {
             <TableRow
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              <TableCell>import-woo-orders</TableCell>
+              <TableCell>woo-import-orders</TableCell>
               <TableCell>
                 Import of orders from Woo updated in last 7 days. Runs every
                 hour.
@@ -96,7 +94,7 @@ export default function ImportResult() {
                     <Button
                       type="submit"
                       name="_action"
-                      value="import-woo-orders"
+                      value="woo-import-orders"
                       disabled={isRunningImportWooOrders}
                     >
                       {isRunningImportWooOrders ? 'Running...' : 'Run now'}
@@ -108,7 +106,7 @@ export default function ImportResult() {
             <TableRow
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              <TableCell>import-woo-subscriptions</TableCell>
+              <TableCell>woo-import-subscriptions</TableCell>
               <TableCell>
                 Import of all subscriptions from Woo, status changes are synced
                 with Backoffice. Runs once a day.

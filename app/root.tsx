@@ -94,7 +94,7 @@ export function CatchBoundary() {
             </h1>
             <p>
               The page you are looking for was not found. Go to
-              <a href="/"> fronpage</a>.
+              <a href="/"> frontpage</a>.
             </p>
           </div>
         </Document>

@@ -12,6 +12,8 @@ export const action: ActionFunction = async ({ request }) => {
   const name = 'woo-import-subscriptions';
   const importStartedAt = DateTime.now().toJSDate();
 
+  console.time('woo-import-subscriptions');
+
   try {
     const result = await woo.importWooSubscriptions();
 
@@ -31,6 +33,10 @@ export const action: ActionFunction = async ({ request }) => {
       errors: err.message,
     });
 
+    console.debug(err.message);
+
     return { errors: err.message };
+  } finally {
+    console.timeEnd('woo-import-subscriptions');
   }
 };

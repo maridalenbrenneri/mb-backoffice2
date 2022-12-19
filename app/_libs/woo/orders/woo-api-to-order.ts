@@ -63,11 +63,7 @@ export function hasSupportedStatus(wooApiOrder: any) {
   return false;
 }
 
-export default async function wooApiToOrder(
-  wooApiOrder: any,
-  subscriptionId: number,
-  deliveryId: number
-) {
+export default async function wooApiToOrder(wooApiOrder: any) {
   if (!wooApiOrder.line_items?.length) {
     throw new Error(`No line items on order. Woo order id ${wooApiOrder.id}`);
   }
@@ -87,8 +83,7 @@ export default async function wooApiToOrder(
 
   const orderBaseData = {
     wooOrderId: wooApiOrder.id,
-    subscriptionId,
-    deliveryId,
+    wooCustomerId: wooApiOrder.customer_id,
     status: resolveOrderStatus(wooApiOrder.status, wooApiOrder.payment_method),
     shippingType: resolveShippingType(wooApiOrder),
     name: resolveFullname(wooApiOrder),

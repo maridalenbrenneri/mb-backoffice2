@@ -190,7 +190,9 @@ export default function Packing() {
               </Form>
             </Grid>
           </Grid>
-          {!!orders.length && <Orders orders={orders} />}
+          {!!orders.length && (
+            <Orders orders={orders} ignoreFields={['delivery']} />
+          )}
         </AccordionDetails>
       </Accordion>
     );

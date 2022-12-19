@@ -1,14 +1,59 @@
 import { fetchOrders } from './orders/fetch';
-import { createGiftSubscription } from '../core/models/subscription.server';
+import {
+  createGiftSubscription,
+  getSubscription,
+} from '../core/models/subscription.server';
 import {
   upsertOrderFromWoo,
   upsertOrderItemFromWoo,
 } from '../core/models/order.server';
 import { getNextOrCreateDelivery } from '../core/services/delivery-service';
 import wooApiToOrder, { hasSupportedStatus } from './orders/woo-api-to-order';
-import { WOO_RENEWALS_SUBSCRIPTION_ID } from '../core/settings';
+import {
+  WOO_NON_RECURRENT_SUBSCRIPTION_ID,
+  WOO_RENEWALS_SUBSCRIPTION_ID,
+} from '../core/settings';
 import { getCoffees } from '../core/models/coffee.server';
-import { OrderType } from '@prisma/client';
+import { OrderType, SubscriptionStatus } from '@prisma/client';
+
+async function resolveSubscription(wooOrder: any) {
+  console.debug('Resolving subscription for order', wooOrder.wooOrderId);
+  if (!wooOrder.wooCustomerId) {
+    // ORDER PLACED AS "GUEST" IN VIEW. CANNOT BE SUBSCRIPTION RENEWAL.
+    return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
+  }
+
+  const subscription = await getSubscription({
+    where: {
+      AND: [
+        {
+          wooCustomerId: wooOrder.wooCustomerId,
+        },
+        {
+          status: SubscriptionStatus.ACTIVE,
+        },
+      ],
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!subscription) {
+    if (wooOrder.created_via === 'subscription') {
+      console.warn(
+        `No subscription was found for Woo renewal order. Woo order id: ${wooOrder.wooOrderId}. Order is added to default system renewal subscription.`
+      );
+      return WOO_RENEWALS_SUBSCRIPTION_ID;
+    }
+
+    // NON RENEWAL ORDER ON A CUSTOMER THAT HASN'T A SUBSCRIPTION IN BACKOFFICE, RETURN DEFAULT NON RECURRENT SYSTEM SUBSCRIPTION
+    return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
+  }
+
+  console.debug('Resolved subscription', subscription.id);
+  return subscription.id;
+}
 
 export default async function importWooOrders() {
   console.debug('FETCHING WOO ORDERS...');
@@ -47,11 +92,7 @@ export default async function importWooOrders() {
 
   const orderInfos: any[] = [];
   for (const wooOrder of wooOrders) {
-    const mapped = await wooApiToOrder(
-      wooOrder,
-      WOO_RENEWALS_SUBSCRIPTION_ID,
-      nextDelivery.id
-    );
+    const mapped = await wooApiToOrder(wooOrder);
     orderInfos.push(mapped);
   }
 
@@ -70,13 +111,20 @@ export default async function importWooOrders() {
 
     // SUBSCRIPTION RENEWALS
     if (info.order.type === OrderType.RECURRING) {
-      // TODO: CONNECT ORDERS TO SUBSCRIPTIONS
+      info.order.subscriptionId = await resolveSubscription(info.order);
+      info.order.deliveryId = nextDelivery.id;
+
       await upsertOrderFromWoo(info.order.wooOrderId as number, info.order);
+
       included = true;
 
       // SINGLE ORDERS (IF ONLY GIFT, ITEMS IS EMPTY, ALREADY HANDLED ABOVE)
     } else if (info.items.length) {
       if (!verifyThatItemsAreValid(info.items, info.order.wooOrderId)) continue;
+
+      // ALL WOO SINGLE ORDERS ENDS UP ON DEFAULT SYSTEM SUBSCRIPTION
+      info.order.subscriptionId = WOO_NON_RECURRENT_SUBSCRIPTION_ID;
+      info.order.deliveryId = nextDelivery.id;
 
       const orderCreated = await upsertOrderFromWoo(
         info.order.wooOrderId as number,

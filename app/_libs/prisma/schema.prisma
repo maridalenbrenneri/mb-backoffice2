@@ -85,7 +85,9 @@ model Subscription {
   fikenContactId      Int? @unique
 
   // Set on PRIVATE imported from Woo
-  wooSubscriptionId Int? @unique
+  wooSubscriptionId   Int? @unique
+  wooCustomerId       Int?
+  wooNextPaymentDate  DateTime?
 
   // Set on PRIVATE_GIFT (created from Woo order)
   gift_wooOrderId          Int?

@@ -15,10 +15,20 @@ import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { TableFooter } from '@mui/material';
 import { generateReference } from '~/_libs/core/services/order-service';
 
-export default function Orders(props: { orders: Order[] }) {
-  const { orders } = props;
+export default function Orders(props: {
+  orders: Order[];
+  ignoreFields?: string[] | undefined;
+}) {
+  const { orders, ignoreFields } = props;
 
-  if (!orders) return <Box>Orders was null :(</Box>;
+  if (!orders) return null;
+
+  const ignore = (field: string) => {
+    if (!ignoreFields) return false;
+    return !!ignoreFields.find((f) => f === field);
+  };
+
+  console.debug('ignoreFields', ignoreFields);
 
   return (
     <Box>
@@ -26,7 +36,7 @@ export default function Orders(props: { orders: Order[] }) {
         <Table sx={{ minWidth: 650 }} aria-label="orders table" size="small">
           <TableHead>
             <TableRow>
-              <TableCell colSpan={6}>
+              <TableCell colSpan={8}>
                 <small>{orders.length} orders</small>
               </TableCell>
             </TableRow>
@@ -35,7 +45,9 @@ export default function Orders(props: { orders: Order[] }) {
               <TableCell>Status</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Created</TableCell>
-              <TableCell>Delivery</TableCell>
+              <TableCell>Updated</TableCell>
+              <TableCell>Name</TableCell>
+              {!ignore('delivery') && <TableCell>Delivery</TableCell>}
               <TableCell>Item summary</TableCell>
             </TableRow>
           </TableHead>
@@ -54,12 +66,22 @@ export default function Orders(props: { orders: Order[] }) {
                 <TableCell>
                   <small>{order.type}</small>
                 </TableCell>
-                <TableCell>{toPrettyDateTime(order.createdAt)}</TableCell>
                 <TableCell>
-                  <Link to={`/deliveries/admin/${order.delivery?.id}`}>
-                    {toPrettyDate(order.delivery?.date)}
-                  </Link>
+                  <small>{toPrettyDateTime(order.createdAt)}</small>
                 </TableCell>
+                <TableCell>
+                  <small>{toPrettyDateTime(order.updatedAt)}</small>
+                </TableCell>
+                <TableCell>
+                  <small>{order.name}</small>
+                </TableCell>
+                {!ignore('delivery') && (
+                  <TableCell>
+                    <Link to={`/deliveries/admin/${order.delivery?.id}`}>
+                      {toPrettyDate(order.delivery?.date)}
+                    </Link>
+                  </TableCell>
+                )}
                 <TableCell>{generateReference(order)}</TableCell>
               </TableRow>
             ))}

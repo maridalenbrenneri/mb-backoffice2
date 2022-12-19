@@ -58,22 +58,8 @@ export type GiftSubscriptionCreateInput = Pick<
   | 'gift_messageToRecipient'
 >;
 
-export async function getSubscription(id: number) {
-  return prisma.subscription.findUnique({
-    where: { id },
-    include: {
-      orders: {
-        include: {
-          delivery: true,
-          orderItems: true,
-        },
-        take: TAKE_MAX_ROWS,
-        orderBy: {
-          createdAt: 'desc',
-        },
-      },
-    },
-  });
+export async function getSubscription(filter: any) {
+  return prisma.subscription.findFirst(filter);
 }
 
 export async function getSubscriptions(filter?: any) {
@@ -121,6 +107,8 @@ export async function upsertSubscriptionByWooSubscriptionId(data: any) {
     create: {
       type: data.type,
       wooSubscriptionId: data.wooSubscriptionId,
+      wooCustomerId: data.wooCustomerId,
+      wooNextPaymentDate: data.wooNextPaymentDate,
       status: data.status,
       shippingType: data.shippingType,
       frequency: data.frequency,

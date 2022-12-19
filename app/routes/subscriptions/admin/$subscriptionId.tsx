@@ -133,7 +133,7 @@ export default function UpdateSubscription() {
             <Typography variant="h1">Subscription Details</Typography>
           </Grid>
 
-          {!subscription.wooSubscriptionId && (
+          {!subscription.wooSubscriptionId && !isSystemSubscription && (
             <Grid item md={12}>
               <Grid container spacing={2}>
                 <Grid item md={6}>
@@ -413,6 +413,12 @@ export default function UpdateSubscription() {
               }}
             >
               <GiftSubscriptionWooData subscription={subscription} />
+              {isSystemSubscription && (
+                <Alert severity="info">
+                  This is a system subscription, it cannot be edited and no
+                  orders can be created.
+                </Alert>
+              )}
               {subscription.fikenContactId && (
                 <Alert severity="info">
                   <DataLabel

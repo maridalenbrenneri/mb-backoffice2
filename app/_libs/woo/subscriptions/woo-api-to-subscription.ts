@@ -2,6 +2,7 @@ import {
   WOO_STATUS_ACTIVE,
   WOO_STATUS_CANCELLED,
   WOO_STATUS_DELETED,
+  WOO_STATUS_EXPIRED,
   WOO_STATUS_ON_HOLD,
   WOO_STATUS_PENDING_CANCEL,
 } from '../constants';
@@ -84,9 +85,13 @@ const resolveSubscriptionStatus = (wooStatus: string): SubscriptionStatus => {
       return SubscriptionStatus.ON_HOLD;
     case WOO_STATUS_CANCELLED:
     case WOO_STATUS_DELETED:
+    case WOO_STATUS_EXPIRED:
       return SubscriptionStatus.DELETED;
     default: {
-      console.debug('Unknown Woo Status, setting to DELETED', wooStatus);
+      console.warn(
+        'Unknown Woo Status, setting to DELETED. Woo status:',
+        wooStatus
+      );
       return SubscriptionStatus.DELETED;
     }
   }
@@ -120,8 +125,14 @@ const wooApiToSubscription = (subscription: any): any => {
 
   const status = resolveSubscriptionStatus(subscription.status);
 
+  console.debug('wooNextPaymentDate', subscription.next_payment_date);
+
   return {
     wooSubscriptionId: subscription.id,
+    wooCustomerId: subscription.customer_id,
+    wooNextPaymentDate: subscription.next_payment_date
+      ? new Date(subscription.next_payment_date)
+      : null,
     type: SubscriptionType.PRIVATE,
     status,
     shippingType: resolveShippingType(subscription),

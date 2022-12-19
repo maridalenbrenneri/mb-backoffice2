@@ -28,7 +28,17 @@ async function _createOrder(
     _1200: 0,
   }
 ): Promise<Order> {
-  const subscription = await getSubscription(subscriptionId); // TODO: USE FILTER IN QUERY AND FETCH ONLY WHAT WE NEED
+  const subscription = await getSubscription({
+    where: { id: subscriptionId },
+    include: {
+      orders: {
+        include: {
+          delivery: true,
+          orderItems: true,
+        },
+      },
+    },
+  });
 
   if (!subscription) {
     console.warn(

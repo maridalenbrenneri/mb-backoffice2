@@ -19,6 +19,7 @@ export const WOO_STATUS_ON_HOLD = 'on-hold';
 export const WOO_STATUS_COMPLETED = 'completed';
 export const WOO_STATUS_CANCELLED = 'cancelled';
 export const WOO_STATUS_PENDING_CANCEL = 'pending-cancel';
+export const WOO_STATUS_EXPIRED = 'expired';
 export const WOO_STATUS_DELETED = 'deleted';
 
 export const WOO_STATUS_PUBLIC = 'publish';

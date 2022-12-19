@@ -146,7 +146,7 @@ export default function UpdateDelivery() {
 
         <Box my={2}>
           <Typography variant="h2">Orders</Typography>
-          <Orders orders={delivery.orders} />
+          <Orders orders={delivery.orders} ignoreFields={['delivery']} />
         </Box>
       </Box>
     </main>
