@@ -149,14 +149,15 @@ function throwIfAnyError(errors: any) {
 }
 
 async function printLabel(consignmentId: number) {
-  let url = `${print_url}?printer_id=${settings.CARGONIZER_PRINTER_ID}&consignment_ids[${consignmentId}]=`;
+  let url = `${print_url}?printer_id=${settings.CARGONIZER_PRINTER_ID}&consignment_ids[]=${consignmentId}`;
 
   try {
     const response = await fetch(url, { method: 'post', headers });
     const xml = await response.text();
     const json = new XMLParser().parse(xml);
 
-    console.debug('PRINT RESULT', json);
+    // console.debug('PRINT url', url);
+    // console.debug('PRINT RESULT', xml);
 
     throwIfAnyError(json.errors);
 
@@ -252,12 +253,14 @@ async function createConsignmentXml(
       ? { service: settings.CARGONIZER_PRODUCT_PRIVATE_SERVICE }
       : {};
 
+  // console.debug('services', services, product, consignment.customer.name);
+
   const consignmentJson = {
     consignments: {
       consignment: {
         $transport_agreement: transport_agreement,
         $print: false,
-        product: product,
+        product,
         parts: {
           consignee: consignment.customer,
           service_partner: servicePartner,
@@ -269,7 +272,7 @@ async function createConsignmentXml(
             $weight: weightInKg,
           },
         },
-        services: services,
+        services,
         references: { consignor: consignment.reference },
         return_address: {
           name: 'Maridalen Brenneri AS',
