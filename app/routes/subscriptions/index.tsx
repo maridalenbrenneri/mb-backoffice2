@@ -6,7 +6,7 @@ import {
   useSearchParams,
   useSubmit,
 } from '@remix-run/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -39,7 +39,7 @@ const defaultStatus = '_all';
 const defaultType = '_all';
 
 type LoaderData = {
-  subscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
+  loadedSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -91,17 +91,19 @@ export const loader = async ({ request }) => {
 
   const filter = buildFilter(search);
 
-  const subscriptions = await getSubscriptions(filter);
+  const loadedSubscriptions = await getSubscriptions(filter);
 
   return json<LoaderData>({
-    subscriptions,
+    loadedSubscriptions,
   });
 };
 
 export default function Subscriptions() {
-  const { subscriptions } = useLoaderData() as unknown as LoaderData;
+  const { loadedSubscriptions } = useLoaderData() as unknown as LoaderData;
   const [params] = useSearchParams();
   const submit = useSubmit();
+
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>();
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
   const [type, setType] = useState(params.get('type') || defaultType);
   const [recipientName, setRecipientName] = useState(
@@ -110,6 +112,12 @@ export default function Subscriptions() {
   const [recipientEmail, setRecipientEmail] = useState(
     params.get('recipientEmail') || ''
   );
+
+  useEffect(() => {
+    setSubscriptions(loadedSubscriptions);
+  }, [loadedSubscriptions]);
+
+  if (!subscriptions) return null;
 
   const doSubmit = (data: any) => {
     submit(data, { replace: true });

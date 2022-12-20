@@ -6,8 +6,6 @@ export interface DeliveryDate {
   type: string;
 }
 
-// TODO: Date hell
-
 export function toPrettyDate2(date: Date | undefined | null) {
   if (!date) return null;
   return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
@@ -16,21 +14,7 @@ export function toPrettyDate2(date: Date | undefined | null) {
 export function toPrettyDate(date: Date | undefined | null) {
   if (!date) return null;
 
-  return date.toString();
-
-  // const d = new Date(date);
-
-  // console.log('toPrettyDate', date);
-
-  // if (d.toLocaleDateString) {
-  //   console.log('toPrettyDate. local', date.toLocaleDateString('no-NO'));
-  //   return d.toLocaleDateString('no-NO');
-  // }
-
-  // //return `${date.getDate()}.${date.getMonth()}.${date.getFullYear()}`;
-
-  // return d.toString();
-  // return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
+  return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
 }
 
 export function toPrettyDateTime(
@@ -38,24 +22,17 @@ export function toPrettyDateTime(
   includeSeconds = false
 ) {
   if (!date) return null;
-  return date.toString();
 
-  // const seconds = includeSeconds ? ':ss' : '';
+  const seconds = includeSeconds ? ':ss' : '';
 
-  // // const formatted = DateTime.fromISO(date.toString()).toFormat(
-  // //   `dd.MM.yy HH:mm${seconds}`
-  // // );
-  // // console.log('toPrettyDateTime, formatted', formatted);
+  return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
+}
 
-  // const d = new Date(date);
+export function isSameDate(date: Date, dateTime: DateTime) {
+  const date1 = DateTime.fromISO(date.toString()).startOf('day');
+  const date2 = dateTime.startOf('day');
 
-  // if (d.toLocaleString) {
-  //   return d.toLocaleString('no-NO');
-  // }
-
-  // return d.toString();
-
-  // return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
+  return date1.toISO() === date2.toISO();
 }
 
 function getFirstTuesdayOfMonth(date: DateTime) {

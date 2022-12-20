@@ -20,7 +20,7 @@ import type { Order } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 
 import { getOrders } from '~/_libs/core/models/order.server';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   FormControl,
@@ -36,7 +36,7 @@ import { generateReference } from '~/_libs/core/services/order-service';
 const defaultStatus = OrderStatus.ACTIVE;
 
 type LoaderData = {
-  orders: Awaited<ReturnType<typeof getOrders>>;
+  loadedOrders: Awaited<ReturnType<typeof getOrders>>;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -74,18 +74,26 @@ export const loader = async ({ request }) => {
 
   const filter = buildFilter(search);
 
-  const orders = await getOrders(filter);
+  const loadedOrders = await getOrders(filter);
 
   return json<LoaderData>({
-    orders,
+    loadedOrders,
   });
 };
 
 export default function Orders() {
-  const { orders } = useLoaderData() as unknown as LoaderData;
+  const { loadedOrders } = useLoaderData() as unknown as LoaderData;
   const [params] = useSearchParams();
   const submit = useSubmit();
+
+  const [orders, setOrders] = useState<Order[]>();
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
+
+  useEffect(() => {
+    setOrders(loadedOrders);
+  }, [loadedOrders]);
+
+  if (!orders) return null;
 
   const doSubmit = (data: any) => {
     submit(data, { replace: true });

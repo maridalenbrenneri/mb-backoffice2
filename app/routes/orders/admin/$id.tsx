@@ -31,7 +31,7 @@ import {
 } from '@mui/material';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
-import type { Coffee, OrderItem } from '@prisma/client';
+import type { Coffee, Order, OrderItem } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
@@ -47,13 +47,13 @@ import { completeOrders } from '~/_libs/core/services/order-service';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
-  order: Awaited<ReturnType<typeof getOrder>>;
+  loadedOrder: Awaited<ReturnType<typeof getOrder>>;
 };
 
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
 
-  const order = await getOrder({
+  const loadedOrder = await getOrder({
     where: { id: +params.id },
     include: {
       orderItems: true,
@@ -61,11 +61,11 @@ export const loader: LoaderFunction = async ({ params }) => {
       subscription: true,
     },
   });
-  invariant(order, `Order not found: ${params.id}`);
+  invariant(loadedOrder, `Order not found: ${params.id}`);
 
   const coffees = await getActiveCoffees();
 
-  return json({ order, coffees });
+  return json({ loadedOrder, coffees });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -85,23 +85,27 @@ function resolveCoffeeCode(coffeeId: number, coffees: Coffee[]) {
 }
 
 export default function UpdateOrder() {
-  const { order, coffees } = useLoaderData() as unknown as LoaderData;
+  const { loadedOrder, coffees } = useLoaderData() as unknown as LoaderData;
   const data = useActionData();
+  const errors = useActionData();
+  const transition = useTransition();
 
   const [resultData, setResultData] = useState<[] | null>(null);
   const [open, setOpen] = useState(false);
 
-  const errors = useActionData();
-  const transition = useTransition();
+  const [order, setOrder] = useState<Order>();
+
+  useEffect(() => {
+    setOrder(loadedOrder || undefined);
+  }, [loadedOrder]);
 
   useEffect(() => {
     setResultData(data);
   }, [data]);
 
-  const isUpdating = Boolean(transition.submission);
-
   if (!order) return null;
 
+  const isUpdating = Boolean(transition.submission);
   const isReadOnly = !!order.wooOrderId;
 
   const canComplete =

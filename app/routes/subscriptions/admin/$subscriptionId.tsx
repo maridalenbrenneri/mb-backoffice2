@@ -42,9 +42,10 @@ import {
 } from '~/_libs/core/settings';
 import DataLabel from '~/components/DataLabel';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { useEffect, useState } from 'react';
 
 type LoaderData = {
-  subscription: Subscription;
+  loadedSubscription: Subscription;
   customer: Awaited<ReturnType<typeof getCustomer>>;
 };
 
@@ -89,21 +90,32 @@ export const loader: LoaderFunction = async ({ params }) => {
     },
   });
 
-  const subscription = subscriptions?.length ? subscriptions[0] : null;
+  const loadedSubscription = subscriptions?.length ? subscriptions[0] : null;
 
-  invariant(subscription, `Subscription not found: ${params.subscriptionId}`);
+  invariant(
+    loadedSubscription,
+    `Subscription not found: ${params.subscriptionId}`
+  );
 
-  const customer = !subscription.fikenContactId
+  const customer = !loadedSubscription.fikenContactId
     ? null
-    : await getCustomer(subscription.fikenContactId);
+    : await getCustomer(loadedSubscription.fikenContactId);
 
-  return json({ subscription, customer });
+  return json({ loadedSubscription, customer });
 };
 
 export default function UpdateSubscription() {
   const errors = useActionData();
   const transition = useTransition();
-  const { subscription } = useLoaderData() as unknown as LoaderData;
+  const { loadedSubscription } = useLoaderData() as unknown as LoaderData;
+
+  const [subscription, setSubscription] = useState<Subscription>();
+
+  useEffect(() => {
+    setSubscription(loadedSubscription);
+  }, [loadedSubscription]);
+
+  if (!subscription) return null;
 
   const isUpdating =
     transition.state === 'submitting' &&
@@ -116,8 +128,6 @@ export default function UpdateSubscription() {
   const isCreatingCustomOrder =
     transition.state === 'submitting' &&
     transition.submission.formData.get('_action') === 'create-custom-order';
-
-  if (!subscription) return null;
 
   const isSystemSubscription =
     subscription.id === WOO_RENEWALS_SUBSCRIPTION_ID ||
