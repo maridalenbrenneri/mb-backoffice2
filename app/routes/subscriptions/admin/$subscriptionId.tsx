@@ -41,6 +41,7 @@ import {
   WOO_RENEWALS_SUBSCRIPTION_ID,
 } from '~/_libs/core/settings';
 import DataLabel from '~/components/DataLabel';
+import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 
 type LoaderData = {
   subscription: Subscription;
@@ -416,38 +417,57 @@ export default function UpdateSubscription() {
             >
               <GiftSubscriptionWooData subscription={subscription} />
               {isSystemSubscription && (
-                <Alert severity="info">
+                <Alert severity="info" icon={false}>
                   This is a system subscription, it cannot be edited and no
                   orders can be created.
                 </Alert>
               )}
-              {subscription.fikenContactId && (
-                <Alert severity="info">
-                  <DataLabel
-                    label="Fiken id"
-                    data={subscription.fikenContactId}
-                    dataLinkUrl={`https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`}
-                  />
-                </Alert>
-              )}
-              {subscription.wooSubscriptionId && (
-                <Alert severity="info">
-                  This subscription is imported from Woo and cannot be updated
-                  here.
-                  <p>
-                    Update of status, customer data and quantity must be done in
-                    Woo.
-                  </p>
-                  <p>
-                    Renewal orders are automatically created (imported from
-                    Woo).
-                  </p>
-                  <DataLabel
-                    label="Woo subscription id"
-                    data={subscription.wooSubscriptionId}
-                  />
-                </Alert>
-              )}
+
+              <Alert severity="info" icon={false}>
+                {subscription.fikenContactId && (
+                  <div>
+                    <Typography>B2B Fiken Customer</Typography>
+                    <Box sx={{ m: 1 }}>
+                      <DataLabel
+                        label="Fiken id"
+                        data={subscription.fikenContactId}
+                        dataLinkUrl={`https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`}
+                      />
+                    </Box>
+                  </div>
+                )}
+                {subscription.wooSubscriptionId && (
+                  <div>
+                    <Typography>Private Woo subscription</Typography>
+                    <Box sx={{ m: 1 }}>
+                      <p>
+                        This subscription is imported from Woo and cannot be
+                        updated here.
+                      </p>
+                      <p>
+                        Update of status, customer data and quantity must be
+                        done in Woo.
+                      </p>
+                      <p>
+                        Renewal orders are automatically created (imported from
+                        Woo).
+                      </p>
+                      <DataLabel
+                        label="Woo subscription id"
+                        data={subscription.wooSubscriptionId}
+                      />
+                    </Box>
+                  </div>
+                )}
+                <DataLabel
+                  label="Created at"
+                  data={toPrettyDateTime(subscription.createdAt, true)}
+                />
+                <DataLabel
+                  label="Updated at"
+                  data={toPrettyDateTime(subscription.updatedAt, true)}
+                />
+              </Alert>
             </Paper>
           </Grid>
 

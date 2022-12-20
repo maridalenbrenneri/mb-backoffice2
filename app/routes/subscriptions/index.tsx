@@ -33,6 +33,7 @@ import { SubscriptionStatus, SubscriptionType } from '@prisma/client';
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { resolveSubscriptionCode } from '~/_libs/core/services/subscription-service';
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
+import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 
 const defaultStatus = '_all';
 const defaultType = '_all';
@@ -248,7 +249,7 @@ export default function Subscriptions() {
           >
             <TableHead>
               <TableRow>
-                <TableCell colSpan={5} sx={{ border: 0 }}>
+                <TableCell colSpan={6} sx={{ border: 0 }}>
                   {subscriptions.length} subscriptions
                 </TableCell>
               </TableRow>
@@ -257,6 +258,7 @@ export default function Subscriptions() {
                 <TableCell>Type</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Frequency</TableCell>
+                <TableCell>Created at</TableCell>
                 <TableCell>Recipient</TableCell>
                 <TableCell>Recipient, email</TableCell>
                 <TableCell>Abo type</TableCell>
@@ -277,7 +279,14 @@ export default function Subscriptions() {
                     <small>{subscription.status}</small>
                   </TableCell>
                   <TableCell>
-                    <small>{subscription.frequency}</small>
+                    <small>
+                      {subscription.status === SubscriptionStatus.PASSIVE
+                        ? ''
+                        : subscription.frequency}
+                    </small>
+                  </TableCell>
+                  <TableCell>
+                    <small>{toPrettyDateTime(subscription.createdAt)}</small>
                   </TableCell>
                   <TableCell>{subscription.recipientName}</TableCell>
                   <TableCell>{subscription.recipientEmail}</TableCell>

@@ -16,14 +16,14 @@ export default function GiftSubscriptionWooData(props: {
   }
 
   return (
-    <Alert severity="info">
+    <Alert severity="info" icon={false}>
       <Typography>Woo GABO data</Typography>
       <Box sx={{ m: 1 }}>
         <DataLabel
           label="First delivery"
           data={toPrettyDate(subscription.gift_firstDeliveryDate)}
         />
-        <DataLabel label="Deliveries" data={subscription.deliveries} />
+        <DataLabel label="Months" data={subscription.gift_durationMonths} />
         <DataLabel label="Customer" data={subscription.gift_wooCustomerName} />
         <DataLabel label="Woo order id" data={subscription.gift_wooOrderId} />
         <DataLabel label="Customer note" data={subscription.customerNote} />
