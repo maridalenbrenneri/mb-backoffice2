@@ -48,7 +48,6 @@ function buildFilter(search: URLSearchParams) {
 
   if (getStatusFilter !== '_all') filter.where.status = getStatusFilter;
 
-  console.log(getOrderIdsFilter);
   if (getOrderIdsFilter) {
     const orderIds = getOrderIdsFilter.split(',').map((id) => +id);
     filter.where.id = { in: orderIds };

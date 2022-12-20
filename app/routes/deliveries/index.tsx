@@ -14,9 +14,10 @@ import { Box, Button, TableFooter } from '@mui/material';
 import type { Delivery } from '~/_libs/core/models/delivery.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
 import { toPrettyDate } from '~/_libs/core/utils/dates';
+import { useEffect, useState } from 'react';
 
 type LoaderData = {
-  deliveries: Awaited<ReturnType<typeof getDeliveries>>;
+  loadedDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -43,15 +44,23 @@ export const loader = async ({ request }) => {
 
   const filter = buildFilter(search);
 
-  const deliveries = await getDeliveries(filter);
+  const loadedDeliveries = await getDeliveries(filter);
 
   return json<LoaderData>({
-    deliveries,
+    loadedDeliveries,
   });
 };
 
 export default function Deliveries() {
-  const { deliveries } = useLoaderData() as unknown as LoaderData;
+  const { loadedDeliveries } = useLoaderData() as unknown as LoaderData;
+
+  const [deliveries, setDeliveries] = useState<Delivery[]>();
+
+  useEffect(() => {
+    setDeliveries(loadedDeliveries);
+  }, [loadedDeliveries]);
+
+  if (!deliveries) return null;
 
   return (
     <main>

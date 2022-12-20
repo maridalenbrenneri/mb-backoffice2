@@ -41,12 +41,12 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function NewDelivery() {
+  const { deliveryDates, coffees } = useLoaderData() as unknown as LoaderData;
   const transition = useTransition();
   const isCreating = Boolean(transition.submission);
 
-  const { deliveryDates, coffees } = useLoaderData() as unknown as LoaderData;
-
   const [deliveryDate, setDeliveryDate] = React.useState(deliveryDates[0]);
+
   const handleChange = (event: SelectChangeEvent) => {
     const dd = deliveryDates.find(
       (d) => d.id === (event.target.value as unknown as number)

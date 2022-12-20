@@ -26,8 +26,9 @@ import type { Coffee } from '~/_libs/core/models/coffee.server';
 import { getCoffees } from '~/_libs/core/models/coffee.server';
 import { toPrettyDate } from '~/_libs/core/utils/dates';
 import Orders from '~/components/Orders';
+import { useEffect, useState } from 'react';
 
-type LoaderData = { delivery: Delivery; coffees: Coffee[] };
+type LoaderData = { loadedDelivery: Delivery; coffees: Coffee[] };
 
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
@@ -56,13 +57,13 @@ export const loader: LoaderFunction = async ({ params }) => {
       },
     },
   });
-  const delivery = deliveries?.length ? deliveries[0] : null;
-  invariant(delivery, `Delivery not found: ${params.id}`);
+  const loadedDelivery = deliveries?.length ? deliveries[0] : null;
+  invariant(loadedDelivery, `Delivery not found: ${params.id}`);
 
   const coffees = await getCoffees();
   invariant(coffees, `Coffees not found`);
 
-  return json({ delivery, coffees });
+  return json({ loadedDelivery, coffees });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -70,11 +71,19 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function UpdateDelivery() {
-  const { delivery, coffees } = useLoaderData() as unknown as LoaderData;
+  const { loadedDelivery, coffees } = useLoaderData() as unknown as LoaderData;
 
   const errors = useActionData();
   const transition = useTransition();
   const isUpdating = Boolean(transition.submission);
+
+  const [delivery, setDelivery] = useState<Delivery>();
+
+  useEffect(() => {
+    setDelivery(loadedDelivery);
+  }, [loadedDelivery]);
+
+  if (!delivery) return null;
 
   const renderCoffee = (defaultValue: number | '', coffeeNr: number) => {
     return (

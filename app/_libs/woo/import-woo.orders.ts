@@ -110,7 +110,7 @@ export default async function importWooOrders() {
     // GIFT SUBSCRIPTIONS
     if (info.gifts.length)
       console.debug(
-        `Creating ${info.gifts.length} gift subscription(s) from Woo order ${info.order.wooOrderId}`
+        `Creating ${info.gifts.length} gift subscription(s) from Woo order ${info.order.wooOrderId} (if not already exist)`
       );
     for (const gift of info.gifts) {
       await createGiftSubscription(gift);
