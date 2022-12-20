@@ -63,6 +63,7 @@ export const loader = async () => {
       quantity250: true,
       quantity500: true,
       quantity1200: true,
+      wooNextPaymentDate: true,
     },
     take: TAKE_MAX_ROWS,
   });
@@ -215,7 +216,7 @@ export default function Index() {
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h2">Roast overview</Typography>
         <RoastOverviewBox
-          stats={aboStats}
+          subscriptions={allActiveSubscriptions}
           deliveries={deliveries || []}
           coffees={coffees || []}
         />

@@ -8,7 +8,7 @@ import { getNextDeliveryDateFrom } from '../utils/dates';
 // RESOLVES NEXT DELIVERY FROM TODAY OR THE DATE SPECIFIED. IF DELIVERY DOESN'T EXIST, IT IS CREATED
 export async function getNextOrCreateDelivery(): Promise<Delivery> {
   const today = DateTime.now().startOf('day');
-  const nextweek = today.plus({ days: 7 }).startOf('day');
+  const nextweek = today.plus({ days: 7 });
 
   const delivery = await getDelivery({
     where: {
@@ -45,7 +45,7 @@ export async function getNextOrCreateDelivery(): Promise<Delivery> {
 
 export function getNextDeliveryFromList(deliveries: Delivery[]) {
   const today = DateTime.now().startOf('day');
-  const nextweek = today.plus({ days: 7 }).startOf('day');
+  const nextweek = today.plus({ days: 7 });
 
   return deliveries.find((d) => {
     const date = DateTime.fromISO(d.date.toString());

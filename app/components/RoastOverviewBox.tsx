@@ -9,11 +9,9 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-import type { Coffee, Delivery } from '@prisma/client';
+import type { Coffee, Delivery, Subscription } from '@prisma/client';
 
-import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
-import { emptyBagCounter } from '~/_libs/core/services/subscription-stats';
-import { toPrettyDate, toPrettyDate2 } from '~/_libs/core/utils/dates';
+import { toPrettyDate2 } from '~/_libs/core/utils/dates';
 import { getRoastOverview } from '~/_libs/core/services/roast-service';
 import {
   FormControl,
@@ -28,11 +26,11 @@ import { getNextDeliveryFromList } from '~/_libs/core/services/delivery-service'
 import { roundTotalKg } from '~/_libs/core/utils/numbers';
 
 export default function RoastOverviewBox(props: {
-  stats: SubscriptionStats;
+  subscriptions: Subscription[];
   deliveries: Delivery[];
   coffees: Coffee[];
 }) {
-  const { stats, deliveries, coffees } = props;
+  const { subscriptions, deliveries, coffees } = props;
   const [delivery, setDelivery] = useState<Delivery>();
   const [overview, setOverview] = useState<any>();
 
@@ -44,29 +42,12 @@ export default function RoastOverviewBox(props: {
   }, [deliveries]);
 
   useEffect(() => {
-    setOverview(getRoastOverview(emptyBagCounter()));
-  }, [setOverview]);
-
-  useEffect(() => {
     if (!delivery) return;
 
-    const resolve = () => {
-      if (delivery.type === 'MONTHLY')
-        return getRoastOverview(stats.bagCounterMonthly, delivery, coffees);
-      if (delivery.type === 'MONTHLY_3RD')
-        return getRoastOverview(stats.bagCounterMonthly3rd, delivery, coffees);
-
-      return getRoastOverview(emptyBagCounter(), delivery, coffees);
-    };
-
-    const overview = resolve();
+    const overview = getRoastOverview(subscriptions, delivery, coffees);
 
     setOverview(overview);
-  }, [delivery, coffees, stats.bagCounterMonthly, stats.bagCounterMonthly3rd]);
-
-  if (!stats) {
-    return <Box>Data not available :(</Box>;
-  }
+  }, [delivery, coffees, subscriptions]);
 
   if (!deliveries?.length)
     return (
@@ -197,11 +178,18 @@ export default function RoastOverviewBox(props: {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={5}>
+              <TableCell>
                 <big>
                   <Link to={`deliveries/admin/${delivery.id}`}>
                     Edit coffees for Delivery / View orders
                   </Link>
+                </big>
+              </TableCell>
+              <TableCell>
+                <big>
+                  Estimated from {overview.includedSubscriptionCount}{' '}
+                  subscriptions and {overview.includedOrderCount} active
+                  non-recurrent orders.
                 </big>
               </TableCell>
             </TableRow>

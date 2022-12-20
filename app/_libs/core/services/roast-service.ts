@@ -1,38 +1,8 @@
-import type { Coffee, Delivery, Order } from '@prisma/client';
+import type { Coffee, Delivery, Order, Subscription } from '@prisma/client';
+import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 import { OrderType } from '@prisma/client';
-import type { BagCounter, BagCounterItem } from './subscription-stats';
-
-function getCountByQuantity(counter: BagCounterItem) {
-  const coffee1 =
-    counter.one +
-    counter.two +
-    counter.three +
-    counter.four +
-    (counter.five > 0 ? counter.five * 2 : 0) +
-    (counter.six > 0 ? counter.six * 2 : 0) +
-    (counter.seven > 0 ? counter.seven * 2 : 0);
-
-  const coffee2 =
-    counter.two +
-    counter.three +
-    counter.four +
-    counter.five +
-    (counter.six > 0 ? counter.six * 2 : 0) +
-    (counter.seven > 0 ? counter.seven * 2 : 0);
-
-  const coffee3 =
-    counter.three +
-    counter.four +
-    counter.five +
-    (counter.six > 0 ? counter.six * 2 : 0) +
-    (counter.seven > 0 ? counter.seven * 2 : 0);
-
-  const coffee4 = counter.four + counter.five + counter.six + counter.seven;
-
-  const total = coffee1 + coffee2 + coffee3 + coffee4;
-
-  return { total, coffee1, coffee2, coffee3, coffee4 };
-}
+import { DateTime } from 'luxon';
+import { isSameDate, resolveDateForNextDelivery } from '../utils/dates';
 
 function calculateWeightByCoffee(_250: any, _500: any, _1200: any) {
   const coffee1kg =
@@ -52,24 +22,23 @@ function calculateWeightByCoffee(_250: any, _500: any, _1200: any) {
 function _agg(quantity: number) {
   const NR_OF_COFFEES = 4;
 
-  let count = 1;
-  let coffeeNo = 1;
-
+  let counter = 1;
+  let currentCoffee = 1;
   let coffee1 = 0;
   let coffee2 = 0;
   let coffee3 = 0;
   let coffee4 = 0;
 
-  while (count <= quantity) {
-    if (coffeeNo === 1) coffee1++;
-    else if (coffeeNo === 2) coffee2++;
-    else if (coffeeNo === 3) coffee3++;
-    else if (coffeeNo === 4) coffee4++;
+  while (counter <= quantity) {
+    if (currentCoffee === 1) coffee1++;
+    else if (currentCoffee === 2) coffee2++;
+    else if (currentCoffee === 3) coffee3++;
+    else if (currentCoffee === 4) coffee4++;
 
-    coffeeNo++;
-    count++;
+    currentCoffee++;
+    counter++;
 
-    if (coffeeNo > NR_OF_COFFEES) coffeeNo = 1;
+    if (currentCoffee > NR_OF_COFFEES) currentCoffee = 1;
   }
 
   return { coffee1, coffee2, coffee3, coffee4 };
@@ -115,6 +84,35 @@ function aggregateCoffeesFromNonRecurringOrders(orders: Order[]) {
   };
 }
 
+function aggregateCoffeesFromSubscriptions(
+  subscriptions: Subscription[],
+  _250: any,
+  _500: any,
+  _1200: any
+) {
+  subscriptions.forEach((s) => {
+    let agg = _agg(s.quantity250);
+    _250.coffee1 += agg.coffee1;
+    _250.coffee2 += agg.coffee2;
+    _250.coffee3 += agg.coffee3;
+    _250.coffee4 += agg.coffee4;
+
+    agg = _agg(s.quantity500);
+    _500.coffee1 += agg.coffee1;
+    _500.coffee2 += agg.coffee2;
+    _500.coffee3 += agg.coffee3;
+    _500.coffee4 += agg.coffee4;
+
+    agg = _agg(s.quantity1200);
+    _1200.coffee1 += agg.coffee1;
+    _1200.coffee2 += agg.coffee2;
+    _1200.coffee3 += agg.coffee3;
+    _1200.coffee4 += agg.coffee4;
+  });
+
+  return { _250, _500, _1200 };
+}
+
 function resolveCoffee(coffees: Coffee[], coffeeId: number) {
   return coffees.find((c) => c.id === coffeeId);
 }
@@ -123,17 +121,99 @@ function resolveCoffee(coffees: Coffee[], coffeeId: number) {
 // COFFEES IN ORDERS FROM SELECTED DELIVERY IS INCLUDED.
 // BASE IS A BAG COUNTER (CREATED FROM CURRENT ABO STATS IF STOR-ABO DELIVERY)
 export function getRoastOverview(
-  counter: BagCounter,
+  subscriptions: Subscription[],
   delivery: Delivery | undefined = undefined,
   coffees: Coffee[] = []
 ) {
-  const _250 = getCountByQuantity(counter._250);
-  const _500 = getCountByQuantity(counter._500);
-  const _1200 = getCountByQuantity(counter._1200);
+  if (!delivery)
+    throw new Error('No delivery set, cannot resolve roast overview');
+
+  let includedSubscriptionCount = 0;
+  let includedOrderCount = 0;
+
+  let _250 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
+  let _500 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
+  let _1200 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
+
+  if (delivery.type === 'MONTHLY') {
+    const monthlySubscriptions = subscriptions.filter(
+      (s) =>
+        s.frequency === SubscriptionFrequency.MONTHLY ||
+        (s.frequency === SubscriptionFrequency.FORTNIGHTLY &&
+          s.type === SubscriptionType.B2B)
+    );
+
+    const aggSubscriptions = aggregateCoffeesFromSubscriptions(
+      monthlySubscriptions,
+      _250,
+      _500,
+      _1200
+    );
+
+    _250 = aggSubscriptions._250;
+    _500 = aggSubscriptions._500;
+    _1200 = aggSubscriptions._1200;
+
+    includedSubscriptionCount += monthlySubscriptions.length;
+    console.debug('MONTHLY', aggSubscriptions);
+  } else if (delivery.type === 'MONTHLY_3RD') {
+    const monthly3rdSubscriptions = subscriptions.filter(
+      (s) =>
+        s.frequency === SubscriptionFrequency.MONTHLY_3RD ||
+        (s.frequency === SubscriptionFrequency.FORTNIGHTLY &&
+          s.type === SubscriptionType.B2B)
+    );
+
+    const aggSubscriptions = aggregateCoffeesFromSubscriptions(
+      monthly3rdSubscriptions,
+      _250,
+      _500,
+      _1200
+    );
+
+    _250 = aggSubscriptions._250;
+    _500 = aggSubscriptions._500;
+    _1200 = aggSubscriptions._1200;
+
+    includedSubscriptionCount += monthly3rdSubscriptions.length;
+
+    console.debug('MONTHLY_3RD', aggSubscriptions);
+  }
+
+  const fortnightlyPrivate = subscriptions.filter(
+    (s) =>
+      s.frequency === SubscriptionFrequency.FORTNIGHTLY &&
+      s.type === SubscriptionType.PRIVATE &&
+      s.wooNextPaymentDate !== null
+  );
+
+  fortnightlyPrivate.forEach((s) => {
+    if (!s.wooNextPaymentDate) return;
+
+    const next = DateTime.fromISO(s.wooNextPaymentDate.toString());
+    const nextRenewalDate = resolveDateForNextDelivery(next);
+
+    if (isSameDate(delivery.date, nextRenewalDate)) {
+      const aggSubscriptions = aggregateCoffeesFromSubscriptions(
+        [s],
+        _250,
+        _500,
+        _1200
+      );
+
+      _250 = aggSubscriptions._250;
+      _500 = aggSubscriptions._500;
+      _1200 = aggSubscriptions._1200;
+
+      includedSubscriptionCount++;
+
+      console.debug('FORTNIGHTLY PRIVATE', aggSubscriptions);
+    }
+  });
 
   const notSetOnDelivery: any[] = [];
 
-  if (delivery?.orders?.length) {
+  if (delivery.orders?.length) {
     const nonRecurringOrders = delivery.orders.filter(
       (o: Order) => o.type === OrderType.NON_RECURRING
     );
@@ -160,6 +240,8 @@ export function getRoastOverview(
       _1200.coffee2 += aggOrders._1200.coffee2;
       _1200.coffee3 += aggOrders._1200.coffee3;
       _1200.coffee4 += aggOrders._1200.coffee4;
+
+      includedOrderCount += nonRecurringOrders.length;
     }
 
     if (customOrders.length) {
@@ -225,9 +307,18 @@ export function getRoastOverview(
         }
       }
     }
+    includedOrderCount += customOrders.length;
   }
 
   const weight = calculateWeightByCoffee(_250, _500, _1200);
 
-  return { _250, _500, _1200, ...weight, notSetOnDelivery };
+  return {
+    _250,
+    _500,
+    _1200,
+    ...weight,
+    notSetOnDelivery,
+    includedSubscriptionCount,
+    includedOrderCount,
+  };
 }

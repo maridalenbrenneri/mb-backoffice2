@@ -40,8 +40,8 @@ model Coffee {
 
   OrderItems OrderItem[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 }
 
 enum SubscriptionType {
@@ -87,14 +87,14 @@ model Subscription {
   // Set on PRIVATE imported from Woo
   wooSubscriptionId   Int? @unique
   wooCustomerId       Int?
-  wooNextPaymentDate  DateTime?
+  wooNextPaymentDate  DateTime? @db.Timestamptz
 
   // Set on PRIVATE_GIFT (created from Woo order)
   gift_wooOrderId          Int?
   gift_wooOrderLineItemId  String? @unique
   gift_wooCustomerName     String?
   gift_durationMonths      Int?
-  gift_firstDeliveryDate   DateTime?
+  gift_firstDeliveryDate   DateTime? @db.Timestamptz
   gift_messageToRecipient  String?
 
   orders Order[]
@@ -108,8 +108,8 @@ model Subscription {
   recipientPostalPlace  String
   recipientCountry      String? 
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 }
 
 enum DeliveryStatus {
@@ -122,7 +122,7 @@ model Delivery {
 
   status DeliveryStatus @default(ACTIVE)
 
-  date DateTime @unique
+  date DateTime @unique @db.Timestamptz
   type String
 
   coffee1     Coffee? @relation(name: "delivery_to_coffee_1", fields: [coffee1Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -139,8 +139,8 @@ model Delivery {
 
   orders      Order[]
   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 }
 
 enum OrderStatus {
@@ -176,8 +176,8 @@ model OrderItem {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   orderId Int
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 }
 
 model Order {
@@ -213,8 +213,8 @@ model Order {
   delivery Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   deliveryId Int
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 }
 
 model JobResult {
@@ -226,6 +226,6 @@ model JobResult {
 
   jobStartedAt DateTime
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 }

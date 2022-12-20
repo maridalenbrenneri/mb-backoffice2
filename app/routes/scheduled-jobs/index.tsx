@@ -12,8 +12,11 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Box, Button, FormControl } from '@mui/material';
 
+import type { JobResult } from '@prisma/client';
+
 import { getJobResults } from '~/_libs/core/models/job-result.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { useEffect, useState } from 'react';
 
 type LoaderData = {
   results: Awaited<ReturnType<typeof getJobResults>>;
@@ -26,11 +29,17 @@ export const loader = async () => {
   });
 };
 
-export default function JobResult() {
+export default function JobResultPage() {
   const { results } = useLoaderData() as unknown as LoaderData;
   const fetcher = useFetcher();
 
-  if (!results) return <div>Loading...</div>;
+  const [jobResult, setJobResult] = useState<JobResult[]>();
+
+  useEffect(() => {
+    setJobResult(results);
+  }, [jobResult, results]);
+
+  if (!jobResult) return null;
 
   const isRunningImportWooOrders =
     fetcher.state === 'submitting' &&
@@ -49,14 +58,14 @@ export default function JobResult() {
     fetcher.state === 'submitting' &&
     fetcher.submission.formData.get('_action') === 'create-renewal-orders';
 
-  const importWooOrders = results.find((r) => r.name === 'woo-import-orders');
+  const importWooOrders = jobResult.find((r) => r.name === 'woo-import-orders');
   const importWooSubscriptions = results.find(
     (r) => r.name === 'woo-import-subscriptions'
   );
-  const updateStatusOnGiftSubscriptions = results.find(
+  const updateStatusOnGiftSubscriptions = jobResult.find(
     (r) => r.name === 'update-status-on-gift-subscriptions'
   );
-  const createRenewalOrders = results.find(
+  const createRenewalOrders = jobResult.find(
     (r) => r.name === 'create-renewal-orders'
   );
 
