@@ -92,7 +92,7 @@ export default function JobResult() {
                 </small>
               </TableCell>
               <TableCell>
-                <fetcher.Form method="post" action="/api/import-woo-orders">
+                <fetcher.Form method="post" action="/api/woo-import-orders">
                   <FormControl sx={{ m: 1 }}>
                     <Button
                       type="submit"
@@ -121,7 +121,7 @@ export default function JobResult() {
               <TableCell>
                 <fetcher.Form
                   method="post"
-                  action="/api/import-woo-subscriptions"
+                  action="/api/woo-import-subscriptions"
                 >
                   <FormControl sx={{ m: 1 }}>
                     <Button
