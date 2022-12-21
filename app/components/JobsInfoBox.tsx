@@ -16,30 +16,31 @@ export default function JobsInfoBox(props: {
       <Typography variant="subtitle1">Scheduled jobs (last run)</Typography>
       <Box sx={{ m: 1 }}>
         <DataLabel
-          label="Woo import, orders"
-          data={toPrettyDateTime(orders?.createdAt, true) || 'Not available'}
-        />
-
-        <DataLabel
-          label="Woo import, subscriptions"
-          data={
-            toPrettyDateTime(subscriptions?.createdAt, true) || 'Not available'
-          }
-        />
-
-        <DataLabel
-          label="Create renewal orders"
-          data={
-            toPrettyDateTime(createRenewalOrders?.createdAt, true) ||
-            'Not available'
-          }
-        />
-
-        <DataLabel
-          label="Update GABO status"
-          data={
-            toPrettyDateTime(gaboStatus?.createdAt, true) || 'Not available'
-          }
+          dataFields={[
+            {
+              label: 'Woo import, orders',
+              data:
+                toPrettyDateTime(orders?.createdAt, true) || 'Not available',
+            },
+            {
+              label: 'Woo import, subscriptions',
+              data:
+                toPrettyDateTime(subscriptions?.createdAt, true) ||
+                'Not available',
+            },
+            {
+              label: 'Create renewal orders',
+              data:
+                toPrettyDateTime(createRenewalOrders?.createdAt, true) ||
+                'Not available',
+            },
+            {
+              label: 'Update GABO status',
+              data:
+                toPrettyDateTime(gaboStatus?.createdAt, true) ||
+                'Not available',
+            },
+          ]}
         />
       </Box>
     </Box>

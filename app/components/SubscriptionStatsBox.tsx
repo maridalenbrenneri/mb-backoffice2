@@ -34,24 +34,28 @@ export default function SubscriptionStatsBox(props: {
         <Grid item xs={6}>
           <Paper sx={{ p: 2 }}>
             <DataLabel
-              label="ABO, monthly"
-              data={stats.privateActiveMonthlyCount || 0}
-            />
-            <DataLabel
-              label="ABO, fortnightly"
-              data={stats.privateActiveFortnigthlyCount || 0}
-            />
-            <DataLabel
-              label="GABO, monthly"
-              data={stats.privateGiftActiveMonthlyCount || 0}
-            />
-            <DataLabel
-              label="B2B, monthly"
-              data={stats.b2bMonthlySubscriptionCount || 0}
-            />
-            <DataLabel
-              label="B2B, fortnightly"
-              data={stats.b2bFortnightlySubscriptionCount || 0}
+              dataFields={[
+                {
+                  label: 'ABO, monthly',
+                  data: stats.privateActiveMonthlyCount || 0,
+                },
+                {
+                  label: 'ABO, fortnightly',
+                  data: stats.privateActiveFortnigthlyCount || 0,
+                },
+                {
+                  label: 'GABO, monthly',
+                  data: stats.privateGiftActiveMonthlyCount || 0,
+                },
+                {
+                  label: 'B2B, monthly',
+                  data: stats.b2bMonthlySubscriptionCount || 0,
+                },
+                {
+                  label: 'B2B, fortnightly',
+                  data: stats.b2bFortnightlySubscriptionCount || 0,
+                },
+              ]}
             />
           </Paper>
         </Grid>

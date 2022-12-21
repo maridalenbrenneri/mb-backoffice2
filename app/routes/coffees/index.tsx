@@ -104,7 +104,7 @@ export default function Coffees() {
       </Form>
 
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }}>
+        <Table sx={{ minWidth: 650 }} size="small">
           <TableHead>
             <TableRow>
               <TableCell>ID</TableCell>

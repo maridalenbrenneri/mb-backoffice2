@@ -15,6 +15,7 @@ import {
 } from '../core/settings';
 import { getCoffees } from '../core/models/coffee.server';
 import { OrderStatus, OrderType, SubscriptionStatus } from '@prisma/client';
+import completeWooOrder from './complete-woo-order';
 
 async function resolveSubscription(wooOrder: any) {
   // console.debug('Resolving subscription for order', wooOrder.wooOrderId);
@@ -114,7 +115,10 @@ export default async function importWooOrders() {
       );
     for (const gift of info.gifts) {
       await createGiftSubscription(gift);
-      // TODO: Set order to complete in Woo when imported. OBS: Handle if order has other items!
+      // Set order to complete in Woo after import, don't if order has other items as well
+      if (!info.items.length && info.order.status === OrderStatus.ACTIVE) {
+        await completeWooOrder(info.order.wooOrderId);
+      }
       included = true;
     }
 

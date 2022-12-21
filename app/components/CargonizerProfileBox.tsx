@@ -17,9 +17,23 @@ export default function CargonizerProfileBox(props: { profile: any }) {
           label="Manager id"
           data={profile.user.managerships.managership.id}
         /> */}
-        <DataLabel label="Count" data={plan.item_counter} />
-        <DataLabel label="Limit" data={plan.item_limit} />
-        <DataLabel label="Plan" data={plan.name} />
+
+        <DataLabel
+          dataFields={[
+            {
+              label: 'Count',
+              data: plan.item_counter,
+            },
+            {
+              label: 'Limit',
+              data: plan.item_limit,
+            },
+            {
+              label: 'Plan',
+              data: plan.name,
+            },
+          ]}
+        />
       </Box>
     </Box>
   );

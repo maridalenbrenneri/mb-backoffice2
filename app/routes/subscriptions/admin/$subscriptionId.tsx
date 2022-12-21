@@ -439,9 +439,13 @@ export default function UpdateSubscription() {
                     <Typography>B2B Fiken Customer</Typography>
                     <Box sx={{ m: 1 }}>
                       <DataLabel
-                        label="Fiken id"
-                        data={subscription.fikenContactId}
-                        dataLinkUrl={`https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`}
+                        dataFields={[
+                          {
+                            label: 'Fiken id',
+                            data: subscription.fikenContactId,
+                            dataLinkUrl: `https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`,
+                          },
+                        ]}
                       />
                     </Box>
                   </div>
@@ -462,20 +466,29 @@ export default function UpdateSubscription() {
                         Renewal orders are automatically created (imported from
                         Woo).
                       </p>
+
                       <DataLabel
-                        label="Woo subscription id"
-                        data={subscription.wooSubscriptionId}
+                        dataFields={[
+                          {
+                            label: 'Woo subscription id',
+                            data: subscription.wooSubscriptionId,
+                          },
+                        ]}
                       />
                     </Box>
                   </div>
                 )}
                 <DataLabel
-                  label="Created at"
-                  data={toPrettyDateTime(subscription.createdAt, true)}
-                />
-                <DataLabel
-                  label="Updated at"
-                  data={toPrettyDateTime(subscription.updatedAt, true)}
+                  dataFields={[
+                    {
+                      label: 'Created at',
+                      data: toPrettyDateTime(subscription.createdAt, true),
+                    },
+                    {
+                      label: 'Updated at',
+                      data: toPrettyDateTime(subscription.updatedAt, true),
+                    },
+                  ]}
                 />
               </Alert>
             </Paper>

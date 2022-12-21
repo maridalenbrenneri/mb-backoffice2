@@ -137,23 +137,28 @@ export default function UpdateOrder() {
 
       <Grid container>
         <Grid item>
-          <Box sx={{ m: 2 }}>
+          <Box sx={{ m: 1 }}>
             <DataLabel
-              label="Subscription"
-              data={`${order.subscription.recipientName}`}
-              dataLinkUrl={`/subscriptions/admin/${order.subscriptionId}`}
+              dataFields={[
+                {
+                  label: 'Subscription',
+                  data: `${order.subscription.recipientName}`,
+                  dataLinkUrl: `/subscriptions/admin/${order.subscriptionId}`,
+                },
+                {
+                  label: 'Created at',
+                  data: toPrettyDateTime(order.createdAt, true),
+                },
+                {
+                  label: 'Updated at',
+                  data: toPrettyDateTime(order.updatedAt, true),
+                },
+                {
+                  label: 'Woo order id',
+                  data: order.wooOrderId || '',
+                },
+              ]}
             />
-            <DataLabel
-              label="Created At"
-              data={toPrettyDateTime(order.createdAt, true)}
-            />
-            <DataLabel
-              label="Updated At"
-              data={toPrettyDateTime(order.updatedAt, true)}
-            />
-            {order.wooOrderId && (
-              <DataLabel label="Woo Order ID" data={order.wooOrderId} />
-            )}
           </Box>
         </Grid>
         <Grid item>
