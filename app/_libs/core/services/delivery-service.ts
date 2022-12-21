@@ -8,7 +8,7 @@ import { getNextDeliveryDateFrom } from '../utils/dates';
 // RESOLVES NEXT DELIVERY FROM TODAY OR THE DATE SPECIFIED. IF DELIVERY DOESN'T EXIST, IT IS CREATED
 export async function getNextOrCreateDelivery(): Promise<Delivery> {
   const today = DateTime.now().startOf('day');
-  const nextweek = today.plus({ days: 7, hours: 3 }); // Adding 3 hours to fix date compare time zone hell (kind od a hack..)
+  const nextweek = today.plus({ days: 7, hours: 3 }); // Adding 3 hours to fix date compare time zone hell (kind of a hack...)
 
   console.debug(
     'GET OR CREATE DELIVERY DAY, find deliver between these dates: ',

@@ -39,7 +39,7 @@ import { getOrder } from '~/_libs/core/models/order.server';
 import { upsertOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
 import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
-import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { coffeeVariationToLabel } from '~/_libs/core/utils/labels';
 import { useEffect, useState } from 'react';
 import { modalStyle } from '~/style/theme';
@@ -142,8 +142,13 @@ export default function UpdateOrder() {
               dataFields={[
                 {
                   label: 'Subscription',
-                  data: `${order.subscription.recipientName}`,
+                  data: order.subscription.recipientName,
                   dataLinkUrl: `/subscriptions/admin/${order.subscriptionId}`,
+                },
+                {
+                  label: 'Delivery day',
+                  data: toPrettyDate(order.delivery.date),
+                  dataLinkUrl: `/deliveries/admin/${order.deliveryId}`,
                 },
                 {
                   label: 'Created at',

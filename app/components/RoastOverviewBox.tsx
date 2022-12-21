@@ -161,7 +161,8 @@ export default function RoastOverviewBox(props: {
               <TableRow>
                 <TableCell colSpan={5}>
                   <strong>
-                    Coffees in active orders not set on the Delivery
+                    Coffees from active custom orders not set on the Delivery
+                    day
                   </strong>
                 </TableCell>
               </TableRow>

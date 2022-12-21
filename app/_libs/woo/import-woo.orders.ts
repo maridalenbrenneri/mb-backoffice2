@@ -117,6 +117,10 @@ export default async function importWooOrders() {
       await createGiftSubscription(gift);
       // Set order to complete in Woo after import, don't if order has other items as well
       if (!info.items.length && info.order.status === OrderStatus.ACTIVE) {
+        console.debug(
+          'Imported order with nothing but gift subscription, completing order in Woo',
+          info.order.wooOrderId
+        );
         await completeWooOrder(info.order.wooOrderId);
       }
       included = true;
