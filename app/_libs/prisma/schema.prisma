@@ -88,6 +88,7 @@ model Subscription {
   wooSubscriptionId   Int? @unique
   wooCustomerId       Int?
   wooNextPaymentDate  DateTime? @db.Timestamptz
+  wooCreatedAt        DateTime? @db.Timestamptz
 
   // Set on PRIVATE_GIFT (created from Woo order)
   gift_wooOrderId          Int?
@@ -185,7 +186,8 @@ model Order {
   status  OrderStatus
   type    OrderType
 
-  wooOrderId  Int? @unique
+  wooOrderId   Int? @unique
+  wooCreatedAt DateTime? @db.Timestamptz
 
   name        String
   email       String?

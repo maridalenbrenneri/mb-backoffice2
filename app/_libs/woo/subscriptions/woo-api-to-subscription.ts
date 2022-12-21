@@ -130,6 +130,7 @@ const wooApiToSubscription = (subscription: any): any => {
   return {
     wooSubscriptionId: subscription.id,
     wooCustomerId: subscription.customer_id,
+    wooCreatedAt: new Date(subscription.date_created),
     wooNextPaymentDate: subscription.next_payment_date
       ? new Date(subscription.next_payment_date)
       : null,

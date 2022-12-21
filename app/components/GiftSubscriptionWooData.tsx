@@ -3,7 +3,7 @@ import { Alert, Box, Typography } from '@mui/material';
 import type { Subscription } from '@prisma/client';
 import { SubscriptionType } from '@prisma/client';
 
-import { toPrettyDate } from '~/_libs/core/utils/dates';
+import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import DataLabel from './DataLabel';
 
 export default function GiftSubscriptionWooData(props: {
@@ -44,6 +44,10 @@ export default function GiftSubscriptionWooData(props: {
             {
               label: 'Message to recipient',
               data: subscription.gift_messageToRecipient,
+            },
+            {
+              label: 'Woo order created at',
+              data: toPrettyDateTime(subscription.wooCreatedAt),
             },
           ]}
         />

@@ -126,6 +126,41 @@ export default function UpdateOrder() {
     setOpen(true);
   };
 
+  const dataFields: any[] = [
+    {
+      label: 'Subscription',
+      data: order.subscription.recipientName,
+      dataLinkUrl: `/subscriptions/admin/${order.subscriptionId}`,
+    },
+    {
+      label: 'Delivery day',
+      data: toPrettyDate(order.delivery.date),
+      dataLinkUrl: `/deliveries/admin/${order.deliveryId}`,
+    },
+    {
+      label: 'Created at',
+      data: toPrettyDateTime(order.createdAt, true),
+    },
+    {
+      label: 'Updated at',
+      data: toPrettyDateTime(order.updatedAt, true),
+    },
+  ];
+
+  if (order.wooOrderId) {
+    dataFields.push({
+      label: 'Woo order id',
+      data: order.wooOrderId || '',
+    });
+
+    dataFields.push({
+      label: 'Woo created at',
+      data: toPrettyDateTime(order.wooCreatedAt),
+    });
+  }
+
+  console.log(dataFields);
+
   return (
     <Box
       m={2}
@@ -138,32 +173,7 @@ export default function UpdateOrder() {
       <Grid container>
         <Grid item>
           <Box sx={{ m: 1 }}>
-            <DataLabel
-              dataFields={[
-                {
-                  label: 'Subscription',
-                  data: order.subscription.recipientName,
-                  dataLinkUrl: `/subscriptions/admin/${order.subscriptionId}`,
-                },
-                {
-                  label: 'Delivery day',
-                  data: toPrettyDate(order.delivery.date),
-                  dataLinkUrl: `/deliveries/admin/${order.deliveryId}`,
-                },
-                {
-                  label: 'Created at',
-                  data: toPrettyDateTime(order.createdAt, true),
-                },
-                {
-                  label: 'Updated at',
-                  data: toPrettyDateTime(order.updatedAt, true),
-                },
-                {
-                  label: 'Woo order id',
-                  data: order.wooOrderId || '',
-                },
-              ]}
-            />
+            <DataLabel dataFields={dataFields} />
           </Box>
         </Grid>
         <Grid item>
