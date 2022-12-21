@@ -64,18 +64,6 @@ export default function RoastOverviewBox(props: {
     setDelivery(deliveries.find((c) => c.id === e.target.value) as Delivery);
   };
 
-  // INCLUDE WOO ABO DATA IF DELIVERY TYPE IS STOR-ABO
-
-  // INCLUDE B2B ABO DATA IF DELIVERY TYPE IS B2B-ABO // DONE IN bagCounterMonthly
-
-  // INCLUDE SUBSCRIPTION PASSIVE ORDERS (B2B but can also be from GIFT)
-
-  // INCLUDE WOO FORTNIGHTLY ACTIVE RE-CURRENT ORDERS AND NON-RECURRENT ORDERS
-
-  // const weightData = resolveQuantities(stats.bagCounterMonthly, delivery);
-
-  // const overview = getRoastOverview(stats.bagCounterMonthly);
-
   return (
     <Box>
       <TableContainer component={Paper}>
@@ -189,8 +177,8 @@ export default function RoastOverviewBox(props: {
               <TableCell>
                 <big>
                   Estimated from {overview.includedSubscriptionCount}{' '}
-                  subscriptions and {overview.includedOrderCount} active
-                  non-recurrent orders.
+                  subscriptions and {overview.includedOrderCount} actual
+                  order(s).
                 </big>
               </TableCell>
             </TableRow>

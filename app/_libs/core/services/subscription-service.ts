@@ -55,11 +55,12 @@ export function resolveStatusForGiftSubscription(
   durationMonths: number,
   firstDeliveryDate: DateTime
 ): SubscriptionStatus {
-  const last = firstDeliveryDate
+  const first = firstDeliveryDate.startOf('day');
+
+  const last = first
     .plus({ months: durationMonths })
     .startOf('month')
-    .plus({ days: 7 })
-    .startOf('day');
+    .plus({ days: 7 });
 
   const today = DateTime.now().startOf('day');
 
@@ -67,16 +68,17 @@ export function resolveStatusForGiftSubscription(
 
   if (today > last) return SubscriptionStatus.COMPLETED;
 
-  if (firstDeliveryDate > nextMonthly) return SubscriptionStatus.NOT_STARTED;
+  if (first > nextMonthly) return SubscriptionStatus.NOT_STARTED;
 
   return SubscriptionStatus.ACTIVE;
 }
 
-// TODO: ADD NEW STATUS "NOT_STARTED" AND UPDATE TO "ACTIVE" WHEN STARTED - IMPORT NEEDS TO BE UPDATED
 export async function updateStatusOnGiftSubscriptions() {
   const gifts = await getSubscriptions({
     where: {
-      status: SubscriptionStatus.ACTIVE,
+      status: {
+        in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.NOT_STARTED],
+      },
       type: SubscriptionType.PRIVATE_GIFT,
     },
     select: {

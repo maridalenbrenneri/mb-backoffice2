@@ -67,7 +67,7 @@ function fromItems(orders: Order[]) {
   return data;
 }
 
-function aggregateCoffeesFromNonRecurringOrders(orders: Order[]) {
+function aggregateCoffeesOrders(orders: Order[]) {
   // get total count from all orders of each bag size
   let _250 = 0;
   let _500 = 0;
@@ -117,9 +117,6 @@ function resolveCoffee(coffees: Coffee[], coffeeId: number) {
   return coffees.find((c) => c.id === coffeeId);
 }
 
-// RESOLVES QUANTITES OF EACH COFFEE TYPES AND BAG SIZES
-// COFFEES IN ORDERS FROM SELECTED DELIVERY IS INCLUDED.
-// BASE IS A BAG COUNTER (CREATED FROM CURRENT ABO STATS IF STOR-ABO DELIVERY)
 export function getRoastOverview(
   subscriptions: Subscription[],
   delivery: Delivery | undefined = undefined,
@@ -130,11 +127,14 @@ export function getRoastOverview(
 
   let includedSubscriptionCount = 0;
   let includedOrderCount = 0;
+  const coffeesFromCustomOrdersNotSetOnDelivery: any[] = [];
+  const fortnigthlyPrivateOrdersOnDelivery: Order[] = [];
 
   let _250 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
   let _500 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
   let _1200 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
 
+  // ADD MONTHLY SUBSCRIPTIONS (ESTIMATE, NOT FROM ACTUAL RENEWAL ORDERS)
   if (delivery.type === 'MONTHLY') {
     const monthlySubscriptions = subscriptions.filter(
       (s) =>
@@ -156,7 +156,10 @@ export function getRoastOverview(
 
     includedSubscriptionCount += monthlySubscriptions.length;
     console.debug('MONTHLY', aggSubscriptions);
-  } else if (delivery.type === 'MONTHLY_3RD') {
+  }
+
+  // ADD MONTHLY_3RD SUBSCRIPTIONS (ESTIMATE, NOT FROM ACTUAL RENEWAL ORDERS)
+  if (delivery.type === 'MONTHLY_3RD') {
     const monthly3rdSubscriptions = subscriptions.filter(
       (s) =>
         s.frequency === SubscriptionFrequency.MONTHLY_3RD ||
@@ -180,14 +183,23 @@ export function getRoastOverview(
     console.debug('MONTHLY_3RD', aggSubscriptions);
   }
 
+  // ADD PRIVATE FORTNIGHTLY (ESTIMATE BASED ON wooNextPaymentDate OR ACTUAL RENEWAL ORDERS IF EXISTS)
   const fortnightlyPrivate = subscriptions.filter(
     (s) =>
       s.frequency === SubscriptionFrequency.FORTNIGHTLY &&
       s.type === SubscriptionType.PRIVATE &&
       s.wooNextPaymentDate !== null
   );
-
   fortnightlyPrivate.forEach((s) => {
+    // Exclude if renewal order exist on Delivery (renewal orders will be added below)
+    const order = delivery.orders.find((o: Order) => o.subscriptionId === s.id);
+    if (order) {
+      console.debug('Subscription already has a renewal order on delivery');
+      fortnigthlyPrivateOrdersOnDelivery.push(order);
+      return;
+    }
+
+    // Should not happen, just to make ESLint happy
     if (!s.wooNextPaymentDate) return;
 
     const next = DateTime.fromISO(s.wooNextPaymentDate.toString());
@@ -211,102 +223,113 @@ export function getRoastOverview(
     }
   });
 
-  const notSetOnDelivery: any[] = [];
-
-  if (delivery.orders?.length) {
-    const nonRecurringOrders = delivery.orders.filter(
-      (o: Order) => o.type === OrderType.NON_RECURRING
+  // ADD FORTNIGHTLY ABO ORDERS (THOSE EXCLUDED FROM nextPaymentDate ESTIMATE ABOVE)
+  if (fortnigthlyPrivateOrdersOnDelivery.length) {
+    const aggOrders = aggregateCoffeesOrders(
+      fortnigthlyPrivateOrdersOnDelivery
     );
 
-    const customOrders = delivery.orders.filter(
-      (o: Order) => o.type === OrderType.CUSTOM
-    );
+    // These can only be from Woo, so only _250 needed
+    _250.coffee1 += aggOrders._250.coffee1;
+    _250.coffee2 += aggOrders._250.coffee2;
+    _250.coffee3 += aggOrders._250.coffee3;
+    _250.coffee4 += aggOrders._250.coffee4;
 
-    if (nonRecurringOrders.length) {
-      const aggOrders =
-        aggregateCoffeesFromNonRecurringOrders(nonRecurringOrders);
+    includedOrderCount += fortnigthlyPrivateOrdersOnDelivery.length;
+  }
 
-      _250.coffee1 += aggOrders._250.coffee1;
-      _250.coffee2 += aggOrders._250.coffee2;
-      _250.coffee3 += aggOrders._250.coffee3;
-      _250.coffee4 += aggOrders._250.coffee4;
+  // ADD NON-RENEWAL ORDERS TO OVERVIEW (FROM PASSIVE SUBSCRIPTIONS OR MANUALLY CREATED ORDERS ON ACTIVE SUBSCRIPTIONS)
+  const nonRecurringOrders = delivery.orders.filter(
+    (o: Order) => o.type === OrderType.NON_RECURRING
+  );
+  if (nonRecurringOrders.length) {
+    const aggOrders = aggregateCoffeesOrders(nonRecurringOrders);
 
-      _500.coffee1 += aggOrders._500.coffee1;
-      _500.coffee2 += aggOrders._500.coffee2;
-      _500.coffee3 += aggOrders._500.coffee3;
-      _500.coffee4 += aggOrders._500.coffee4;
+    _250.coffee1 += aggOrders._250.coffee1;
+    _250.coffee2 += aggOrders._250.coffee2;
+    _250.coffee3 += aggOrders._250.coffee3;
+    _250.coffee4 += aggOrders._250.coffee4;
 
-      _1200.coffee1 += aggOrders._1200.coffee1;
-      _1200.coffee2 += aggOrders._1200.coffee2;
-      _1200.coffee3 += aggOrders._1200.coffee3;
-      _1200.coffee4 += aggOrders._1200.coffee4;
+    _500.coffee1 += aggOrders._500.coffee1;
+    _500.coffee2 += aggOrders._500.coffee2;
+    _500.coffee3 += aggOrders._500.coffee3;
+    _500.coffee4 += aggOrders._500.coffee4;
 
-      includedOrderCount += nonRecurringOrders.length;
+    _1200.coffee1 += aggOrders._1200.coffee1;
+    _1200.coffee2 += aggOrders._1200.coffee2;
+    _1200.coffee3 += aggOrders._1200.coffee3;
+    _1200.coffee4 += aggOrders._1200.coffee4;
+
+    includedOrderCount += nonRecurringOrders.length;
+  }
+
+  // ADD CUSTOM ORDERS
+  const customOrders = delivery.orders.filter(
+    (o: Order) => o.type === OrderType.CUSTOM
+  );
+  if (customOrders.length) {
+    const map = fromItems(customOrders);
+
+    const list: number[] = [];
+    let c1, c2, c3, c4;
+
+    // ADD QUANTITIES TO COFFEES SET ON DELIVERY - LIST USED TO HANDLE WHEN SAME COFFEE IS SET MULTIPLE TIMES ON DELIVERY
+    if (delivery.coffee1Id) {
+      c1 = map.get(delivery.coffee1Id);
+      list.push(delivery.coffee1Id);
     }
 
-    if (customOrders.length) {
-      const map = fromItems(customOrders);
+    if (delivery.coffee2Id && !list.some((l) => l === delivery.coffee2Id)) {
+      c2 = map.get(delivery.coffee2Id);
+      list.push(delivery.coffee2Id);
+    }
 
-      const list: number[] = [];
-      let c1, c2, c3, c4;
+    if (delivery.coffee3Id && !list.some((l) => l === delivery.coffee3Id)) {
+      c3 = map.get(delivery.coffee3Id);
+      list.push(delivery.coffee3Id);
+    }
 
-      // ADD QUANTITIES TO COFFEES SET ON DELIVERY - LIST USED TO HANDLE WHEN SAME COFFEE IS SET MULTIPLE TIMES ON DELIVERY
-      if (delivery.coffee1Id) {
-        c1 = map.get(delivery.coffee1Id);
-        list.push(delivery.coffee1Id);
-      }
+    if (delivery.coffee4Id && !list.some((l) => l === delivery.coffee4Id)) {
+      c4 = map.get(delivery.coffee4Id);
+      list.push(delivery.coffee4Id);
+    }
 
-      if (delivery.coffee2Id && !list.some((l) => l === delivery.coffee2Id)) {
-        c2 = map.get(delivery.coffee2Id);
-        list.push(delivery.coffee2Id);
-      }
+    _250.coffee1 += c1?._250 || 0;
+    _250.coffee2 += c2?._250 || 0;
+    _250.coffee3 += c3?._250 || 0;
+    _250.coffee4 += c4?._250 || 0;
 
-      if (delivery.coffee3Id && !list.some((l) => l === delivery.coffee3Id)) {
-        c3 = map.get(delivery.coffee3Id);
-        list.push(delivery.coffee3Id);
-      }
+    _500.coffee1 += c1?._500 || 0;
+    _500.coffee2 += c2?._500 || 0;
+    _500.coffee3 += c3?._500 || 0;
+    _500.coffee4 += c4?._500 || 0;
 
-      if (delivery.coffee4Id && !list.some((l) => l === delivery.coffee4Id)) {
-        c4 = map.get(delivery.coffee4Id);
-        list.push(delivery.coffee4Id);
-      }
+    _1200.coffee1 += c1?._1200 || 0;
+    _1200.coffee2 += c2?._1200 || 0;
+    _1200.coffee3 += c3?._1200 || 0;
+    _1200.coffee4 += c4?._1200 || 0;
 
-      _250.coffee1 += c1?._250 || 0;
-      _250.coffee2 += c2?._250 || 0;
-      _250.coffee3 += c3?._250 || 0;
-      _250.coffee4 += c4?._250 || 0;
-
-      _500.coffee1 += c1?._500 || 0;
-      _500.coffee2 += c2?._500 || 0;
-      _500.coffee3 += c3?._500 || 0;
-      _500.coffee4 += c4?._500 || 0;
-
-      _1200.coffee1 += c1?._1200 || 0;
-      _1200.coffee2 += c2?._1200 || 0;
-      _1200.coffee3 += c3?._1200 || 0;
-      _1200.coffee4 += c4?._1200 || 0;
-
-      // ADD QUANTITIES TO COFFEES NOT SET ON DELIVERY
-      for (const [key, value] of map.entries()) {
-        if (
-          key !== delivery.coffee1Id &&
-          key !== delivery.coffee2Id &&
-          key !== delivery.coffee3Id &&
-          key !== delivery.coffee4Id
-        ) {
-          const coffee = resolveCoffee(coffees, key);
-          notSetOnDelivery.push({
-            coffeeId: key,
-            productCode: coffee?.productCode || `${key}`,
-            totalKg:
-              (value._250 * 250 + value._500 * 500 + value._1200 * 1200) / 1000,
-            _250: value._250,
-            _500: value._500,
-            _1200: value._1200,
-          });
-        }
+    // ADD QUANTITIES TO COFFEES NOT SET ON DELIVERY
+    for (const [key, value] of map.entries()) {
+      if (
+        key !== delivery.coffee1Id &&
+        key !== delivery.coffee2Id &&
+        key !== delivery.coffee3Id &&
+        key !== delivery.coffee4Id
+      ) {
+        const coffee = resolveCoffee(coffees, key);
+        coffeesFromCustomOrdersNotSetOnDelivery.push({
+          coffeeId: key,
+          productCode: coffee?.productCode || `${key}`,
+          totalKg:
+            (value._250 * 250 + value._500 * 500 + value._1200 * 1200) / 1000,
+          _250: value._250,
+          _500: value._500,
+          _1200: value._1200,
+        });
       }
     }
+
     includedOrderCount += customOrders.length;
   }
 
@@ -317,7 +340,7 @@ export function getRoastOverview(
     _500,
     _1200,
     ...weight,
-    notSetOnDelivery,
+    notSetOnDelivery: coffeesFromCustomOrdersNotSetOnDelivery,
     includedSubscriptionCount,
     includedOrderCount,
   };
