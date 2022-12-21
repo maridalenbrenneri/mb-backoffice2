@@ -6,15 +6,16 @@ export interface DeliveryDate {
   type: string;
 }
 
-export function toPrettyDate2(date: Date | undefined | null) {
-  if (!date) return null;
-  return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
-}
-
 export function toPrettyDate(date: Date | undefined | null) {
   if (!date) return null;
 
   return DateTime.fromISO(date.toString()).toFormat('dd.MM.yy');
+}
+
+export function toPrettyDateText(date: Date | undefined | null) {
+  if (!date) return null;
+
+  return DateTime.fromISO(date.toString()).toFormat('ccc d. LLL');
 }
 
 export function toPrettyDateTime(

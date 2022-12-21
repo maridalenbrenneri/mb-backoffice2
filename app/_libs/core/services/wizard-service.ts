@@ -63,10 +63,11 @@ function isSystemSubscription(subscriptionId: number) {
   );
 }
 
-export async function generatePreview() {
+export async function generatePreview(deliveryIds: number[]) {
   const orders = await getOrders({
     where: {
       status: OrderStatus.ACTIVE,
+      deliveryId: { in: deliveryIds },
     },
     include: {
       orderItems: {

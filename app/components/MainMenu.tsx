@@ -18,7 +18,6 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LocalPostOfficeIcon from '@mui/icons-material/LocalPostOffice';
 import CoffeeIcon from '@mui/icons-material/Coffee';
-import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 
 export default function MainMenu(props: { loggedIn: boolean }) {
   const { loggedIn } = props;
@@ -76,15 +75,6 @@ export default function MainMenu(props: { loggedIn: boolean }) {
 
               <ListItemButton
                 component={Link}
-                to={'/subscriptions'}
-                onClick={() => setIsDrawerOpen(false)}
-              >
-                <SubscriptionsIcon />
-                <ListItemText primary="Subscriptions" />
-              </ListItemButton>
-
-              <ListItemButton
-                component={Link}
                 to={'/coffees'}
                 onClick={() => setIsDrawerOpen(false)}
               >
@@ -93,6 +83,14 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               </ListItemButton>
 
               <Divider />
+
+              <ListItemButton
+                component={Link}
+                to={'/subscriptions'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
+                <ListItemText secondary="Subscriptions" />
+              </ListItemButton>
 
               <ListItemButton
                 component={Link}

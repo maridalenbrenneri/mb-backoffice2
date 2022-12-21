@@ -10,3 +10,16 @@ export function coffeeVariationToLabel(variation: string) {
       return variation;
   }
 }
+
+export function deliveryDayTypeToLabel(type: string) {
+  switch (type) {
+    case 'NORMAL':
+      return 'Normal';
+    case 'MONTHLY':
+      return 'Monthly';
+    case 'MONTHLY_3RD':
+      return 'Monthly 3rd';
+    default:
+      return type;
+  }
+}

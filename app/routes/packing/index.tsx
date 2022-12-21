@@ -4,11 +4,12 @@ import {
   Form,
   useActionData,
   useLoaderData,
+  useSubmit,
   useTransition,
 } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 
-import type { Order } from '@prisma/client';
+import type { Delivery, Order } from '@prisma/client';
 
 import {
   Accordion,
@@ -17,9 +18,12 @@ import {
   Box,
   Button,
   CircularProgress,
+  FormControl,
   Grid,
+  MenuItem,
   Modal,
   Paper,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -37,16 +41,47 @@ import { generatePreview } from '~/_libs/core/services/wizard-service';
 import Orders from '../../components/Orders';
 import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
 import { modalStyle } from '~/style/theme';
+import { getDeliveries } from '~/_libs/core/models/delivery.server';
+import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
+import { toPrettyDateText } from '~/_libs/core/utils/dates';
+import { deliveryDayTypeToLabel } from '~/_libs/core/utils/labels';
 
 type LoaderData = {
   preview: Awaited<ReturnType<typeof generatePreview>>;
+  currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
+  selectedDelivery: Delivery;
 };
 
-export const loader = async () => {
-  const preview = await generatePreview();
+export const loader = async ({ request }) => {
+  const url = new URL(request.url);
+  const search = new URLSearchParams(url.search);
+  const deliveryId = search.get('deliveryId');
+
+  const currentDeliveries = await getDeliveries({
+    select: {
+      id: true,
+      date: true,
+      type: true,
+    },
+    orderBy: { date: 'desc' },
+    take: 5,
+  });
+
+  const selectedDelivery = deliveryId
+    ? currentDeliveries.find((d) => d.id === +deliveryId)
+    : await getNextOrCreateDelivery();
+
+  if (!selectedDelivery) throw new Error("Couldn't resolve Delivery day");
+
+  const deliveries = currentDeliveries.filter(
+    (d) => d.date <= selectedDelivery.date
+  );
+  const preview = await generatePreview(deliveries.map((d) => d.id));
 
   return json<LoaderData>({
     preview,
+    currentDeliveries,
+    selectedDelivery,
   });
 };
 
@@ -68,31 +103,18 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Packing() {
-  const { preview } = useLoaderData() as unknown as LoaderData;
+  const { preview, currentDeliveries, selectedDelivery } =
+    useLoaderData() as unknown as LoaderData;
   const data = useActionData();
+  const submit = useSubmit();
   const transition = useTransition();
 
   const isWorking = Boolean(transition.submission);
-
+  const [delivery, setDelivery] = useState<Delivery>();
+  const [deliveries, setDeliveries] = useState<Delivery[]>();
   const [resultData, setResultData] = useState<[] | null>(null);
-
   const [expanded, setExpanded] = useState<string | false>(false);
-
-  useEffect(() => {
-    setResultData(data);
-  }, [data]);
-
   const [open, setOpen] = useState(false);
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = (_event: any, reason: string) => {
-    if (reason === 'closeBtnClick') {
-      setResultData(null);
-      setOpen(false);
-    }
-  };
 
   const [customPickUpOrders, setPickUpCustomOrders] = useState<Order[]>([]);
   const [renewalPickUpOrders, setPickUpRenewalOrders] = useState<Order[]>([]);
@@ -132,10 +154,45 @@ export default function Packing() {
     setB2bRenewalOrders(preview.orders.b2bs.renewal.ship);
   }, [preview]);
 
+  useEffect(() => {
+    setDeliveries(currentDeliveries);
+  }, [currentDeliveries]);
+
+  useEffect(() => {
+    setDelivery(selectedDelivery);
+  }, [selectedDelivery]);
+
+  useEffect(() => {
+    setResultData(data);
+  }, [data]);
+
+  if (!preview || !deliveries || !delivery) return null;
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (_event: any, reason: string) => {
+    if (reason === 'closeBtnClick') {
+      setResultData(null);
+      setOpen(false);
+    }
+  };
+
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
     };
+
+  const handleSelectDelivery = (e: any) => {
+    setDelivery(e.target.value);
+    submit(
+      {
+        deliveryId: e.target.value,
+      },
+      { replace: true }
+    );
+  };
 
   const renderAccordian = (
     title: string,
@@ -196,6 +253,32 @@ export default function Packing() {
             Active orders ready to be packed and shipped, grouped by
             packing/shipping type.
           </p>
+          <Paper sx={{ m: 2, px: 2, py: 1 }}>
+            <Form method="post">
+              <FormControl sx={{ my: 2 }}>
+                Include orders up to and including Delivery day
+              </FormControl>
+              <FormControl sx={{ m: 1 }}>
+                <Select
+                  labelId={`delivery-label`}
+                  name={`deliveryId`}
+                  defaultValue={delivery?.id || 0}
+                  onChange={handleSelectDelivery}
+                  sx={{ minWidth: 250 }}
+                  size="small"
+                >
+                  {deliveries &&
+                    deliveries.map((d) => (
+                      <MenuItem value={d.id} key={d.id}>
+                        {toPrettyDateText(d.date)} -{' '}
+                        {deliveryDayTypeToLabel(d.type)}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+              <FormControl></FormControl>
+            </Form>
+          </Paper>
         </Grid>
         <Grid item xs={12}>
           {renderAccordian(`Custom - local pick-up`, customPickUpOrders, false)}

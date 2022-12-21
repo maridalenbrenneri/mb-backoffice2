@@ -1,6 +1,5 @@
 import Typography from '@mui/material/Typography';
-import { Box } from '@mui/material';
-import { Settings } from '@mui/icons-material';
+import { Alert, Box } from '@mui/material';
 import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
 
 export default function JobResult() {
@@ -26,6 +25,31 @@ export default function JobResult() {
             the currently selected
           </li>
         </ul>
+      </Box>
+
+      <Box sx={{ m: 2 }}>
+        <Typography variant="h2">Packing & Shipping</Typography>
+        <p>
+          This is where you hang out on packing day for easy order completion
+          and shipping. :)
+        </p>
+        <p>
+          Active orders appears here grouped in "packing groups" where they can
+          be completed and sent to Cargonizer in batches. Active orders set on
+          the selected and on previous Delivery days will be included.
+        </p>
+        <p>
+          To be gentle with Woo and Cargonizer (and our printer, and ourselves),
+          max orders sent in one batch is set to {COMPLETE_ORDERS_BATCH_MAX}.
+        </p>
+        <Alert severity="warning">
+          If you pack/send orders later than on the ordinary shipping day
+          (Tuesday), for example on a Thursday, it might have been created
+          renewal orders for subscriptions that should not be sent until the
+          week after, so make sure correct Delivery day is selected and the
+          amount of orders seems reasonable.
+          <p></p>
+        </Alert>
       </Box>
 
       <Box sx={{ m: 2 }}>
@@ -133,22 +157,6 @@ export default function JobResult() {
         <p>
           All orders are connected to a Delivery day and the Roast overview is
           based on the orders connected to one Delivery day.
-        </p>
-      </Box>
-
-      <Box sx={{ m: 2 }}>
-        <Typography variant="h2">Packing & Shipping</Typography>
-        <p>
-          All active orders appears here grouped in "packing groups" where they
-          can be completed and sent to Cargonizer in batches.
-        </p>
-        <p>
-          This is where you hang out on packing day for easy order completion
-          and shipping. :)
-        </p>
-        <p>
-          To be gentle with Woo and Cargonizer (and our printer, and ourselves),
-          max orders sent in one batch is set to {COMPLETE_ORDERS_BATCH_MAX}.
         </p>
       </Box>
     </main>

@@ -97,7 +97,7 @@ export const loader = async () => {
         },
       },
     },
-    orderBy: { date: 'asc' },
+    orderBy: { date: 'desc' },
     take: 5,
   });
 

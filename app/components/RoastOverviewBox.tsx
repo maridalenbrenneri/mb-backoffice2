@@ -11,7 +11,7 @@ import Paper from '@mui/material/Paper';
 
 import type { Coffee, Delivery, Subscription } from '@prisma/client';
 
-import { toPrettyDate2 } from '~/_libs/core/utils/dates';
+import { toPrettyDateText } from '~/_libs/core/utils/dates';
 import { getRoastOverview } from '~/_libs/core/services/roast-service';
 import {
   FormControl,
@@ -24,6 +24,7 @@ import {
 import { useEffect, useState } from 'react';
 import { getNextDeliveryFromList } from '~/_libs/core/services/delivery-service';
 import { roundTotalKg } from '~/_libs/core/utils/numbers';
+import { deliveryDayTypeToLabel } from '~/_libs/core/utils/labels';
 
 export default function RoastOverviewBox(props: {
   subscriptions: Subscription[];
@@ -84,7 +85,8 @@ export default function RoastOverviewBox(props: {
                     >
                       {deliveries.map((d) => (
                         <MenuItem value={d.id} key={d.id}>
-                          {toPrettyDate2(d.date)} - {d.type}
+                          {toPrettyDateText(d.date)} -{' '}
+                          {deliveryDayTypeToLabel(d.type)}
                         </MenuItem>
                       ))}
                     </Select>
