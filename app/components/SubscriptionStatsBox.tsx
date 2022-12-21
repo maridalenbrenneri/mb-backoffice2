@@ -52,7 +52,7 @@ export default function SubscriptionStatsBox(props: {
                   data: stats.b2bMonthlySubscriptionCount || 0,
                 },
                 {
-                  label: 'B2B, fortnightly',
+                  label: 'B2B, twice a month',
                   data: stats.b2bFortnightlySubscriptionCount || 0,
                 },
               ]}
