@@ -18,7 +18,10 @@ import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
 import { getCoffees } from '~/_libs/core/models/coffee.server';
 
-import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
+import {
+  resolveAboStats,
+  SubscriptionStats,
+} from '~/_libs/core/services/subscription-stats';
 import { countBags } from '~/_libs/core/services/subscription-stats';
 import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
 import RoastOverviewBox from '~/components/RoastOverviewBox';
@@ -119,46 +122,6 @@ export const loader = async () => {
     cargonizerProfile,
   });
 };
-
-function resolveAboStats(
-  allActiveSubscriptions: Subscription[]
-): SubscriptionStats {
-  const activeMonthly = allActiveSubscriptions.filter(
-    (s) => s.frequency === SubscriptionFrequency.MONTHLY
-  );
-
-  const activeMonthly3rd = allActiveSubscriptions.filter(
-    (s) => s.frequency === SubscriptionFrequency.MONTHLY_3RD
-  );
-
-  const activeFortnightly = allActiveSubscriptions.filter(
-    (s) => s.frequency === SubscriptionFrequency.FORTNIGHTLY
-  );
-
-  const bagCounterMonthly = countBags(activeMonthly);
-  const bagCounterMonthly3rd = countBags(activeMonthly3rd); // No Monthly3rd comes from Woo
-  const bagCounterFortnightly = countBags(activeFortnightly);
-
-  const gifts =
-    allActiveSubscriptions.filter(
-      (s) => s.type === SubscriptionType.PRIVATE_GIFT
-    ) || [];
-
-  const B2Bs =
-    allActiveSubscriptions.filter((s) => s.type === SubscriptionType.B2B) || [];
-
-  return {
-    bagCounterMonthly,
-    bagCounterMonthly3rd,
-    bagCounterFortnightly,
-    totalCount: allActiveSubscriptions.length,
-    monthlyCount: activeMonthly.length,
-    fortnightlyCount: activeFortnightly.length,
-    subscriptionCount: allActiveSubscriptions.length,
-    giftSubscriptionCount: gifts.length,
-    b2bSubscriptionCount: B2Bs.length,
-  };
-}
 
 export default function Index() {
   const {

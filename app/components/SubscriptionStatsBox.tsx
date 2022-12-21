@@ -17,7 +17,7 @@ export default function SubscriptionStatsBox(props: {
   const { stats } = props;
 
   if (!stats) {
-    return <Box>Stats not available</Box>;
+    return null;
   }
 
   return (
@@ -26,7 +26,7 @@ export default function SubscriptionStatsBox(props: {
         <Grid item xs={6} style={{ textAlign: 'center' }}>
           <Paper sx={{ p: 1, paddingBottom: 3.5 }}>
             <Typography variant="h2" sx={{ m: 3, marginBottom: 0 }}>
-              {stats.totalCount + stats.b2bSubscriptionCount}
+              {stats.totalCount}
             </Typography>
             <Typography variant="subtitle2">active subscriptions</Typography>
           </Paper>
@@ -34,21 +34,31 @@ export default function SubscriptionStatsBox(props: {
         <Grid item xs={6}>
           <Paper sx={{ p: 2 }}>
             <DataLabel
-              label="Monthly, ABO/GABO"
-              data={stats.monthlyCount || 0}
+              label="ABO, monthly"
+              data={stats.privateActiveMonthlyCount || 0}
             />
             <DataLabel
-              label="Fortnightly, ABO"
-              data={stats.fortnightlyCount || 0}
+              label="ABO, fortnightly"
+              data={stats.privateActiveFortnigthlyCount || 0}
             />
-            <DataLabel label="GABO" data={stats.giftSubscriptionCount || 0} />
-            <DataLabel label="B2B" data={stats.b2bSubscriptionCount || 0} />
+            <DataLabel
+              label="GABO, monthly"
+              data={stats.privateGiftActiveMonthlyCount || 0}
+            />
+            <DataLabel
+              label="B2B, monthly"
+              data={stats.b2bMonthlySubscriptionCount || 0}
+            />
+            <DataLabel
+              label="B2B, fortnightly"
+              data={stats.b2bFortnightlySubscriptionCount || 0}
+            />
           </Paper>
         </Grid>
       </Grid>
 
       <Typography variant="subtitle1" sx={{ mx: 1 }}>
-        ABO/GABO bag distribution
+        Bag distribution <small>(B2B not included)</small>
       </Typography>
 
       <TableContainer component={Paper}>

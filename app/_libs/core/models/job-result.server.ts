@@ -20,7 +20,7 @@ export async function getJobResults() {
     orderBy: {
       createdAt: 'desc',
     },
-    take: 20,
+    take: 30,
   });
 }
 

@@ -1,4 +1,5 @@
 import type { Subscription } from '@prisma/client';
+import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 
 export interface BagCounterItem {
   one: number;
@@ -18,13 +19,16 @@ export interface BagCounter {
 
 export interface SubscriptionStats {
   totalCount: number;
-  giftSubscriptionCount: number;
-  b2bSubscriptionCount: number;
-  subscriptionCount: number;
-  monthlyCount: number;
-  fortnightlyCount: number;
+
+  privateActiveMonthlyCount: number;
+  privateActiveFortnigthlyCount: number;
+
+  privateGiftActiveMonthlyCount: number;
+
+  b2bMonthlySubscriptionCount: number;
+  b2bFortnightlySubscriptionCount: number;
+
   bagCounterMonthly: BagCounter;
-  bagCounterMonthly3rd: BagCounter;
   bagCounterFortnightly: BagCounter;
 }
 
@@ -98,4 +102,59 @@ export function countBags(
   bagCounter._1200.seven += resolveBagCount(1200, subscriptions, 7);
 
   return bagCounter;
+}
+
+export function resolveAboStats(
+  allActiveSubscriptions: Subscription[]
+): SubscriptionStats {
+  const privateActiveMonthly = allActiveSubscriptions.filter(
+    (s) =>
+      s.frequency === SubscriptionFrequency.MONTHLY &&
+      s.type === SubscriptionType.PRIVATE
+  );
+
+  const privateGiftActiveMonthly = allActiveSubscriptions.filter(
+    (s) =>
+      s.frequency === SubscriptionFrequency.MONTHLY &&
+      s.type === SubscriptionType.PRIVATE_GIFT
+  );
+
+  const privateActiveFortnightly = allActiveSubscriptions.filter(
+    (s) =>
+      s.frequency === SubscriptionFrequency.FORTNIGHTLY &&
+      s.type === SubscriptionType.PRIVATE
+  );
+
+  const bagCounterMonthly = countBags(privateActiveMonthly);
+  const bagCounterFortnightly = countBags(privateActiveFortnightly);
+
+  const B2BMonthly =
+    allActiveSubscriptions.filter(
+      (s) =>
+        (s.frequency === SubscriptionFrequency.MONTHLY_3RD ||
+          s.frequency === SubscriptionFrequency.MONTHLY) &&
+        s.type === SubscriptionType.B2B
+    ) || [];
+
+  const B2BFortnightly =
+    allActiveSubscriptions.filter(
+      (s) =>
+        s.frequency === SubscriptionFrequency.FORTNIGHTLY &&
+        s.type === SubscriptionType.B2B
+    ) || [];
+
+  return {
+    totalCount: allActiveSubscriptions.length,
+
+    bagCounterMonthly,
+    bagCounterFortnightly,
+
+    privateActiveMonthlyCount: privateActiveMonthly.length,
+    privateActiveFortnigthlyCount: privateActiveFortnightly.length,
+
+    privateGiftActiveMonthlyCount: privateGiftActiveMonthly.length,
+
+    b2bMonthlySubscriptionCount: B2BMonthly.length,
+    b2bFortnightlySubscriptionCount: B2BFortnightly.length,
+  };
 }
