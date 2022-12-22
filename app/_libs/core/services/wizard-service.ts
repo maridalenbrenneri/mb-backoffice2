@@ -83,6 +83,12 @@ export async function generatePreview(deliveryIds: number[]) {
           type: true,
         },
       },
+      delivery: {
+        select: {
+          id: true,
+          date: true,
+        },
+      },
     },
   });
 

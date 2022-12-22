@@ -5,12 +5,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 import type { Coffee, Delivery } from '@prisma/client';
-import {
-  OrderStatus,
-  SubscriptionFrequency,
-  SubscriptionStatus,
-  SubscriptionType,
-} from '@prisma/client';
+import { OrderStatus, SubscriptionStatus } from '@prisma/client';
 
 import { getLastJobResult } from '~/_libs/core/models/job-result.server';
 import type { Subscription } from '~/_libs/core/models/subscription.server';
@@ -18,11 +13,7 @@ import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
 import { getCoffees } from '~/_libs/core/models/coffee.server';
 
-import {
-  resolveAboStats,
-  SubscriptionStats,
-} from '~/_libs/core/services/subscription-stats';
-import { countBags } from '~/_libs/core/services/subscription-stats';
+import { resolveAboStats } from '~/_libs/core/services/subscription-stats';
 import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
 import RoastOverviewBox from '~/components/RoastOverviewBox';
 import { getCargonizerProfile } from '~/_libs/cargonizer';
@@ -79,10 +70,11 @@ export const loader = async () => {
       coffee4: { select: { id: true, productCode: true } },
       orders: {
         where: {
-          status: OrderStatus.ACTIVE,
+          status: { in: [OrderStatus.ACTIVE, OrderStatus.COMPLETED] },
         },
         select: {
           id: true,
+          subscriptionId: true,
           type: true,
           quantity250: true,
           quantity500: true,

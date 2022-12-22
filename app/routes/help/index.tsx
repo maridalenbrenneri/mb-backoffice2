@@ -21,10 +21,19 @@ export default function JobResult() {
           <li>GABO - count from active gift subscriptions</li>
           <li>B2B - count from active B2B subscriptions</li>
           <li>
-            Custom orders - orders of any status where Delivery day is set to
-            the currently selected
+            Custom orders - orders with status <small>ACTIVE</small> or{' '}
+            <small>COMPLETED</small> where Delivery day is set to the currently
+            selected
           </li>
         </ul>
+        <Alert severity="info">
+          Orders (custom and fortnightly renewals) with status{' '}
+          <small>COMPLETED</small> are included in overview. This is because we
+          don't want the overview to change when roastig and packing at the same
+          time. If there are orders you don't want in the overview, set them
+          temporarly to <small>ON-HOLD</small> (or <small>CANCELLED</small> if
+          they should never be packed/shipped)
+        </Alert>
       </Box>
 
       <Box sx={{ m: 2 }}>
@@ -122,6 +131,11 @@ export default function JobResult() {
           <small>ABO</small>, renewal orders are created by Woo and imported to
           Backoffice by the import orders job (runs every hour).
         </p>
+        <Alert severity="info">
+          Renewal orders for <small>GABO</small> and <small>B2B</small> are
+          created at 5:00 Thursday mornings the week before monthly and
+          monthly_3rd delivery.
+        </Alert>
         <p></p>
       </Box>
 

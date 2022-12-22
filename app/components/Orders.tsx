@@ -11,7 +11,7 @@ import Box from '@mui/material/Box';
 
 import type { Order } from '@prisma/client';
 
-import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { toPrettyDateText, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { TableFooter } from '@mui/material';
 import { generateReference } from '~/_libs/core/services/order-service';
 
@@ -45,7 +45,7 @@ export default function Orders(props: {
               <TableCell>Created</TableCell>
               <TableCell>Updated</TableCell>
               <TableCell>Name</TableCell>
-              {!ignore('delivery') && <TableCell>Delivery</TableCell>}
+              {!ignore('delivery') && <TableCell>Delivery day</TableCell>}
               <TableCell>Item summary</TableCell>
             </TableRow>
           </TableHead>
@@ -76,7 +76,7 @@ export default function Orders(props: {
                 {!ignore('delivery') && (
                   <TableCell>
                     <Link to={`/deliveries/admin/${order.delivery?.id}`}>
-                      {toPrettyDate(order.delivery?.date)}
+                      {toPrettyDateText(order.delivery?.date)}
                     </Link>
                   </TableCell>
                 )}

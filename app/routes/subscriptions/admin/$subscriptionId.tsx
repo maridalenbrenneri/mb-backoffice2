@@ -86,6 +86,9 @@ export const loader: LoaderFunction = async ({ params }) => {
             },
           },
         },
+        orderBy: {
+          updatedAt: 'desc',
+        },
       },
     },
   });

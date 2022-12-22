@@ -67,21 +67,31 @@ function fromItems(orders: Order[]) {
   return data;
 }
 
-function aggregateCoffeesOrders(orders: Order[]) {
-  // get total count from all orders of each bag size
-  let _250 = 0;
-  let _500 = 0;
-  let _1200 = 0;
+function aggregateCoffeesOrders(
+  orders: Order[],
+  _250: any,
+  _500: any,
+  _1200: any
+) {
+  orders.forEach((order) => {
+    let agg = _agg(order.quantity250 || 0);
+    _250.coffee1 += agg.coffee1;
+    _250.coffee2 += agg.coffee2;
+    _250.coffee3 += agg.coffee3;
+    _250.coffee4 += agg.coffee4;
 
-  orders.map((o: Order) => (_250 += o.quantity250 || 0));
-  orders.map((o: Order) => (_500 += o.quantity500 || 0));
-  orders.map((o: Order) => (_1200 += o.quantity1200 || 0));
+    agg = _agg(order.quantity500 || 0);
+    _500.coffee1 += agg.coffee1;
+    _500.coffee2 += agg.coffee2;
+    _500.coffee3 += agg.coffee3;
+    _500.coffee4 += agg.coffee4;
 
-  return {
-    _250: _agg(_250),
-    _500: _agg(_500),
-    _1200: _agg(_1200),
-  };
+    agg = _agg(order.quantity1200 || 0);
+    _1200.coffee1 += agg.coffee1;
+    _1200.coffee2 += agg.coffee2;
+    _1200.coffee3 += agg.coffee3;
+    _1200.coffee4 += agg.coffee4;
+  });
 }
 
 function aggregateCoffeesFromSubscriptions(
@@ -155,7 +165,9 @@ export function getRoastOverview(
     _1200 = aggSubscriptions._1200;
 
     includedSubscriptionCount += monthlySubscriptions.length;
-    console.debug('MONTHLY', aggSubscriptions);
+
+    console.debug('_250 AFTER monthly');
+    console.table(_250);
   }
 
   // ADD MONTHLY_3RD SUBSCRIPTIONS (ESTIMATE, NOT FROM ACTUAL RENEWAL ORDERS)
@@ -180,8 +192,13 @@ export function getRoastOverview(
 
     includedSubscriptionCount += monthly3rdSubscriptions.length;
 
-    console.debug('MONTHLY_3RD', aggSubscriptions);
+    console.debug('_250 AFTER monthly3rd');
+    console.table(_250);
   }
+
+  // delivery.orders.forEach((o) => {
+  //   console.debug('ORDER IN DELIVERY', o.id, o.subscriptionId);
+  // });
 
   // ADD PRIVATE FORTNIGHTLY (ESTIMATE BASED ON wooNextPaymentDate OR ACTUAL RENEWAL ORDERS IF EXISTS)
   const fortnightlyPrivate = subscriptions.filter(
@@ -194,7 +211,10 @@ export function getRoastOverview(
     // Exclude if renewal order exist on Delivery (renewal orders will be added below)
     const order = delivery.orders.find((o: Order) => o.subscriptionId === s.id);
     if (order) {
-      console.debug('Subscription already has a renewal order on delivery');
+      console.debug(
+        'Subscription already has a renewal order on delivery',
+        order.id
+      );
       fortnigthlyPrivateOrdersOnDelivery.push(order);
       return;
     }
@@ -219,23 +239,31 @@ export function getRoastOverview(
 
       includedSubscriptionCount++;
 
-      console.debug('FORTNIGHTLY PRIVATE', aggSubscriptions);
+      console.debug('_250 AFTER fortnightlyPrivate');
+      console.table(_250);
     }
   });
 
   // ADD FORTNIGHTLY ABO ORDERS (THOSE EXCLUDED FROM nextPaymentDate ESTIMATE ABOVE)
+  console.debug(
+    'ROAST OVERVIEW: fortnigthlyPrivateOrdersOnDelivery',
+    fortnigthlyPrivateOrdersOnDelivery.length
+  );
   if (fortnigthlyPrivateOrdersOnDelivery.length) {
-    const aggOrders = aggregateCoffeesOrders(
-      fortnigthlyPrivateOrdersOnDelivery
+    console.debug('_250 BEFORE fortnigthlyPrivateOrdersOnDelivery');
+    console.table(_250);
+
+    aggregateCoffeesOrders(
+      fortnigthlyPrivateOrdersOnDelivery,
+      _250,
+      _500,
+      _1200
     );
 
-    // These can only be from Woo, so only _250 needed
-    _250.coffee1 += aggOrders._250.coffee1;
-    _250.coffee2 += aggOrders._250.coffee2;
-    _250.coffee3 += aggOrders._250.coffee3;
-    _250.coffee4 += aggOrders._250.coffee4;
-
     includedOrderCount += fortnigthlyPrivateOrdersOnDelivery.length;
+
+    console.debug('_250 AFTER fortnigthlyPrivateOrdersOnDelivery');
+    console.table(_250);
   }
 
   // ADD NON-RENEWAL ORDERS TO OVERVIEW (FROM PASSIVE SUBSCRIPTIONS OR MANUALLY CREATED ORDERS ON ACTIVE SUBSCRIPTIONS)
@@ -243,24 +271,12 @@ export function getRoastOverview(
     (o: Order) => o.type === OrderType.NON_RECURRING
   );
   if (nonRecurringOrders.length) {
-    const aggOrders = aggregateCoffeesOrders(nonRecurringOrders);
-
-    _250.coffee1 += aggOrders._250.coffee1;
-    _250.coffee2 += aggOrders._250.coffee2;
-    _250.coffee3 += aggOrders._250.coffee3;
-    _250.coffee4 += aggOrders._250.coffee4;
-
-    _500.coffee1 += aggOrders._500.coffee1;
-    _500.coffee2 += aggOrders._500.coffee2;
-    _500.coffee3 += aggOrders._500.coffee3;
-    _500.coffee4 += aggOrders._500.coffee4;
-
-    _1200.coffee1 += aggOrders._1200.coffee1;
-    _1200.coffee2 += aggOrders._1200.coffee2;
-    _1200.coffee3 += aggOrders._1200.coffee3;
-    _1200.coffee4 += aggOrders._1200.coffee4;
+    aggregateCoffeesOrders(nonRecurringOrders, _250, _500, _1200);
 
     includedOrderCount += nonRecurringOrders.length;
+
+    console.debug('_250 AFTER nonRecurring');
+    console.table(_250);
   }
 
   // ADD CUSTOM ORDERS
@@ -331,6 +347,9 @@ export function getRoastOverview(
     }
 
     includedOrderCount += customOrders.length;
+
+    console.debug('_250 AFTER custom');
+    console.table(_250);
   }
 
   const weight = calculateWeightByCoffee(_250, _500, _1200);
