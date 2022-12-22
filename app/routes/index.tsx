@@ -62,6 +62,8 @@ export const loader = async () => {
     take: TAKE_MAX_ROWS,
   });
 
+  // DELIVERIES USED IN ROAST OVERVIEW - ONLY "ACTIVE" AND "COMPLETED"
+  // TODO: ROAST OVERVIEW SHOULD DO IT'S OWN DATA LOADING
   const currentDeliveries = await getDeliveries({
     include: {
       coffee1: { select: { id: true, productCode: true } },
@@ -75,6 +77,7 @@ export const loader = async () => {
         select: {
           id: true,
           subscriptionId: true,
+          status: true,
           type: true,
           quantity250: true,
           quantity500: true,

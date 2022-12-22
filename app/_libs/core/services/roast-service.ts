@@ -1,4 +1,5 @@
 import type { Coffee, Delivery, Order, Subscription } from '@prisma/client';
+import { OrderStatus } from '@prisma/client';
 import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 import { OrderType } from '@prisma/client';
 import { DateTime } from 'luxon';
@@ -130,10 +131,13 @@ function resolveCoffee(coffees: Coffee[], coffeeId: number) {
 export function getRoastOverview(
   subscriptions: Subscription[],
   delivery: Delivery | undefined = undefined,
-  coffees: Coffee[] = []
+  coffees: Coffee[] = [],
+  includeCompletedOrders: boolean = false
 ) {
   if (!delivery)
     throw new Error('No delivery set, cannot resolve roast overview');
+
+  console.debug('getRoastOverview', includeCompletedOrders);
 
   let includedSubscriptionCount = 0;
   let includedOrderCount = 0;
@@ -143,6 +147,15 @@ export function getRoastOverview(
   let _250 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
   let _500 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
   let _1200 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
+
+  // MAKE SURE WE ONLY USE ACTIVE AND COMPLETED ORDERS IN ESTIMATION
+  const orders = delivery.orders.filter(
+    (o: Order) =>
+      o.status === OrderStatus.ACTIVE || o.status === OrderStatus.COMPLETED
+  );
+
+  console.log('delivery.orders', delivery.orders.length);
+  console.log('orders', orders.length);
 
   // ADD MONTHLY SUBSCRIPTIONS (ESTIMATE, NOT FROM ACTUAL RENEWAL ORDERS)
   if (delivery.type === 'MONTHLY') {
@@ -196,10 +209,6 @@ export function getRoastOverview(
     console.table(_250);
   }
 
-  // delivery.orders.forEach((o) => {
-  //   console.debug('ORDER IN DELIVERY', o.id, o.subscriptionId);
-  // });
-
   // ADD PRIVATE FORTNIGHTLY (ESTIMATE BASED ON wooNextPaymentDate OR ACTUAL RENEWAL ORDERS IF EXISTS)
   const fortnightlyPrivate = subscriptions.filter(
     (s) =>
@@ -209,7 +218,7 @@ export function getRoastOverview(
   );
   fortnightlyPrivate.forEach((s) => {
     // Exclude if renewal order exist on Delivery (renewal orders will be added below)
-    const order = delivery.orders.find((o: Order) => o.subscriptionId === s.id);
+    const order = orders.find((o: Order) => o.subscriptionId === s.id);
     if (order) {
       console.debug(
         'Subscription already has a renewal order on delivery',
@@ -253,22 +262,25 @@ export function getRoastOverview(
     console.debug('_250 BEFORE fortnigthlyPrivateOrdersOnDelivery');
     console.table(_250);
 
-    aggregateCoffeesOrders(
-      fortnigthlyPrivateOrdersOnDelivery,
-      _250,
-      _500,
-      _1200
-    );
+    const fortnightly = includeCompletedOrders
+      ? fortnigthlyPrivateOrdersOnDelivery
+      : fortnigthlyPrivateOrdersOnDelivery.filter(
+          (o) => o.status === OrderStatus.ACTIVE
+        );
 
-    includedOrderCount += fortnigthlyPrivateOrdersOnDelivery.length;
+    aggregateCoffeesOrders(fortnightly, _250, _500, _1200);
+
+    includedOrderCount += fortnightly.length;
 
     console.debug('_250 AFTER fortnigthlyPrivateOrdersOnDelivery');
     console.table(_250);
   }
 
   // ADD NON-RENEWAL ORDERS TO OVERVIEW (FROM PASSIVE SUBSCRIPTIONS OR MANUALLY CREATED ORDERS ON ACTIVE SUBSCRIPTIONS)
-  const nonRecurringOrders = delivery.orders.filter(
-    (o: Order) => o.type === OrderType.NON_RECURRING
+  const nonRecurringOrders = orders.filter(
+    (o: Order) =>
+      o.type === OrderType.NON_RENEWAL &&
+      (includeCompletedOrders || o.status === OrderStatus.ACTIVE)
   );
   if (nonRecurringOrders.length) {
     aggregateCoffeesOrders(nonRecurringOrders, _250, _500, _1200);
@@ -280,8 +292,10 @@ export function getRoastOverview(
   }
 
   // ADD CUSTOM ORDERS
-  const customOrders = delivery.orders.filter(
-    (o: Order) => o.type === OrderType.CUSTOM
+  const customOrders = orders.filter(
+    (o: Order) =>
+      o.type === OrderType.CUSTOM &&
+      (includeCompletedOrders || o.status === OrderStatus.ACTIVE)
   );
   if (customOrders.length) {
     const map = fromItems(customOrders);

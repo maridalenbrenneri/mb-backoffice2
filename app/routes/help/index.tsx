@@ -20,19 +20,18 @@ export default function JobResult() {
           </li>
           <li>GABO - count from active gift subscriptions</li>
           <li>B2B - count from active B2B subscriptions</li>
-          <li>
-            Custom orders - orders with status <small>ACTIVE</small> or{' '}
-            <small>COMPLETED</small> where Delivery day is set to the currently
-            selected
-          </li>
+          <li>Custom orders</li>
         </ul>
         <Alert severity="info">
-          Orders (custom and fortnightly renewals) with status{' '}
-          <small>COMPLETED</small> are included in overview. This is because we
-          don't want the overview to change when roastig and packing at the same
-          time. If there are orders you don't want in the overview, set them
-          temporarly to <small>ON-HOLD</small> (or <small>CANCELLED</small> if
-          they should never be packed/shipped)
+          If "Include completed orders" is checked both active and completed
+          orders set on the Deliver day are included, this means the overview
+          will NOT change when orders are completed/shipped. This is intended to
+          be used when we're roasting and packing at the same time. The default
+          behaviour is to not include completed orders.
+          <p>
+            Orders with other status's, such as <small>ON-HOLD</small> and{' '}
+            <small>CANCELLED</small> are never included in the overview.
+          </p>
         </Alert>
       </Box>
 
@@ -56,7 +55,7 @@ export default function JobResult() {
           (Tuesday), for example on a Thursday, it might have been created
           renewal orders for subscriptions that should not be sent until the
           week after, so make sure correct Delivery day is selected and the
-          amount of orders seems reasonable.
+          amount of orders seem reasonable.
           <p></p>
         </Alert>
       </Box>
@@ -171,6 +170,22 @@ export default function JobResult() {
         <p>
           All orders are connected to a Delivery day and the Roast overview is
           based on the orders connected to one Delivery day.
+        </p>
+      </Box>
+
+      <Box sx={{ m: 2 }}>
+        <Typography variant="h2">B2B customers</Typography>
+        <p>
+          To create an order for a new B2B customer, first create a subcription
+          with type <small>B2B</small> then, on the Subscription page, create
+          new order. New orders can either be a "renewal" (Coffee types
+          distributed as for any ABO) or a custom order where coffee types and
+          bag sizes are specified.
+        </p>
+        <p>
+          If the customer orders on request only, set the subscription to status{' '}
+          <small>PASSIVE</small>, if renewal orders should be automatically
+          created, set status to <small>ACTIVE</small>.
         </p>
       </Box>
     </main>

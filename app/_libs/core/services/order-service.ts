@@ -87,7 +87,7 @@ export async function createNonRecurringOrder(
   subscriptionId: number,
   quantities: Quantites
 ) {
-  await _createOrder(subscriptionId, OrderType.NON_RECURRING, quantities);
+  await _createOrder(subscriptionId, OrderType.NON_RENEWAL, quantities);
   return redirect(`/subscriptions/admin/${subscriptionId}`);
 }
 

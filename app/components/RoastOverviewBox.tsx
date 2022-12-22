@@ -14,7 +14,10 @@ import type { Coffee, Delivery, Subscription } from '@prisma/client';
 import { toPrettyDateText } from '~/_libs/core/utils/dates';
 import { getRoastOverview } from '~/_libs/core/services/roast-service';
 import {
+  Checkbox,
   FormControl,
+  FormControlLabel,
+  FormGroup,
   InputLabel,
   MenuItem,
   Select,
@@ -34,6 +37,7 @@ export default function RoastOverviewBox(props: {
   const { subscriptions, deliveries, coffees } = props;
   const [delivery, setDelivery] = useState<Delivery>();
   const [overview, setOverview] = useState<any>();
+  const [includeCompleted, setIncludeCompleted] = useState<boolean>(false);
 
   const notSetLabel = '[Not set]';
 
@@ -45,10 +49,15 @@ export default function RoastOverviewBox(props: {
   useEffect(() => {
     if (!delivery) return;
 
-    const overview = getRoastOverview(subscriptions, delivery, coffees);
+    const overview = getRoastOverview(
+      subscriptions,
+      delivery,
+      coffees,
+      includeCompleted
+    );
 
     setOverview(overview);
-  }, [delivery, coffees, subscriptions]);
+  }, [delivery, coffees, subscriptions, includeCompleted]);
 
   if (!deliveries?.length)
     return (
@@ -65,6 +74,11 @@ export default function RoastOverviewBox(props: {
     setDelivery(deliveries.find((c) => c.id === e.target.value) as Delivery);
   };
 
+  const handleChangeIncludeCompleted = () => {
+    console.log(includeCompleted);
+    setIncludeCompleted(!includeCompleted);
+  };
+
   return (
     <Box>
       <TableContainer component={Paper}>
@@ -74,24 +88,37 @@ export default function RoastOverviewBox(props: {
               <TableCell>
                 <Form method="post">
                   <FormControl sx={{ m: 1 }}>
-                    <InputLabel id={`delivery-label`}>Delivery day</InputLabel>
-                    <Select
-                      labelId={`delivery-label`}
-                      name={`deliveryId`}
-                      defaultValue={delivery?.id || 0}
-                      onChange={handleChange}
-                      sx={{ minWidth: 250 }}
-                      size="small"
-                    >
-                      {deliveries.map((d) => (
-                        <MenuItem value={d.id} key={d.id}>
-                          {toPrettyDateText(d.date)} -{' '}
-                          {deliveryDayTypeToLabel(d.type)}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    <FormGroup>
+                      <InputLabel id={`delivery-label`}>
+                        Delivery day
+                      </InputLabel>
+                      <Select
+                        labelId={`delivery-label`}
+                        name={`deliveryId`}
+                        defaultValue={delivery?.id || 0}
+                        onChange={handleChange}
+                        sx={{ minWidth: 250 }}
+                        size="small"
+                      >
+                        {deliveries.map((d) => (
+                          <MenuItem value={d.id} key={d.id}>
+                            {toPrettyDateText(d.date)} -{' '}
+                            {deliveryDayTypeToLabel(d.type)}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      <FormControlLabel
+                        sx={{ marginTop: 0.5 }}
+                        control={
+                          <Checkbox
+                            value={includeCompleted}
+                            onChange={handleChangeIncludeCompleted}
+                          />
+                        }
+                        label="Include completed orders"
+                      />
+                    </FormGroup>
                   </FormControl>
-                  <FormControl></FormControl>
                 </Form>
               </TableCell>
               <TableCell colSpan={4} style={{ textAlign: 'center' }}>

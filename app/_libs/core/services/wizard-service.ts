@@ -48,7 +48,7 @@ export type WizardPreviewGroup = {
 
 function filterPrivateAboQuantity(o: Order, quantity: number) {
   if (
-    (o.type !== OrderType.RENEWAL && o.type !== OrderType.NON_RECURRING) ||
+    (o.type !== OrderType.RENEWAL && o.type !== OrderType.NON_RENEWAL) ||
     o.shippingType !== ShippingType.SHIP
   )
     return false;
@@ -146,7 +146,7 @@ export async function generatePreview(deliveryIds: number[]) {
 
   preview.orders.privates.renewal.pickUp = privates.filter(
     (o) =>
-      (o.type === OrderType.RENEWAL || o.type === OrderType.NON_RECURRING) &&
+      (o.type === OrderType.RENEWAL || o.type === OrderType.NON_RENEWAL) &&
       o.shippingType === ShippingType.LOCAL_PICK_UP
   );
 
@@ -197,13 +197,13 @@ export async function generatePreview(deliveryIds: number[]) {
 
   preview.orders.b2bs.renewal.pickUp = b2bs.filter(
     (o) =>
-      (o.type === OrderType.RENEWAL || o.type === OrderType.NON_RECURRING) &&
+      (o.type === OrderType.RENEWAL || o.type === OrderType.NON_RENEWAL) &&
       o.shippingType === ShippingType.LOCAL_PICK_UP
   );
 
   preview.orders.b2bs.renewal.ship = b2bs.filter(
     (o) =>
-      (o.type === OrderType.RENEWAL || o.type === OrderType.NON_RECURRING) &&
+      (o.type === OrderType.RENEWAL || o.type === OrderType.NON_RENEWAL) &&
       o.shippingType === ShippingType.SHIP
   );
 
