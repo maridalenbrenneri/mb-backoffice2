@@ -108,7 +108,7 @@ export default async function wooApiToOrder(wooApiOrder: any) {
       items: [],
       order: {
         ...orderBaseData,
-        type: OrderType.RECURRING,
+        type: OrderType.RENEWAL,
         quantity250: resolveQuantity(item.wooVariationId),
       },
     };

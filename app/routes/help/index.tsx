@@ -45,7 +45,7 @@ export default function JobResult() {
         <p>
           Active orders appears here grouped in "packing groups" where they can
           be completed and sent to Cargonizer in batches. Active orders set on
-          the selected and on previous Delivery days will be included.
+          the selected and previous Delivery days will be included.
         </p>
         <p>
           To be gentle with Woo and Cargonizer (and our printer, and ourselves),

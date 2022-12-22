@@ -127,7 +127,7 @@ export default async function importWooOrders() {
     }
 
     // SUBSCRIPTION RENEWALS
-    if (info.order.type === OrderType.RECURRING) {
+    if (info.order.type === OrderType.RENEWAL) {
       info.order.subscriptionId = await resolveSubscription(info.order);
       info.order.deliveryId = nextDelivery.id;
 

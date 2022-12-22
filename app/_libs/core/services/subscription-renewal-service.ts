@@ -34,7 +34,7 @@ async function getActiveSubscriptions3RD() {
     include: {
       orders: {
         where: {
-          type: OrderType.RECURRING,
+          type: OrderType.RENEWAL,
         },
         select: {
           createdAt: true,
@@ -74,7 +74,7 @@ async function getActiveSubscriptionsMonthly() {
     include: {
       orders: {
         where: {
-          type: OrderType.RECURRING,
+          type: OrderType.RENEWAL,
         },
         select: {
           createdAt: true,
@@ -118,7 +118,7 @@ export async function createRenewalOrders(ignoreRenewalDay: boolean = false) {
   const newOrders = subscriptionsToCreateOrderOn.map((s: any) => {
     return {
       status: OrderStatus.ACTIVE,
-      type: OrderType.RECURRING,
+      type: OrderType.RENEWAL,
       shippingType: s.shippingType || ShippingType.SHIP,
       subscriptionId: s.id,
       deliveryId: delivery.id,
