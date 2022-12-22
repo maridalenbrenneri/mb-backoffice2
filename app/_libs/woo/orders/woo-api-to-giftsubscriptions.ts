@@ -27,6 +27,7 @@ function itemToSubscription(item: any): GiftSubscriptionCreateInput {
     quantity250: +resolveMetadataValue(item.meta_data, 'poser'),
 
     wooCreatedAt: new Date(item.date_created),
+    wooCustomerId: item.customer_id,
     gift_wooCustomerName: item.customer_name,
     gift_wooOrderId: item.order_id,
     gift_wooOrderLineItemId: `${item.order_id}-${item.id}`, // UNIQUE VALUE USED TO SYNC IMPORT

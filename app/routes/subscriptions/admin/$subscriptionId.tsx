@@ -477,6 +477,10 @@ export default function UpdateSubscription() {
                             data: subscription.wooSubscriptionId,
                           },
                           {
+                            label: 'Woo customer id',
+                            data: subscription.wooCustomerId,
+                          },
+                          {
                             label: 'Woo created at',
                             data: toPrettyDateTime(subscription.wooCreatedAt),
                           },
