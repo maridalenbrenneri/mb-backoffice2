@@ -83,6 +83,7 @@ export default async function wooApiToOrder(wooApiOrder: any) {
 
   const orderBaseData = {
     wooOrderId: wooApiOrder.id,
+    wooOrderNumber: wooApiOrder.number,
     wooCustomerId: wooApiOrder.customer_id,
     wooCreatedAt: new Date(wooApiOrder.date_created),
     status: resolveOrderStatus(wooApiOrder.status, wooApiOrder.payment_method),

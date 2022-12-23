@@ -5,6 +5,7 @@ import { OrderType } from '@prisma/client';
 import { redirect } from '@remix-run/node';
 
 import { sendConsignment } from '~/_libs/cargonizer';
+import type { OrderUpsertData } from '../models/order.server';
 import { updateOrderStatus } from '../models/order.server';
 import { getOrder, upsertOrder } from '../models/order.server';
 import { getSubscription } from '../models/subscription.server';
@@ -59,7 +60,6 @@ async function _createOrder(
   const delivery = await getNextOrCreateDelivery();
 
   const order = await upsertOrder(null, {
-    wooOrderId: null,
     subscriptionId,
     deliveryId: delivery.id,
     status: OrderStatus.ACTIVE,
@@ -75,8 +75,7 @@ async function _createOrder(
     quantity250: quantities?._250 || 0,
     quantity500: quantities?._500 || 0,
     quantity1200: quantities?._1200 || 0,
-    internalNote: null,
-  });
+  } as OrderUpsertData);
 
   if (!order) throw new Error('Failed to create order');
 

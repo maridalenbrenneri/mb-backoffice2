@@ -154,8 +154,13 @@ export default function UpdateOrder() {
     });
 
     dataFields.push({
+      label: 'Woo order number',
+      data: order.wooOrderNumber || '',
+    });
+
+    dataFields.push({
       label: 'Woo created at',
-      data: toPrettyDateTime(order.wooCreatedAt),
+      data: toPrettyDateTime(order.wooCreatedAt, true),
     });
   }
 

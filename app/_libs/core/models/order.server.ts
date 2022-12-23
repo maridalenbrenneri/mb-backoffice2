@@ -24,6 +24,8 @@ export type OrderUpsertData = Pick<
   | 'quantity500'
   | 'quantity1200'
   | 'wooOrderId'
+  | 'wooOrderNumber'
+  | 'wooCreatedAt'
   | 'internalNote'
 >;
 
@@ -127,7 +129,12 @@ export async function upsertOrderFromWoo(
     });
   }
 
-  console.log('Creating order id status active', data.wooOrderId, data.status);
+  console.log(
+    'Creating order id status active',
+    data.wooOrderId,
+    data.status,
+    data.wooOrderNumber
+  );
 
   // NEVER INSERT NOT ACTIVE ORDERS
   if (data.status !== OrderStatus.ACTIVE) {
@@ -142,6 +149,8 @@ export async function upsertOrderFromWoo(
   return prisma.order.create({
     data: {
       wooOrderId,
+      // wooOrderNumber: data.wooOrderNumber, // TODO: Throws exception, why?
+      wooCreatedAt: data.wooCreatedAt,
       type: data.type,
       status: data.status,
       shippingType: data.shippingType,

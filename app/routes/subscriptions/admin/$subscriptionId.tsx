@@ -483,7 +483,10 @@ export default function UpdateSubscription() {
                           },
                           {
                             label: 'Woo created at',
-                            data: toPrettyDateTime(subscription.wooCreatedAt),
+                            data: toPrettyDateTime(
+                              subscription.wooCreatedAt,
+                              true
+                            ),
                           },
                         ]}
                       />

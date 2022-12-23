@@ -186,8 +186,9 @@ model Order {
   status  OrderStatus
   type    OrderType
 
-  wooOrderId   Int? @unique
-  wooCreatedAt DateTime? @db.Timestamptz
+  wooOrderId      Int? @unique
+  wooOrderNumber  String? @unique
+  wooCreatedAt    DateTime? @db.Timestamptz
 
   name        String
   email       String?
