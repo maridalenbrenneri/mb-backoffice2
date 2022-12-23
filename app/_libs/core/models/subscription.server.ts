@@ -89,7 +89,7 @@ export async function createGiftSubscription(
     where: {
       gift_wooOrderLineItemId: input.gift_wooOrderLineItemId || undefined,
     },
-    update: input,
+    update: {},
     create: {
       type: SubscriptionType.PRIVATE_GIFT,
       shippingType: ShippingType.SHIP,
