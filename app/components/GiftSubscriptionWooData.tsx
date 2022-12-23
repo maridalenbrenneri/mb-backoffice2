@@ -42,16 +42,16 @@ export default function GiftSubscriptionWooData(props: {
               data: subscription.wooCustomerId,
             },
             {
-              label: 'Woo order id',
-              data: subscription.gift_wooOrderId,
-            },
-            {
               label: 'Customer note',
               data: subscription.customerNote,
             },
             {
               label: 'Message to recipient',
               data: subscription.gift_messageToRecipient,
+            },
+            {
+              label: 'Woo order id',
+              data: subscription.gift_wooOrderId,
             },
             {
               label: 'Woo order created at',
