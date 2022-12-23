@@ -99,12 +99,12 @@ function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
   const nextMonthly = resolveDateForNextMonthlyDelivery(fromDate);
   const nextMonthly3rd = resolveDateForNextMonthly3rdDelivery(fromDate);
 
-  console.debug(' === DATES === ');
-  console.debug('getDate, input date', fromDate.toString());
-  console.debug('getDate, next any', nextDeliveryDateAnyType.toString());
-  console.debug('getDate, next monthly', nextMonthly.toString());
-  console.debug('getDate, next 3rd', nextMonthly3rd.toString());
-  console.debug(' === === ');
+  // console.debug(' === DATES === ');
+  // console.debug('getDate, input date', fromDate.toString());
+  // console.debug('getDate, next any', nextDeliveryDateAnyType.toString());
+  // console.debug('getDate, next monthly', nextMonthly.toString());
+  // console.debug('getDate, next 3rd', nextMonthly3rd.toString());
+  // console.debug(' === === ');
 
   let type;
   let date;
@@ -129,14 +129,19 @@ function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
 }
 
 // RETURNS NEXT 5 DELIVERY DATES (Tuesdays)
-export function getNextDeliveryDates(): DeliveryDate[] {
-  return [
-    getDate(0, 1),
-    getDate(7, 2),
-    getDate(14, 3),
-    getDate(21, 4),
-    getDate(28, 5),
-  ];
+export function getNextDeliveryDates(days: number = 5): DeliveryDate[] {
+  if (days < 1 || days > 50) return [];
+
+  const result: DeliveryDate[] = [];
+
+  let daysFromNow: number = 0;
+
+  for (let i = 1; i <= days; i++) {
+    result.push(getDate(daysFromNow, i));
+    daysFromNow += 7;
+  }
+
+  return result;
 }
 
 // RETURNS NEXT DELIVERY DATE AFTER THE DATE SPECIFIED

@@ -137,6 +137,19 @@ export default function UpdateSubscription() {
     subscription.id === WOO_RENEWALS_SUBSCRIPTION_ID ||
     subscription.id === WOO_NON_RECURRENT_SUBSCRIPTION_ID;
 
+  // const handleChangeFirstDeliveryDate = (event: any) => {
+  //   const dd = monthlyDeliveryDates.find(
+  //     (d) => d.id === (event.target.value as number)
+  //   ) as DeliveryDate;
+
+  //   console.log('DATE 1', DateTime.fromISO(dd.date.toString()));
+  //   subscription.gift_firstDeliveryDate = DateTime.fromISO(
+  //     dd.date.toString()
+  //   ).toJSDate();
+
+  //   console.log('DATE', subscription.gift_firstDeliveryDate);
+  // };
+
   return (
     <main>
       <Box
@@ -312,7 +325,6 @@ export default function UpdateSubscription() {
                     />
                   </FormControl>
                 </Box>
-
                 <Box my={2}>
                   <div>
                     <FormControl>
@@ -517,6 +529,52 @@ export default function UpdateSubscription() {
           </Grid>
         </Grid>
       </Box>
+      {/* <div>
+        <Modal
+          open={openFirstDelivery}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={{ ...modalStyle, width: '50%' }}>
+            <Grid container>
+              <Grid item xs={12} style={{ textAlign: 'center' }}>
+                <FormControl sx={{ m: 1 }}>
+                  <InputLabel id="date-label">Date</InputLabel>
+                  <Select
+                    labelId="date-label"
+                    defaultValue={`${monthlyDeliveryDates[0].id}`}
+                    onChange={handleChangeFirstDeliveryDate}
+                  >
+                    {monthlyDeliveryDates.map((date: DeliveryDate) => (
+                      <MenuItem value={date.id} key={date.id}>
+                        {toPrettyDate(date.date)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} style={{ textAlign: 'left' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => setOpenFirstDelivery(false)}
+                  sx={{ m: 2, marginTop: 4 }}
+                >
+                  Cancel
+                </Button>
+              </Grid>
+              <Grid item xs={6} style={{ textAlign: 'right' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => setOpenFirstDelivery(false)}
+                  sx={{ m: 2, marginTop: 4 }}
+                >
+                  Update First Delivery day
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Modal>
+      </div> */}
     </main>
   );
 }

@@ -32,6 +32,7 @@ function itemToSubscription(item: any): GiftSubscriptionCreateInput {
     gift_wooOrderId: item.order_id,
     gift_wooOrderLineItemId: `${item.order_id}-${item.id}`, // UNIQUE VALUE USED TO SYNC IMPORT
     gift_durationMonths: duration_months,
+    gift_customerFirstDeliveryDate: startDate.toJSDate(),
     gift_firstDeliveryDate: firstDeliveryDate.toJSDate(),
     gift_messageToRecipient: resolveMetadataValue(
       item.meta_data,

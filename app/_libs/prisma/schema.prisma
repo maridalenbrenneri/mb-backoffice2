@@ -96,8 +96,9 @@ model Subscription {
   gift_wooOrderLineItemId  String? @unique
   gift_wooCustomerName     String? // TODO: OBSOLETE - use wooCustomerName
   gift_durationMonths      Int?
-  gift_firstDeliveryDate   DateTime? @db.Timestamptz
   gift_messageToRecipient  String?
+  gift_firstDeliveryDate   DateTime? @db.Timestamptz
+  gift_customerFirstDeliveryDate DateTime? @db.Timestamptz
 
   orders Order[]
 

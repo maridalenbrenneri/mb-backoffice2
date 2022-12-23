@@ -55,6 +55,7 @@ export type GiftSubscriptionCreateInput = Pick<
   | 'gift_wooOrderLineItemId'
   | 'wooCustomerName'
   | 'gift_firstDeliveryDate'
+  | 'gift_customerFirstDeliveryDate'
   | 'gift_durationMonths'
   | 'gift_messageToRecipient'
 >;

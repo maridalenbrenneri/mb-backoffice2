@@ -51,7 +51,6 @@ export default function NewDelivery() {
     const dd = deliveryDates.find(
       (d) => d.id === (event.target.value as unknown as number)
     ) as DeliveryDate;
-    console.log('DeliveryDate set', dd);
     setDeliveryDate(dd);
   };
 

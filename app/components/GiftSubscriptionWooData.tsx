@@ -22,7 +22,11 @@ export default function GiftSubscriptionWooData(props: {
         <DataLabel
           dataFields={[
             {
-              label: 'First delivery',
+              label: 'Customer requested first delivery date',
+              data: toPrettyDate(subscription.gift_customerFirstDeliveryDate),
+            },
+            {
+              label: 'First delivery day',
               data: toPrettyDate(subscription.gift_firstDeliveryDate),
             },
             {
