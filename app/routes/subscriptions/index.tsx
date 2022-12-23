@@ -33,7 +33,7 @@ import { SubscriptionStatus, SubscriptionType } from '@prisma/client';
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { resolveSubscriptionCode } from '~/_libs/core/services/subscription-service';
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
-import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 
 const defaultStatus = '_all';
 const defaultType = '_all';
@@ -76,6 +76,13 @@ function buildFilter(search: URLSearchParams) {
       mode: 'insensitive',
     };
 
+  const getCustomerNameFilter = search.get('customerName');
+  if (getCustomerNameFilter)
+    filter.where.wooCustomerName = {
+      contains: getCustomerNameFilter,
+      mode: 'insensitive',
+    };
+
   filter.orderBy = {
     id: 'desc',
   };
@@ -112,6 +119,9 @@ export default function Subscriptions() {
   const [recipientEmail, setRecipientEmail] = useState(
     params.get('recipientEmail') || ''
   );
+  const [customerName, setCustomerName] = useState(
+    params.get('customerName') || ''
+  );
 
   useEffect(() => {
     setSubscriptions(loadedSubscriptions);
@@ -128,6 +138,7 @@ export default function Subscriptions() {
     doSubmit({
       status,
       type: e.target.value,
+      customerName,
       recipientName,
       recipientEmail,
     });
@@ -138,30 +149,51 @@ export default function Subscriptions() {
     doSubmit({
       status: e.target.value,
       type,
+      customerName,
       recipientName,
       recipientEmail,
     });
   };
 
-  const handleSelectName = (e: any) => {
+  const handleSelectRecipientName = (e: any) => {
     setRecipientName(e.target.value);
     doSubmit({
       recipientName: e.target.value,
       recipientEmail,
+      customerName,
       type,
       status,
     });
   };
 
-  const handleSelectEmail = (e: any) => {
+  const handleSelectRecipientEmail = (e: any) => {
     if (e.target.value?.length === 1) return;
     setRecipientEmail(e.target.value);
     doSubmit({
       recipientEmail: e.target.value,
+      customerName,
       type,
       status,
       recipientName,
     });
+  };
+
+  const handleSelectCustomerName = (e: any) => {
+    setCustomerName(e.target.value);
+    doSubmit({
+      customerName: e.target.value,
+      recipientName,
+      recipientEmail,
+      type,
+      status,
+    });
+  };
+
+  const gaboInfoString = (s: Subscription) => {
+    if (s.type !== SubscriptionType.PRIVATE_GIFT) return '';
+
+    return `
+      ${toPrettyDate(s.gift_firstDeliveryDate)} / ${s.gift_durationMonths}`;
   };
 
   // TODO: Does not clear content of form controls
@@ -227,21 +259,31 @@ export default function Subscriptions() {
           <FormControl sx={{ m: 1 }}>
             <TextField
               name="recipientName"
-              label="Name"
+              label="Recipient, name"
               variant="outlined"
               size="small"
               defaultValue={recipientName}
-              onChange={handleSelectName}
+              onChange={handleSelectRecipientName}
             />
           </FormControl>
           <FormControl sx={{ m: 1 }}>
             <TextField
               name="recipientEmail"
-              label="Email"
+              label="Recipent, email"
               variant="outlined"
               size="small"
               defaultValue={recipientEmail}
-              onChange={handleSelectEmail}
+              onChange={handleSelectRecipientEmail}
+            />
+          </FormControl>
+          <FormControl sx={{ m: 1 }}>
+            <TextField
+              name="customername"
+              label="Customer, name"
+              variant="outlined"
+              size="small"
+              defaultValue={customerName}
+              onChange={handleSelectCustomerName}
             />
           </FormControl>
           {/* <FormControl>
@@ -269,7 +311,9 @@ export default function Subscriptions() {
                 <TableCell>Created at</TableCell>
                 <TableCell>Recipient</TableCell>
                 <TableCell>Recipient, email</TableCell>
+                <TableCell>Customer, name</TableCell>
                 <TableCell>Abo type</TableCell>
+                <TableCell>GABO start/months</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -298,7 +342,9 @@ export default function Subscriptions() {
                   </TableCell>
                   <TableCell>{subscription.recipientName}</TableCell>
                   <TableCell>{subscription.recipientEmail}</TableCell>
+                  <TableCell>{subscription.wooCustomerName}</TableCell>
                   <TableCell>{resolveSubscriptionCode(subscription)}</TableCell>
+                  <TableCell>{gaboInfoString(subscription)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

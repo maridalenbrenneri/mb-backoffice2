@@ -31,7 +31,7 @@ export default function GiftSubscriptionWooData(props: {
             },
             {
               label: 'Customer',
-              data: subscription.gift_wooCustomerName,
+              data: subscription.wooCustomerName,
             },
             {
               label: 'Woo customer id',

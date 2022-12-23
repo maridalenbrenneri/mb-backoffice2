@@ -82,18 +82,19 @@ model Subscription {
   internalNote String?
   
   // Set on B2B
-  fikenContactId      String? @unique
+  fikenContactId      String? // TODO: Should be uniquq but don't work..
 
   // Set on PRIVATE imported from Woo
   wooSubscriptionId   Int? @unique
   wooCustomerId       Int?
+  wooCustomerName     String?
   wooNextPaymentDate  DateTime? @db.Timestamptz
   wooCreatedAt        DateTime? @db.Timestamptz
 
   // Set on PRIVATE_GIFT (created from Woo order)
   gift_wooOrderId          Int?
   gift_wooOrderLineItemId  String? @unique
-  gift_wooCustomerName     String?
+  gift_wooCustomerName     String? // TODO: OBSOLETE - use wooCustomerName
   gift_durationMonths      Int?
   gift_firstDeliveryDate   DateTime? @db.Timestamptz
   gift_messageToRecipient  String?
