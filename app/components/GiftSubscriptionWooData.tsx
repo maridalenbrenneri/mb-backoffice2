@@ -26,7 +26,7 @@ export default function GiftSubscriptionWooData(props: {
               data: toPrettyDate(subscription.gift_customerFirstDeliveryDate),
             },
             {
-              label: 'First delivery day',
+              label: 'System resolved actual first delivery day',
               data: toPrettyDate(subscription.gift_firstDeliveryDate),
             },
             {
