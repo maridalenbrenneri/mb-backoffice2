@@ -81,6 +81,7 @@ export async function generatePreview(deliveryIds: number[]) {
       subscription: {
         select: {
           type: true,
+          fikenContactId: true,
         },
       },
       delivery: {

@@ -205,9 +205,9 @@ export default function RoastOverviewBox(props: {
               </TableCell>
               <TableCell>
                 <big>
-                  Estimated from {overview.includedSubscriptionCount}{' '}
-                  subscriptions and {overview.includedOrderCount} actual
-                  order(s).
+                  Includes {overview.includedOrderCount} orders and{' '}
+                  {overview.includedSubscriptionCount} estimated renewals from
+                  subscriptions.
                 </big>
               </TableCell>
             </TableRow>

@@ -37,6 +37,7 @@ import {
   createNonRecurringOrder,
 } from '~/_libs/core/services/order-service';
 import {
+  FIKEN_CONTACT_URL,
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
 } from '~/_libs/core/settings';
@@ -446,7 +447,7 @@ export default function UpdateSubscription() {
                           {
                             label: 'Fiken id',
                             data: subscription.fikenContactId,
-                            dataLinkUrl: `https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/${subscription.fikenContactId}`,
+                            dataLinkUrl: `${FIKEN_CONTACT_URL}${subscription.fikenContactId}`,
                           },
                         ]}
                       />
@@ -508,7 +509,7 @@ export default function UpdateSubscription() {
           <Grid item md={12}>
             <Box my={2}>
               <Typography variant="h2">Order History</Typography>
-              <Orders orders={subscription.orders} />
+              <Orders orders={subscription.orders} extraFields={['delivery']} />
             </Box>
           </Grid>
         </Grid>

@@ -14,6 +14,7 @@ export const CARGONIZER_PRODUCT_PRIVATE_SERVICE =
 
 // FIKEN
 export const FIKEN_API_URL = 'https://api.fiken.no/api/v2';
+export const FIKEN_CONTACT_URL = `https://fiken.no/foretak/maridalen-brenneri-as/kontakter/kontakt/`;
 export const FIKEN_COMPANY_SLUG = 'maridalen-brenneri-as';
 
 // WOO

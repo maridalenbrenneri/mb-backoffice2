@@ -8,22 +8,24 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import type { Order } from '@prisma/client';
 
 import { toPrettyDateText, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { TableFooter } from '@mui/material';
 import { generateReference } from '~/_libs/core/services/order-service';
+import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
 
 export default function Orders(props: {
   orders: Order[];
-  ignoreFields?: string[] | undefined;
+  extraFields?: string[] | null | undefined; // "delivery", "fiken"
 }) {
-  const { orders, ignoreFields } = props;
+  const { orders, extraFields: ignoreFields } = props;
 
   if (!orders) return null;
 
-  const ignore = (field: string) => {
+  const extra = (field: string) => {
     if (!ignoreFields) return false;
     return !!ignoreFields.find((f) => f === field);
   };
@@ -34,7 +36,7 @@ export default function Orders(props: {
         <Table sx={{ minWidth: 650 }} aria-label="orders table" size="small">
           <TableHead>
             <TableRow>
-              <TableCell colSpan={8}>
+              <TableCell colSpan={7 + extra.length}>
                 <small>{orders.length} orders</small>
               </TableCell>
             </TableRow>
@@ -45,7 +47,8 @@ export default function Orders(props: {
               <TableCell>Created</TableCell>
               <TableCell>Updated</TableCell>
               <TableCell>Name</TableCell>
-              {!ignore('delivery') && <TableCell>Delivery day</TableCell>}
+              {extra('fiken') && <TableCell>Customer in Fiken</TableCell>}
+              {extra('delivery') && <TableCell>Delivery day</TableCell>}
               <TableCell>Item summary</TableCell>
             </TableRow>
           </TableHead>
@@ -73,13 +76,26 @@ export default function Orders(props: {
                 <TableCell>
                   <small>{order.name}</small>
                 </TableCell>
-                {!ignore('delivery') && (
+                {extra('fiken') && order.subscription && (
                   <TableCell>
-                    <Link to={`/deliveries/admin/${order.delivery?.id}`}>
-                      {toPrettyDateText(order.delivery?.date)}
+                    <a
+                      href={`${FIKEN_CONTACT_URL}${order.subscription.fikenContactId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {order.subscription.fikenContactId}{' '}
+                      <OpenInNewIcon sx={{}} />
+                    </a>
+                  </TableCell>
+                )}
+                {extra('delivery') && order.delivery && (
+                  <TableCell>
+                    <Link to={`/deliveries/admin/${order.deliveryId}`}>
+                      {toPrettyDateText(order.delivery.date)}
                     </Link>
                   </TableCell>
                 )}
+
                 <TableCell>{generateReference(order)}</TableCell>
               </TableRow>
             ))}

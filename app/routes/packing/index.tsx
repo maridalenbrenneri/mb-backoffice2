@@ -15,6 +15,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -197,48 +198,76 @@ export default function Packing() {
   const renderAccordian = (
     title: string,
     orders: Order[],
-    ship: boolean = true
+    ship: boolean = true,
+    isB2B: boolean = false
   ) => {
+    const extraFields = isB2B ? ['fiken'] : null;
     return (
-      <Accordion expanded={expanded === title} onChange={handleChange(title)}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography sx={{ width: '25%', flexShrink: 0 }}>{title}</Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            {orders.length} <small>order(s)</small>
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container>
-            <Grid item xs={12} style={{ textAlign: 'center' }}>
-              <Form method="post">
-                <input
-                  type="hidden"
-                  name="orderIds"
-                  value={orders.map((o) => o.id).join()}
-                />
-                <Button
-                  variant="contained"
-                  type="submit"
-                  disabled={!orders.length || isWorking}
-                  onClick={handleOpen}
-                  sx={{ marginBottom: 2, minWidth: 200 }}
-                >
-                  {ship && <LocalShippingIcon />}
-                  {!ship && <DoneIcon />}
+      <>
+        <Accordion expanded={expanded === title} onChange={handleChange(title)}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography sx={{ width: '25%', flexShrink: 0 }}>
+              {title}
+            </Typography>
+            <Typography sx={{ color: 'text.secondary' }}>
+              {orders.length} <small>order(s)</small>
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container>
+              <Grid item xs={12} style={{ textAlign: 'center' }}>
+                <Form method="post">
+                  <input
+                    type="hidden"
+                    name="orderIds"
+                    value={orders.map((o) => o.id).join()}
+                  />
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    disabled={!orders.length || isWorking}
+                    onClick={handleOpen}
+                    sx={{ marginBottom: 2, minWidth: 200 }}
+                  >
+                    {ship && <LocalShippingIcon />}
+                    {!ship && <DoneIcon />}
 
-                  {isWorking && (
-                    <Typography sx={{ m: 1 }}>Completing...</Typography>
-                  )}
-                  {!isWorking && (
-                    <Typography sx={{ m: 1 }}>Complete</Typography>
-                  )}
-                </Button>
-              </Form>
+                    {isWorking && (
+                      <Typography sx={{ m: 1 }}>Completing...</Typography>
+                    )}
+                    {!isWorking && (
+                      <Typography sx={{ m: 1 }}>Complete</Typography>
+                    )}
+                  </Button>
+                </Form>
+                {isB2B && (
+                  <Grid item xs={12} style={{ textAlign: 'center' }}>
+                    <Alert
+                      severity="info"
+                      sx={{
+                        marginBottom: 1,
+                        p: 1,
+                        '& .MuiAlert-message': {
+                          textAlign: 'center',
+                          width: 'inherit',
+                        },
+                      }}
+                    >
+                      <Grid item xs={12} style={{ textAlign: 'center' }}>
+                        Remember to create invoice/delivery note in Fiken for
+                        these orders.
+                      </Grid>
+                    </Alert>
+                  </Grid>
+                )}
+              </Grid>
             </Grid>
-          </Grid>
-          {!!orders.length && <Orders orders={orders} />}
-        </AccordionDetails>
-      </Accordion>
+            {!!orders.length && (
+              <Orders orders={orders} extraFields={extraFields} />
+            )}
+          </AccordionDetails>
+        </Accordion>
+      </>
     );
   };
 
@@ -293,12 +322,14 @@ export default function Packing() {
           {renderAccordian(
             `B2B Custom - local pick-up`,
             b2bCustomPickUpOrders,
-            false
+            false,
+            true
           )}
           {renderAccordian(
             `B2B ABO - local pick-up`,
             b2bRenewalPickUpOrders,
-            false
+            false,
+            true
           )}
           {renderAccordian(`B2B Custom`, b2bCustomOrders)}
           {renderAccordian(`B2B ABO`, b2bRenewalOrders)}

@@ -105,7 +105,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
                 to={'/deliveries'}
                 onClick={() => setIsDrawerOpen(false)}
               >
-                <ListItemText secondary="Deliveries" />
+                <ListItemText secondary="Delivery days" />
               </ListItemButton>
 
               <Divider />
