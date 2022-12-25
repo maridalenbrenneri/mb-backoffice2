@@ -12,6 +12,7 @@ import invariant from 'tiny-invariant';
 import {
   Box,
   Button,
+  ButtonGroup,
   CircularProgress,
   FormControl,
   Grid,
@@ -30,6 +31,8 @@ import {
   Typography,
 } from '@mui/material';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import DoneIcon from '@mui/icons-material/Done';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 import type { Coffee, Order, OrderItem } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
@@ -43,7 +46,12 @@ import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { coffeeVariationToLabel } from '~/_libs/core/utils/labels';
 import { useEffect, useState } from 'react';
 import { modalStyle } from '~/style/theme';
-import { completeOrders } from '~/_libs/core/services/order-service';
+import {
+  activateOrder,
+  cancelOrder,
+  completeAndShipOrders,
+  completeOrder,
+} from '~/_libs/core/services/order-service';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
@@ -72,7 +80,11 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  if (_action === 'send-order') return await completeOrders([+values.id]);
+  if (_action === 'complete-and-ship-order')
+    return await completeAndShipOrders([+values.id]);
+  if (_action === 'complete-order') return await completeOrder(+values.id);
+  if (_action === 'cancel-order') return await cancelOrder(+values.id);
+  if (_action === 'activate-order') return await activateOrder(+values.id);
   else if (_action === 'update') return await upsertOrderAction(values);
 
   return null;
@@ -108,7 +120,7 @@ export default function UpdateOrder() {
   const isUpdating = Boolean(transition.submission);
   const isReadOnly = !!order.wooOrderId;
 
-  const canComplete =
+  const canShipAndComplete =
     order.status === OrderStatus.ACTIVE &&
     (order.orderItems.length > 0 ||
       order.quantity250 ||
@@ -127,6 +139,10 @@ export default function UpdateOrder() {
   };
 
   const dataFields: any[] = [
+    {
+      label: 'Status',
+      data: order.status,
+    },
     {
       label: 'Subscription',
       data: order.subscription.recipientName,
@@ -190,17 +206,52 @@ export default function UpdateOrder() {
                 name="wooOrderId"
                 value={order.wooOrderId || undefined}
               />
-              <Button
-                sx={{ height: 50 }}
-                type="submit"
-                name="_action"
-                value="send-order"
-                variant="contained"
-                onClick={handleOpen}
-                disabled={!canComplete}
-              >
-                <LocalShippingIcon sx={{ mx: 1 }} /> Ship Order
-              </Button>
+              <FormControl>
+                <ButtonGroup>
+                  <Button
+                    type="submit"
+                    name="_action"
+                    value="activate-order"
+                    variant="contained"
+                    disabled={order.status === OrderStatus.ACTIVE || isUpdating}
+                  >
+                    <LocalShippingIcon sx={{ mx: 1 }} /> Activate
+                  </Button>
+                  <Button
+                    type="submit"
+                    name="_action"
+                    value="complete-order"
+                    variant="contained"
+                    disabled={order.status !== OrderStatus.ACTIVE || isUpdating}
+                  >
+                    <DoneIcon sx={{ mx: 1 }} /> Complete
+                  </Button>
+                  <Button
+                    type="submit"
+                    name="_action"
+                    value="cancel-order"
+                    variant="contained"
+                    disabled={order.status !== OrderStatus.ACTIVE || isUpdating}
+                  >
+                    <CancelIcon sx={{ mx: 1 }} /> Cancel
+                  </Button>
+                </ButtonGroup>
+              </FormControl>
+              <FormControl>
+                <Button
+                  sx={{ mx: 3 }}
+                  type="submit"
+                  name="_action"
+                  value="complete-and-ship-order"
+                  variant="contained"
+                  onClick={handleOpen}
+                  disabled={!canShipAndComplete || isUpdating}
+                >
+                  <LocalShippingIcon sx={{ mx: 1 }} /> Complete & Ship Order
+                </Button>
+              </FormControl>
+
+              <div></div>
             </Form>
           </Box>
         </Grid>
@@ -221,21 +272,6 @@ export default function UpdateOrder() {
           value={order.customerNote || undefined}
         />
 
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`status-label`}>Status</InputLabel>
-          <Select
-            labelId="status-label"
-            name="status"
-            defaultValue={order.status}
-            sx={{ minWidth: 250 }}
-          >
-            {Object.keys(OrderStatus).map((status: any) => (
-              <MenuItem value={status} key={status}>
-                {status}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
         <FormControl sx={{ m: 1 }}>
           <InputLabel id={`type-label`}>Type</InputLabel>
           <Select

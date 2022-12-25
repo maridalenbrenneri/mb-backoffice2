@@ -15,7 +15,8 @@ import {
 } from '../core/settings';
 import { getCoffees } from '../core/models/coffee.server';
 import { OrderStatus, OrderType, SubscriptionStatus } from '@prisma/client';
-import completeWooOrder from './complete-woo-order';
+import updateStatus from './update-status';
+import { WOO_STATUS_COMPLETED } from './constants';
 
 async function resolveSubscription(wooOrder: any) {
   // console.debug('Resolving subscription for order', wooOrder.wooOrderId);
@@ -121,7 +122,7 @@ export default async function importWooOrders() {
           'Imported order with nothing but gift subscription, completing order in Woo',
           info.order.wooOrderId
         );
-        await completeWooOrder(info.order.wooOrderId);
+        await updateStatus(info.order.wooOrderId, WOO_STATUS_COMPLETED);
       }
       included = true;
     }

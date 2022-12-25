@@ -37,7 +37,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DoneIcon from '@mui/icons-material/Done';
 
-import { completeOrders } from '~/_libs/core/services/order-service';
+import { completeAndShipOrders } from '~/_libs/core/services/order-service';
 import { generatePreview } from '~/_libs/core/services/wizard-service';
 import Orders from '../../components/Orders';
 import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
@@ -100,7 +100,7 @@ export const action: ActionFunction = async ({ request }) => {
       ? allOrderIds.slice(0, COMPLETE_ORDERS_BATCH_MAX - 1)
       : allOrderIds;
 
-  return await completeOrders(orderIds);
+  return await completeAndShipOrders(orderIds);
 };
 
 export default function Packing() {

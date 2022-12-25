@@ -146,14 +146,10 @@ export default function JobResult() {
           created in Backoffice.
         </p>
         <p>
-          The "Ship" button on the order page sets the order to complete in both
-          Backoffice and Woo and (if not delivery type is set to{' '}
-          <small>LOCAL_PICKUP</small>) creates a consignment and print label in
-          Cargonizer.
-        </p>
-        <p>
-          If an order is updated to <small>COMPLETED</small> in the drop down,
-          it is NOT completed in Woo or sent to Cargonizer.
+          The "Complete & Ship" button on the order page sets the order to
+          completed in both Backoffice and Woo and (if not delivery type is set
+          to <small>LOCAL_PICKUP</small>) creates a consignment and print label
+          in Cargonizer.
         </p>
         <p>
           If orders that are already imported changes status in Woo, the status

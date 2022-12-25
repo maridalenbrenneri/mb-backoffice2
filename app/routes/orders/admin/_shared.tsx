@@ -3,7 +3,6 @@ import { json, redirect } from '@remix-run/node';
 import type { OrderUpsertData } from '~/_libs/core/models/order.server';
 import { upsertOrderItem } from '~/_libs/core/models/order.server';
 import { upsertOrder } from '~/_libs/core/models/order.server';
-import { completeOrder } from '~/_libs/core/services/order-service';
 import { isUnsignedInt } from '~/_libs/core/utils/numbers';
 
 type OrderActionData =

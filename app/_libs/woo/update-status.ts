@@ -1,14 +1,19 @@
 import { WOO_API_BASE_URL } from './constants';
 
-export default async function completeWooOrder(wooOrderId: number) {
+export default async function updateStatus(
+  wooOrderId: number,
+  status: 'processing' | 'completed' | 'cancelled'
+) {
   if (!process.env.WOO_ALLOW_UPDATE) return { error: 'Woo Update not enabled' };
 
   const url = `${WOO_API_BASE_URL}orders/${wooOrderId}?${process.env.WOO_SECRET_PARAM}`;
 
-  console.debug(`UPDATING ORDER ${wooOrderId} IN WOO...`);
+  console.debug(
+    `UPDATING ORDER ${wooOrderId} IN WOO, SETTING STATUS TO ${status}`
+  );
 
   const data = {
-    status: 'completed',
+    status,
   };
 
   const response = await fetch(url, {

@@ -13,6 +13,11 @@ import { COMPLETE_ORDERS_DELAY, WEIGHT_STANDARD_PACKAGING } from '../settings';
 import { getNextOrCreateDelivery } from './delivery-service';
 
 import * as woo from '~/_libs/woo';
+import {
+  WOO_STATUS_CANCELLED,
+  WOO_STATUS_COMPLETED,
+  WOO_STATUS_PROCESSING,
+} from '~/_libs/woo/constants';
 
 export interface Quantites {
   _250: number;
@@ -141,9 +146,8 @@ export function generateReference(order: Order) {
   return reference;
 }
 
-// COMPLETE IN MB AND WOO, CREATE CONSIGNMENT IN CARGONIZER
-export async function completeOrder(orderId: number) {
-  const order = await getOrder({
+async function getOrderFromDb(orderId: number) {
+  return await getOrder({
     where: {
       id: orderId,
     },
@@ -156,6 +160,11 @@ export async function completeOrder(orderId: number) {
       },
     },
   });
+}
+
+// COMPLETE IN MB AND WOO, CREATE CONSIGNMENT IN CARGONIZER
+async function completeAndShipOrder(orderId: number) {
+  const order = await getOrderFromDb(orderId);
 
   if (!order) {
     console.warn(
@@ -163,6 +172,7 @@ export async function completeOrder(orderId: number) {
     );
     return;
   }
+
   let cargonizer;
   if (order.shippingType !== ShippingType.LOCAL_PICK_UP) {
     cargonizer = await sendConsignment({
@@ -173,7 +183,7 @@ export async function completeOrder(orderId: number) {
 
   let wooResult;
   if (order.wooOrderId) {
-    wooResult = await woo.completeWooOrder(order.wooOrderId);
+    wooResult = await woo.updateStatus(order.wooOrderId, WOO_STATUS_COMPLETED);
   }
 
   await updateOrderStatus(order.id, OrderStatus.COMPLETED);
@@ -189,7 +199,7 @@ export async function completeOrder(orderId: number) {
   };
 }
 
-export async function completeOrders(orderIds: number[]) {
+export async function completeAndShipOrders(orderIds: number[]) {
   if (!orderIds.length) return [];
 
   const delay = () =>
@@ -198,7 +208,7 @@ export async function completeOrders(orderIds: number[]) {
   const result: any[] = [];
 
   for (const orderId of orderIds) {
-    const res = await completeOrder(orderId);
+    const res = await completeAndShipOrder(orderId);
     result.push(res);
 
     await delay();
@@ -207,4 +217,37 @@ export async function completeOrders(orderIds: number[]) {
   console.table(result);
 
   return result;
+}
+
+export async function completeOrder(orderId: number) {
+  const order = await getOrderFromDb(orderId);
+  if (!order) return;
+
+  if (order.wooOrderId) {
+    await woo.updateStatus(order.wooOrderId, WOO_STATUS_COMPLETED);
+  }
+  await updateOrderStatus(order.id, OrderStatus.COMPLETED);
+  return null;
+}
+
+export async function cancelOrder(orderId: number) {
+  const order = await getOrderFromDb(orderId);
+  if (!order) return;
+
+  if (order.wooOrderId) {
+    await woo.updateStatus(order.wooOrderId, WOO_STATUS_CANCELLED);
+  }
+  await updateOrderStatus(order.id, OrderStatus.CANCELLED);
+  return null;
+}
+
+export async function activateOrder(orderId: number) {
+  const order = await getOrderFromDb(orderId);
+  if (!order) return;
+
+  if (order.wooOrderId) {
+    await woo.updateStatus(order.wooOrderId, WOO_STATUS_PROCESSING);
+  }
+  await updateOrderStatus(order.id, OrderStatus.ACTIVE);
+  return null;
 }
