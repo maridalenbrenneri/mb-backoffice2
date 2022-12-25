@@ -33,6 +33,7 @@ import {
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DoneIcon from '@mui/icons-material/Done';
 import CancelIcon from '@mui/icons-material/Cancel';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import type { Coffee, Order, OrderItem } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
@@ -215,7 +216,7 @@ export default function UpdateOrder() {
                     variant="contained"
                     disabled={order.status === OrderStatus.ACTIVE || isUpdating}
                   >
-                    <LocalShippingIcon sx={{ mx: 1 }} /> Activate
+                    <RefreshIcon sx={{ mx: 1 }} /> Activate
                   </Button>
                   <Button
                     type="submit"

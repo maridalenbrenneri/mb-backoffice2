@@ -308,7 +308,7 @@ export default function Subscriptions() {
                 <TableCell>Type</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Frequency</TableCell>
-                <TableCell>Created at</TableCell>
+                <TableCell>Created/Imported</TableCell>
                 <TableCell>Recipient</TableCell>
                 <TableCell>Recipient, email</TableCell>
                 <TableCell>Customer, name</TableCell>

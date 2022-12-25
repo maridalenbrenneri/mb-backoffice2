@@ -508,7 +508,7 @@ export default function UpdateSubscription() {
                 <DataLabel
                   dataFields={[
                     {
-                      label: 'Created at',
+                      label: 'Created/Imported',
                       data: toPrettyDateTime(subscription.createdAt, true),
                     },
                     {
