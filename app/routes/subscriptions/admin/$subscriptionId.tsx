@@ -1,4 +1,5 @@
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { redirect } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
   Form,
@@ -15,7 +16,11 @@ import {
   Button,
   FormControl,
   Grid,
+  InputLabel,
+  MenuItem,
+  Modal,
   Paper,
+  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -25,12 +30,11 @@ import {
   renderShippingTypes,
   renderStatus,
   renderTypes,
+  updateFirstDeliveryDate,
   upsertAction,
 } from './_shared';
 import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import type { Subscription } from '~/_libs/core/models/subscription.server';
-import { getCustomer } from '~/_libs/fiken';
-import GiftSubscriptionWooData from '~/components/GiftSubscriptionWooData';
 import Orders from '~/components/Orders';
 import {
   createCustomdOrder,
@@ -42,12 +46,16 @@ import {
   WOO_RENEWALS_SUBSCRIPTION_ID,
 } from '~/_libs/core/settings';
 import DataLabel from '~/components/DataLabel';
-import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import type { DeliveryDate } from '~/_libs/core/utils/dates';
+import { toPrettyDateTextLong } from '~/_libs/core/utils/dates';
+import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
+import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { useEffect, useState } from 'react';
+import { modalStyle } from '~/style/theme';
 
 type LoaderData = {
   loadedSubscription: Subscription;
-  customer: Awaited<ReturnType<typeof getCustomer>>;
+  deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -65,6 +73,11 @@ export const action: ActionFunction = async ({ request }) => {
 
   if (_action === 'create-custom-order')
     return await createCustomdOrder(+(values as any).id);
+
+  if (_action === 'set-first-delivery') {
+    await updateFirstDeliveryDate(values);
+    return redirect(`/subscriptions/admin/${values.id}`);
+  }
 
   return null;
 };
@@ -95,25 +108,27 @@ export const loader: LoaderFunction = async ({ params }) => {
   });
 
   const loadedSubscription = subscriptions?.length ? subscriptions[0] : null;
-
   invariant(
     loadedSubscription,
     `Subscription not found: ${params.subscriptionId}`
   );
 
-  const customer = !loadedSubscription.fikenContactId
-    ? null
-    : await getCustomer(loadedSubscription.fikenContactId);
+  const allDates = getNextDeliveryDates(20);
+  const deliveryDates = allDates.filter((d) => d.type === 'MONTHLY');
 
-  return json({ loadedSubscription, customer });
+  return json({ loadedSubscription, deliveryDates });
 };
 
 export default function UpdateSubscription() {
   const errors = useActionData();
   const transition = useTransition();
-  const { loadedSubscription } = useLoaderData() as unknown as LoaderData;
+  const { loadedSubscription, deliveryDates } =
+    useLoaderData() as unknown as LoaderData;
 
   const [subscription, setSubscription] = useState<Subscription>();
+
+  const [deliveryDate, setDeliveryDate] = useState(deliveryDates[0]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setSubscription(loadedSubscription);
@@ -137,18 +152,21 @@ export default function UpdateSubscription() {
     subscription.id === WOO_RENEWALS_SUBSCRIPTION_ID ||
     subscription.id === WOO_NON_RECURRENT_SUBSCRIPTION_ID;
 
-  // const handleChangeFirstDeliveryDate = (event: any) => {
-  //   const dd = monthlyDeliveryDates.find(
-  //     (d) => d.id === (event.target.value as number)
-  //   ) as DeliveryDate;
+  const handleChangeFirstDeliveryDate = (event: any) => {
+    if (!subscription.gift_firstDeliveryDate) return;
 
-  //   console.log('DATE 1', DateTime.fromISO(dd.date.toString()));
-  //   subscription.gift_firstDeliveryDate = DateTime.fromISO(
-  //     dd.date.toString()
-  //   ).toJSDate();
+    const selectedDeliveryDate = deliveryDates.find(
+      (d) => d.id === (event.target.value as number)
+    );
 
-  //   console.log('DATE', subscription.gift_firstDeliveryDate);
-  // };
+    if (!selectedDeliveryDate) return;
+
+    setDeliveryDate(selectedDeliveryDate);
+  };
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
   return (
     <main>
@@ -441,7 +459,63 @@ export default function UpdateSubscription() {
                 p: 0,
               }}
             >
-              <GiftSubscriptionWooData subscription={subscription} />
+              {subscription.type === 'PRIVATE_GIFT' && (
+                <Box sx={{ m: 1, p: 1 }}>
+                  <Typography>Woo GABO data</Typography>
+
+                  <Box sx={{ m: 1 }}>
+                    <DataLabel
+                      dataFields={[
+                        {
+                          label: 'System resolved actual first delivery day',
+                          data: toPrettyDateTextLong(
+                            subscription.gift_firstDeliveryDate
+                          ),
+                          onClick: handleOpen,
+                        },
+                        {
+                          label: 'Customer requested first delivery date',
+                          data: toPrettyDate(
+                            subscription.gift_customerFirstDeliveryDate
+                          ),
+                        },
+                        {
+                          label: 'Months',
+                          data: subscription.gift_durationMonths,
+                        },
+                        {
+                          label: 'Customer',
+                          data: subscription.wooCustomerName,
+                        },
+                        {
+                          label: 'Woo customer id',
+                          data: subscription.wooCustomerId,
+                        },
+                        {
+                          label: 'Customer note',
+                          data: subscription.customerNote,
+                        },
+                        {
+                          label: 'Message to recipient',
+                          data: subscription.gift_messageToRecipient,
+                        },
+                        {
+                          label: 'Woo order id',
+                          data: subscription.gift_wooOrderId,
+                        },
+                        {
+                          label: 'Woo order created at',
+                          data: toPrettyDateTime(
+                            subscription.wooCreatedAt,
+                            true
+                          ),
+                        },
+                      ]}
+                    />
+                  </Box>
+                </Box>
+              )}
+              {/* <GiftSubscriptionWooData subscription={subscription} /> */}
               {isSystemSubscription && (
                 <Alert severity="info" icon={false}>
                   This is a system subscription, it cannot be edited and no
@@ -449,7 +523,7 @@ export default function UpdateSubscription() {
                 </Alert>
               )}
 
-              <Alert severity="info" icon={false}>
+              <>
                 {subscription.fikenContactId && (
                   <div>
                     <Typography>B2B Fiken Customer</Typography>
@@ -517,7 +591,7 @@ export default function UpdateSubscription() {
                     },
                   ]}
                 />
-              </Alert>
+              </>
             </Paper>
           </Grid>
 
@@ -529,52 +603,63 @@ export default function UpdateSubscription() {
           </Grid>
         </Grid>
       </Box>
-      {/* <div>
+      <div>
         <Modal
-          open={openFirstDelivery}
+          open={open}
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
           <Box sx={{ ...modalStyle, width: '50%' }}>
-            <Grid container>
-              <Grid item xs={12} style={{ textAlign: 'center' }}>
-                <FormControl sx={{ m: 1 }}>
-                  <InputLabel id="date-label">Date</InputLabel>
-                  <Select
-                    labelId="date-label"
-                    defaultValue={`${monthlyDeliveryDates[0].id}`}
-                    onChange={handleChangeFirstDeliveryDate}
+            <Form method="post">
+              <input type="hidden" name="id" value={subscription.id} />
+              <input
+                type="hidden"
+                name="delivery_date"
+                value={deliveryDate.date.toString()}
+              />
+              <Grid container>
+                <Grid item xs={12} style={{ textAlign: 'center' }}>
+                  <FormControl sx={{ m: 1 }}>
+                    <InputLabel id="date-label">Date</InputLabel>
+                    <Select
+                      labelId="date-label"
+                      defaultValue={`${deliveryDates[0].id}`}
+                      onChange={handleChangeFirstDeliveryDate}
+                    >
+                      {deliveryDates.map((date: DeliveryDate) => (
+                        <MenuItem value={date.id} key={date.id}>
+                          {toPrettyDateTextLong(date.date)}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={6} style={{ textAlign: 'left' }}>
+                  <Button
+                    variant="contained"
+                    onClick={() => setOpen(false)}
+                    sx={{ m: 2, marginTop: 4 }}
                   >
-                    {monthlyDeliveryDates.map((date: DeliveryDate) => (
-                      <MenuItem value={date.id} key={date.id}>
-                        {toPrettyDate(date.date)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                    Cancel
+                  </Button>
+                </Grid>
+                <Grid item xs={6} style={{ textAlign: 'right' }}>
+                  <Button
+                    variant="contained"
+                    // onClick={() => setOpen(false)} TODO (closes before action...)
+                    sx={{ m: 2, marginTop: 4 }}
+                    type="submit"
+                    name="_action"
+                    value="set-first-delivery"
+                  >
+                    Update First Delivery day
+                  </Button>
+                </Grid>
               </Grid>
-              <Grid item xs={6} style={{ textAlign: 'left' }}>
-                <Button
-                  variant="contained"
-                  onClick={() => setOpenFirstDelivery(false)}
-                  sx={{ m: 2, marginTop: 4 }}
-                >
-                  Cancel
-                </Button>
-              </Grid>
-              <Grid item xs={6} style={{ textAlign: 'right' }}>
-                <Button
-                  variant="contained"
-                  onClick={() => setOpenFirstDelivery(false)}
-                  sx={{ m: 2, marginTop: 4 }}
-                >
-                  Update First Delivery day
-                </Button>
-              </Grid>
-            </Grid>
+            </Form>
           </Box>
         </Modal>
-      </div> */}
+      </div>
     </main>
   );
 }

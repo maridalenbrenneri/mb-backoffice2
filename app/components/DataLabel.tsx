@@ -1,5 +1,7 @@
+import { Link } from '@remix-run/react';
+
 import {
-  Paper,
+  Button,
   Table,
   TableBody,
   TableCell,
@@ -7,15 +9,16 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { Link } from '@remix-run/react';
-import { colors } from '~/style/colors';
+import { Edit } from '@mui/icons-material';
 
+import { colors } from '~/style/colors';
 export default function DataLabel(props: {
   dataFields: [
     {
       label: string;
       data: string | number | null;
       dataLinkUrl?: string | null | undefined;
+      onClick?: any | undefined;
     }
   ];
 }) {
@@ -31,6 +34,25 @@ export default function DataLabel(props: {
         );
       }
       return <Link to={data.dataLinkUrl}>{data.data}</Link>;
+    }
+
+    if (data.onClick) {
+      return (
+        <>
+          <span>{data.data}</span>
+          <Button
+            sx={{
+              fontSize: 14,
+              p: 0.25,
+              marginLeft: 1,
+            }}
+            onClick={data.onClick}
+            variant="contained"
+          >
+            <Edit />
+          </Button>
+        </>
+      );
     }
 
     const dataString =

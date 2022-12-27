@@ -9,6 +9,7 @@ import {
   SubscriptionType,
 } from '@prisma/client';
 
+import { updateFirstDeliveryDateOnSubscription } from '~/_libs/core/models/subscription.server';
 import { upsertSubscription } from '~/_libs/core/models/subscription.server';
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
 
@@ -108,6 +109,20 @@ export const renderShippingTypes = (
       </Select>
     </FormControl>
   );
+};
+export const updateFirstDeliveryDate = async (values: any) => {
+  console.debug('updateFirstDeliveryDate', values);
+  const errors = {
+    status: values.delivery_date ? null : 'FirstDeliveryDate is required',
+  };
+
+  if (Object.values(errors).some((errorMessage) => errorMessage)) {
+    console.error('Errors in form', errors);
+    return json<any>(errors);
+  }
+
+  const id = +values.id;
+  await updateFirstDeliveryDateOnSubscription(id, values.delivery_date);
 };
 
 export const upsertAction = async (values: any) => {

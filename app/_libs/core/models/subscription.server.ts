@@ -174,3 +174,17 @@ export async function updateStatusOnSubscription(
     },
   });
 }
+
+export async function updateFirstDeliveryDateOnSubscription(
+  id: number,
+  gift_firstDeliveryDate: any
+) {
+  return prisma.subscription.update({
+    where: {
+      id,
+    },
+    data: {
+      gift_firstDeliveryDate,
+    },
+  });
+}

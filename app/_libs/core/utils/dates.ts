@@ -18,6 +18,12 @@ export function toPrettyDateText(date: Date | undefined | null) {
   return DateTime.fromISO(date.toString()).toFormat('ccc d. LLL');
 }
 
+export function toPrettyDateTextLong(date: Date | undefined | null) {
+  if (!date) return null;
+
+  return DateTime.fromISO(date.toString()).toFormat('ccc d. LLL yyyy');
+}
+
 export function toPrettyDateTime(
   date: Date | undefined | null,
   includeSeconds = false
@@ -128,7 +134,7 @@ function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
   };
 }
 
-// RETURNS NEXT 5 DELIVERY DATES (Tuesdays)
+// RETURNS NEXT DELIVERY DATES (Tuesdays)
 export function getNextDeliveryDates(days: number = 5): DeliveryDate[] {
   if (days < 1 || days > 50) return [];
 
