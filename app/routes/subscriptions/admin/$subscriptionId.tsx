@@ -6,6 +6,7 @@ import {
   useActionData,
   useLoaderData,
   useParams,
+  useSubmit,
   useTransition,
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
@@ -122,6 +123,7 @@ export const loader: LoaderFunction = async ({ params }) => {
 export default function UpdateSubscription() {
   const errors = useActionData();
   const transition = useTransition();
+  const submit = useSubmit();
   const { loadedSubscription, deliveryDates } =
     useLoaderData() as unknown as LoaderData;
 
@@ -646,7 +648,10 @@ export default function UpdateSubscription() {
                 <Grid item xs={6} style={{ textAlign: 'right' }}>
                   <Button
                     variant="contained"
-                    // onClick={() => setOpen(false)} TODO (closes before action...)
+                    onClick={(e) => {
+                      submit(e.currentTarget, { replace: true });
+                      setOpen(false);
+                    }}
                     sx={{ m: 2, marginTop: 4 }}
                     type="submit"
                     name="_action"
