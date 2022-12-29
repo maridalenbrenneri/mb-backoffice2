@@ -3,6 +3,7 @@ import { OrderType, ShippingType, SubscriptionType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { getOrders } from '../models/order.server';
 import {
+  TAKE_MAX_ROWS,
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
 } from '../settings';
@@ -91,6 +92,7 @@ export async function generatePreview(deliveryIds: number[]) {
         },
       },
     },
+    take: TAKE_MAX_ROWS,
   });
 
   const preview: WizardPreviewGroup = {

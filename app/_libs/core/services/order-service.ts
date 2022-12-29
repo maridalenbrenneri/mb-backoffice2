@@ -1,4 +1,5 @@
 import type { Order } from '@prisma/client';
+import { SubscriptionType } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { OrderType } from '@prisma/client';
@@ -119,6 +120,15 @@ export function calculateWeight(
   if (includePackaging) weight += WEIGHT_STANDARD_PACKAGING;
 
   return weight;
+}
+
+export function resolveSource(order: Order) {
+  if (order.wooOrderId) return `woo`;
+
+  if (order.subscription?.type === SubscriptionType.B2B) return 'b2b';
+  if (order.subscription?.type === SubscriptionType.PRIVATE_GIFT) return 'gabo';
+
+  return 'n/a';
 }
 
 export function generateReference(order: Order) {

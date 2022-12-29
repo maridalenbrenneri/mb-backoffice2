@@ -14,8 +14,12 @@ import type { Order } from '@prisma/client';
 
 import { toPrettyDateText, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { TableFooter } from '@mui/material';
-import { generateReference } from '~/_libs/core/services/order-service';
+import {
+  generateReference,
+  resolveSource,
+} from '~/_libs/core/services/order-service';
 import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
+import { resolve } from 'path';
 
 export default function Orders(props: {
   orders: Order[];
@@ -46,10 +50,11 @@ export default function Orders(props: {
               <TableCell>Type</TableCell>
               <TableCell>Created</TableCell>
               <TableCell>Updated</TableCell>
-              <TableCell>Name</TableCell>
+              <TableCell>Recipient</TableCell>
               {extra('fiken') && <TableCell>Customer in Fiken</TableCell>}
               {extra('delivery') && <TableCell>Delivery day</TableCell>}
               <TableCell>Item summary</TableCell>
+              {extra('source') && <TableCell>Source</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -97,6 +102,9 @@ export default function Orders(props: {
                 )}
 
                 <TableCell>{generateReference(order)}</TableCell>
+                {extra('source') && (
+                  <TableCell>{resolveSource(order)}</TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

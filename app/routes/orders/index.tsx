@@ -29,9 +29,12 @@ import {
   Select,
   TableFooter,
 } from '@mui/material';
-import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { toPrettyDateText, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
-import { generateReference } from '~/_libs/core/services/order-service';
+import {
+  generateReference,
+  resolveSource,
+} from '~/_libs/core/services/order-service';
 
 const defaultStatus = OrderStatus.ACTIVE;
 
@@ -54,11 +57,23 @@ function buildFilter(search: URLSearchParams) {
   }
 
   filter.include = {
+    delivery: {
+      select: {
+        id: true,
+        date: true,
+      },
+    },
     orderItems: {
       select: {
         variation: true,
         quantity: true,
         coffee: true,
+      },
+    },
+    subscription: {
+      select: {
+        id: true,
+        type: true,
       },
     },
   };
@@ -138,7 +153,7 @@ export default function Orders() {
           >
             <TableHead>
               <TableRow>
-                <TableCell colSpan={8}>
+                <TableCell colSpan={9}>
                   <small>{orders.length} orders</small>
                 </TableCell>
               </TableRow>
@@ -148,9 +163,10 @@ export default function Orders() {
                 <TableCell>Type</TableCell>
                 <TableCell>Created</TableCell>
                 <TableCell>Updated</TableCell>
-                <TableCell>Customer</TableCell>
+                <TableCell>Recipient</TableCell>
+                <TableCell>Delivery day</TableCell>
                 <TableCell>Item summary</TableCell>
-                <TableCell>Woo id</TableCell>
+                <TableCell>Source</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -175,8 +191,13 @@ export default function Orders() {
                     <small>{toPrettyDateTime(order.updatedAt, true)}</small>
                   </TableCell>
                   <TableCell>{order.name}</TableCell>
+                  <TableCell>
+                    <Link to={`/deliveries/admin/${order.deliveryId}`}>
+                      {toPrettyDateText(order.delivery?.date)}
+                    </Link>
+                  </TableCell>
                   <TableCell>{generateReference(order)}</TableCell>
-                  <TableCell>{order.wooOrderId}</TableCell>
+                  <TableCell>{resolveSource(order)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

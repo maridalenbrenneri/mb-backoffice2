@@ -260,6 +260,7 @@ export default function UpdateOrder() {
 
       <Form method="post">
         <input type="hidden" name="id" value={order.id} />
+        <input type="hidden" name="status" value={order.status} />
         <input
           type="hidden"
           name="subscriptionId"

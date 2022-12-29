@@ -38,7 +38,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DoneIcon from '@mui/icons-material/Done';
 
 import { completeAndShipOrders } from '~/_libs/core/services/order-service';
-import { generatePreview } from '~/_libs/core/services/wizard-service';
+import { generatePreview } from '~/_libs/core/services/packing-service';
 import Orders from '../../components/Orders';
 import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
 import { modalStyle } from '~/style/theme';
@@ -201,7 +201,8 @@ export default function Packing() {
     ship: boolean = true,
     isB2B: boolean = false
   ) => {
-    const extraFields = isB2B ? ['fiken'] : null;
+    const extraFields = isB2B ? ['fiken'] : [];
+    extraFields.push('source');
     return (
       <>
         <Accordion expanded={expanded === title} onChange={handleChange(title)}>
