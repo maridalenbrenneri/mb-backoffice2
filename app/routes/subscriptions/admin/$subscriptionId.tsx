@@ -544,20 +544,21 @@ export default function UpdateSubscription() {
                 )}
                 {subscription.wooSubscriptionId && (
                   <div>
-                    <Typography>Private Woo subscription</Typography>
-                    <Box sx={{ m: 1 }}>
-                      <p>
-                        This subscription is imported from Woo and cannot be
-                        updated here.
-                      </p>
-                      <p>
-                        Update of status, customer data and quantity must be
-                        done in Woo.
-                      </p>
-                      <p>
-                        Renewal orders are automatically created (imported from
-                        Woo).
-                      </p>
+                    <Box sx={{ m: 1, paddingTop: 1 }}>
+                      <Alert severity="info" sx={{ m: 1 }}>
+                        <p>
+                          This subscription is imported from Woo and cannot be
+                          updated here.
+                        </p>
+                        <p>
+                          Update of status, customer data and quantity must be
+                          done in Woo.
+                        </p>
+                        <p>
+                          Renewal orders are automatically created (imported
+                          from Woo).
+                        </p>
+                      </Alert>
 
                       <DataLabel
                         dataFields={[
