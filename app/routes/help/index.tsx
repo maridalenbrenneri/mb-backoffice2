@@ -24,13 +24,13 @@ export default function JobResult() {
         </ul>
         <Alert severity="info">
           If "Include completed orders" is checked both active and completed
-          orders set on the Deliver day are included, this means the overview
+          orders set on the Delivery day are included, this means the overview
           will NOT change when orders are completed/shipped. This is intended to
           be used when we're roasting and packing at the same time. The default
           behaviour is to not include completed orders.
           <p>
             Orders with other status's, such as <small>ON-HOLD</small> and{' '}
-            <small>CANCELLED</small> are never included in the overview.
+            <small>CANCELLED</small> is never included in the overview.
           </p>
         </Alert>
       </Box>

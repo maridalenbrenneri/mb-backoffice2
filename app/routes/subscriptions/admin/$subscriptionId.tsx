@@ -350,7 +350,7 @@ export default function UpdateSubscription() {
                     <FormControl>
                       <TextField
                         name="recipientName"
-                        label="Name"
+                        label="Recipent, name"
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientName}
