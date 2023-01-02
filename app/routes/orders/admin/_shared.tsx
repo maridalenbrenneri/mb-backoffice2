@@ -11,6 +11,7 @@ type OrderActionData =
       deliveryId: null | string;
       status: null | string;
       type: null | string;
+      shippingType: null | string;
       quantity250: null | string;
       quantity500: null | string;
       quantity1200: null | string;
@@ -32,6 +33,7 @@ export const upsertOrderAction = async (values: any) => {
     deliveryId: values.deliveryId ? null : 'Delivery is required',
     status: values.status ? null : 'Status is required',
     type: values.type ? null : 'Type is required',
+    shippingType: values.shippingType ? null : 'Shipping Type is required',
     quantity250: isUnsignedInt(values.quantity250)
       ? null
       : 'Must be a number greater or equal to zero',
@@ -51,6 +53,7 @@ export const upsertOrderAction = async (values: any) => {
   const data = {
     status: values.status,
     type: values.type,
+    shippingType: values.shippingType,
     subscriptionId: +values.subscriptionId,
     deliveryId: +values.deliveryId,
     name: values.name,

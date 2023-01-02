@@ -14,11 +14,11 @@ import {
   Button,
   ButtonGroup,
   CircularProgress,
+  Dialog,
   FormControl,
   Grid,
   InputLabel,
   MenuItem,
-  Modal,
   Paper,
   Select,
   Table,
@@ -180,8 +180,6 @@ export default function UpdateOrder() {
       data: toPrettyDateTime(order.wooCreatedAt, true),
     });
   }
-
-  console.log(dataFields);
 
   return (
     <Box
@@ -476,11 +474,11 @@ export default function UpdateOrder() {
         </Box>
       )}
       <div>
-        <Modal
+        <Dialog
           open={open}
           onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
+          fullWidth={true}
+          maxWidth={'xl'}
         >
           <Box sx={modalStyle}>
             {!resultData && (
@@ -497,15 +495,14 @@ export default function UpdateOrder() {
                   Order completed
                 </Typography>
                 <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-                  <Table sx={{ minWidth: 650 }} size="small">
+                  <Table sx={{ minWidth: 800 }} size="small">
                     <TableHead>
                       <TableRow>
                         <TableCell>Result</TableCell>
                         <TableCell>Order</TableCell>
+                        <TableCell>Errors</TableCell>
+                        <TableCell>Label printed</TableCell>
                         <TableCell>Woo id/status</TableCell>
-                        <TableCell>Woo error</TableCell>
-                        <TableCell>Cargonizer Print requested</TableCell>
-                        <TableCell>Cargonizer Print error</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -514,13 +511,15 @@ export default function UpdateOrder() {
                           <TableCell>{row.result}</TableCell>
                           <TableCell>{row.orderId}</TableCell>
                           <TableCell>
+                            {row.errors &&
+                              row.errors.map((error: string, index: number) => (
+                                <div key={index}>{error}</div>
+                              ))}
+                          </TableCell>
+                          <TableCell>{row.printed ? 'Yes' : 'No'}</TableCell>
+                          <TableCell>
                             {row.wooOrderId || ''} {row.wooOrderStatus || ''}
                           </TableCell>
-                          <TableCell>{row.wooError}</TableCell>
-                          <TableCell>
-                            {row.printRequested ? 'Yes' : 'No'}
-                          </TableCell>
-                          <TableCell>{row.printError}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -541,7 +540,7 @@ export default function UpdateOrder() {
               </Box>
             )}
           </Box>
-        </Modal>
+        </Dialog>
       </div>
     </Box>
   );

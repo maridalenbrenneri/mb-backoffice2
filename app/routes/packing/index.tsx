@@ -19,10 +19,10 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
   FormControl,
   Grid,
   MenuItem,
-  Modal,
   Paper,
   Select,
   Table,
@@ -338,11 +338,11 @@ export default function Packing() {
         <Grid item md={12}></Grid>
       </Grid>
       <div>
-        <Modal
+        <Dialog
           open={open}
           onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
+          fullWidth={true}
+          maxWidth={'xl'}
         >
           <Box sx={modalStyle}>
             {!resultData && (
@@ -367,10 +367,9 @@ export default function Packing() {
                       <TableRow>
                         <TableCell>Result</TableCell>
                         <TableCell>Order</TableCell>
+                        <TableCell>Errors</TableCell>
+                        <TableCell>Label printed</TableCell>
                         <TableCell>Woo id/status</TableCell>
-                        <TableCell>Woo error</TableCell>
-                        <TableCell>Cargonizer Print requested</TableCell>
-                        <TableCell>Cargonizer Print error</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -379,13 +378,15 @@ export default function Packing() {
                           <TableCell>{row.result}</TableCell>
                           <TableCell>{row.orderId}</TableCell>
                           <TableCell>
+                            {row.errors &&
+                              row.errors.map((error: string, index: number) => (
+                                <div key={index}>{error}</div>
+                              ))}
+                          </TableCell>
+                          <TableCell>{row.printed ? 'Yes' : 'No'}</TableCell>
+                          <TableCell>
                             {row.wooOrderId || ''} {row.wooOrderStatus || ''}
                           </TableCell>
-                          <TableCell>{row.wooError}</TableCell>
-                          <TableCell>
-                            {row.printRequested ? 'Yes' : 'No'}
-                          </TableCell>
-                          <TableCell>{row.printError}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -406,7 +407,7 @@ export default function Packing() {
               </Box>
             )}
           </Box>
-        </Modal>
+        </Dialog>
       </div>
     </Box>
   );

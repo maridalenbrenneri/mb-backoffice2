@@ -174,34 +174,56 @@ async function getOrderFromDb(orderId: number) {
 
 // COMPLETE IN MB AND WOO, CREATE CONSIGNMENT IN CARGONIZER
 async function completeAndShipOrder(orderId: number) {
-  const order = await getOrderFromDb(orderId);
-
-  if (!order) {
-    console.warn(
-      `[order-service] The order requested to be sent was not found, order id: ${orderId}`
-    );
-    return;
-  }
-
+  let genericError;
   let cargonizer;
-  if (order.shippingType !== ShippingType.LOCAL_PICK_UP) {
-    cargonizer = await sendConsignment({
-      order,
-      print: true,
-    });
-  }
-
   let wooResult;
-  if (order.wooOrderId) {
-    wooResult = await woo.updateStatus(order.wooOrderId, WOO_STATUS_COMPLETED);
+
+  try {
+    const order = await getOrderFromDb(orderId);
+
+    if (!order) {
+      console.warn(
+        `[order-service] The order requested to be sent was not found, order id: ${orderId}`
+      );
+      return;
+    }
+
+    if (order.shippingType !== ShippingType.LOCAL_PICK_UP) {
+      cargonizer = await sendConsignment({
+        order,
+        print: true,
+      });
+    }
+
+    if (order.wooOrderId) {
+      wooResult = await woo.updateStatus(
+        order.wooOrderId,
+        WOO_STATUS_COMPLETED
+      );
+    }
+
+    await updateOrderStatus(order.id, OrderStatus.COMPLETED);
+  } catch (err) {
+    genericError = err.message;
   }
 
-  await updateOrderStatus(order.id, OrderStatus.COMPLETED);
+  const errors: string[] = [];
+  if (genericError) errors.push(genericError);
+  if (wooResult?.error) errors.push(wooResult.error);
+  if (cargonizer?.error) errors.push(cargonizer.error);
+
+  const printOk =
+    !cargonizer?.printRequested ||
+    (cargonizer?.printRequested && !cargonizer?.error);
+  const wooOk = !wooResult?.error;
+
+  const result = !genericError && wooOk && printOk ? 'Success' : 'Failed';
 
   return {
-    result: `Completed`,
+    result,
     orderId,
-    printRequested: cargonizer?.printRequested || false,
+    errors,
+    printed: cargonizer?.printRequested || false,
     printError: cargonizer?.error || null,
     wooOrderId: wooResult?.orderId || null,
     wooOrderStatus: wooResult?.orderStatus || null,
