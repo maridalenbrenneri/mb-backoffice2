@@ -134,7 +134,7 @@ export async function generatePreview(deliveryIds: number[]) {
   const privates = orders.filter(
     (o) =>
       o.subscription.type === SubscriptionType.PRIVATE ||
-      SubscriptionType.PRIVATE_GIFT
+      o.subscription.type === SubscriptionType.PRIVATE_GIFT
   );
 
   preview.orders.privates.custom.pickUp = privates.filter(
