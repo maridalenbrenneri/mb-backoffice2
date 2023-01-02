@@ -64,11 +64,11 @@ export default function Deliveries() {
 
   return (
     <main>
-      <Typography variant="h1">Deliveries</Typography>
+      <Typography variant="h1">Delivery Days</Typography>
 
       <Box sx={{ m: 2 }}>
         <Button href="/deliveries/admin/new" variant="contained">
-          Create New Delivery
+          Create New Delivery Day
         </Button>
       </Box>
 

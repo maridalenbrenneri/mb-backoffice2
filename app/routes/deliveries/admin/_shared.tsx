@@ -42,5 +42,5 @@ export const upsertAction = async (request: any) => {
 
   await upsertDelivery(id, data);
 
-  return redirect('/deliveries');
+  return redirect(`/deliveries/admin/${id}`);
 };

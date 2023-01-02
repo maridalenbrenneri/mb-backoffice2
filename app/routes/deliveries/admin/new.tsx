@@ -16,10 +16,11 @@ import Select from '@mui/material/Select';
 
 import { upsertAction } from './_shared';
 import type { DeliveryDate } from '~/_libs/core/utils/dates';
+import { toPrettyDateTextLong } from '~/_libs/core/utils/dates';
 import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
 import type { Coffee } from '~/_libs/core/models/coffee.server';
 import { getCoffees } from '~/_libs/core/models/coffee.server';
-import { toPrettyDate } from '~/_libs/core/utils/dates';
+import { CoffeeStatus } from '@prisma/client';
 
 type LoaderData = {
   deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
@@ -28,7 +29,11 @@ type LoaderData = {
 
 export const loader = async () => {
   const deliveryDates = getNextDeliveryDates();
-  const coffees = await getCoffees();
+  const coffees = await getCoffees({
+    where: {
+      status: CoffeeStatus.ACTIVE,
+    },
+  });
 
   return json<LoaderData>({
     deliveryDates,
@@ -74,7 +79,7 @@ export default function NewDelivery() {
           >
             {deliveryDates.map((date: DeliveryDate) => (
               <MenuItem value={date.id} key={date.id}>
-                {toPrettyDate(date.date)} - {date.type}
+                {toPrettyDateTextLong(date.date)} - {date.type}
               </MenuItem>
             ))}
           </Select>
