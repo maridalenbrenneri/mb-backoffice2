@@ -97,7 +97,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   const orderIds =
     allOrderIds.length > COMPLETE_ORDERS_BATCH_MAX
-      ? allOrderIds.slice(0, COMPLETE_ORDERS_BATCH_MAX - 1)
+      ? allOrderIds.slice(0, COMPLETE_ORDERS_BATCH_MAX)
       : allOrderIds;
 
   return await completeAndShipOrders(orderIds);
@@ -362,7 +362,7 @@ export default function Packing() {
                   Orders completed
                 </Typography>
                 <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-                  <Table sx={{ minWidth: 650 }} size="small">
+                  <Table sx={{ minWidth: 800 }} size="small">
                     <TableHead>
                       <TableRow>
                         <TableCell>Result</TableCell>
