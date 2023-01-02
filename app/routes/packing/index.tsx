@@ -116,6 +116,7 @@ export default function Packing() {
   const [resultData, setResultData] = useState<[] | null>(null);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [open, setOpen] = useState(false);
+  const [currentOrders, setCurrentOrders] = useState<Order[]>([]);
 
   const [customPickUpOrders, setPickUpCustomOrders] = useState<Order[]>([]);
   const [renewalPickUpOrders, setPickUpRenewalOrders] = useState<Order[]>([]);
@@ -169,13 +170,15 @@ export default function Packing() {
 
   if (!preview || !deliveries || !delivery) return null;
 
-  const handleOpen = () => {
+  const handleOpen = (orders: Order[]) => {
+    setCurrentOrders(orders);
     setOpen(true);
   };
 
   const handleClose = (_event: any, reason: string) => {
     if (reason === 'closeBtnClick') {
       setResultData(null);
+      setCurrentOrders([]);
       setOpen(false);
     }
   };
@@ -227,7 +230,7 @@ export default function Packing() {
                     variant="contained"
                     type="submit"
                     disabled={!orders.length || isWorking}
-                    onClick={handleOpen}
+                    onClick={() => handleOpen(orders)}
                     sx={{ marginBottom: 2, minWidth: 200 }}
                   >
                     {ship && <LocalShippingIcon />}
@@ -349,7 +352,9 @@ export default function Packing() {
               <Grid container>
                 <Grid item xs={12} style={{ textAlign: 'center' }}>
                   <CircularProgress color="primary" />
-                  <Typography>Completing orders...</Typography>
+                  <Typography>
+                    Completing {currentOrders.length} order(s)...
+                  </Typography>
                   <p>
                     <small>This can take a while if many orders.</small>
                   </p>
