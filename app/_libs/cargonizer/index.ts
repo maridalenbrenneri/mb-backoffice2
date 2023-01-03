@@ -250,7 +250,7 @@ async function createConsignmentXml(
 
   const services =
     product === settings.CARGONIZER_PRODUCT_PRIVATE
-      ? { service: settings.CARGONIZER_PRODUCT_PRIVATE_SERVICE }
+      ? { service: { $id: settings.CARGONIZER_PRODUCT_PRIVATE_SERVICE } }
       : {};
 
   // console.debug('services', services, product, consignment.customer.name);
