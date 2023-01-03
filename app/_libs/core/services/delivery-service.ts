@@ -19,7 +19,7 @@ export async function getNextOrCreateDelivery(): Promise<Delivery> {
   const delivery = await getDelivery({
     where: {
       date: {
-        gt: today.toJSDate(),
+        gte: today.toJSDate(),
         lt: nextweek.toJSDate(),
       },
     },
