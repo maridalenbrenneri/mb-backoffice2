@@ -364,7 +364,7 @@ export default function Packing() {
             {resultData && (
               <Box>
                 <Typography variant="h6" component="h2">
-                  {resultData.length} orders completed
+                  {resultData.length} order(s) completed
                 </Typography>
                 <TableContainer component={Paper} sx={{ marginTop: 2 }}>
                   <Table sx={{ minWidth: 800 }} size="small">
