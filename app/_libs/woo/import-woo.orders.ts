@@ -114,6 +114,9 @@ export default async function importWooOrders() {
       console.debug(
         `Creating ${info.gifts.length} gift subscription(s) from Woo order ${info.order.wooOrderId} (if not already exist)`
       );
+
+    // TODO: Handle status === "cancelled", stop gift subscription if already exists (set to "deleted"), don't create if not exists
+
     for (const gift of info.gifts) {
       await createGiftSubscription(gift);
       // Set order to complete in Woo after import, don't if order has other items as well
@@ -149,7 +152,7 @@ export default async function importWooOrders() {
         info.order
       );
 
-      // IF ORDER NOT CREATED IT'S LIKELY A COMLETED ORDER NOT PREVIOSLY IMPORTED, SHOULD BE IGNORED
+      // IF ORDER NOT CREATED IT'S LIKELY A COMPLETED ORDER NOT PREVIOSLY IMPORTED, SHOULD BE IGNORED
       if (orderCreated) {
         for (const item of info.items) {
           const coffeeId = getCoffeeIdFromCode(
