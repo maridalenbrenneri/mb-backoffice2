@@ -10,6 +10,7 @@ import {
 import invariant from 'tiny-invariant';
 
 import {
+  Alert,
   Box,
   Button,
   ButtonGroup,
@@ -17,10 +18,10 @@ import {
   Dialog,
   FormControl,
   Grid,
-  InputLabel,
   MenuItem,
   Paper,
   Select,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -43,7 +44,10 @@ import { getOrder } from '~/_libs/core/models/order.server';
 import { upsertOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
 import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
-import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
+import {
+  toPrettyDateTextLong,
+  toPrettyDateTime,
+} from '~/_libs/core/utils/dates';
 import { coffeeVariationToLabel } from '~/_libs/core/utils/labels';
 import { useEffect, useState } from 'react';
 import { modalStyle } from '~/style/theme';
@@ -53,6 +57,7 @@ import {
   completeAndShipOrders,
   completeOrder,
 } from '~/_libs/core/services/order-service';
+import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
@@ -77,18 +82,40 @@ export const loader: LoaderFunction = async ({ params }) => {
   return json({ loadedOrder, coffees });
 };
 
+async function completeAndShipOrderAction(id: number) {
+  return {
+    didUpdate: true,
+    updateMessage: 'Order was completed and shipped',
+    completeAndShipOrderActionResult: await completeAndShipOrders([id]),
+  };
+}
+
+async function updateStatusAction(id: number, _action: string) {
+  if (_action === 'cancel-order') {
+    await cancelOrder(id);
+    return { didUpdate: true, updateMessage: 'Order was cancelled' };
+  }
+  if (_action === 'complete-order') {
+    await completeOrder(id);
+    return { didUpdate: true, updateMessage: 'Order was completed' };
+  }
+  if (_action === 'activate-order') {
+    await activateOrder(id);
+    return { didUpdate: true, updateMessage: 'Order was activated' };
+  }
+
+  return null;
+}
+
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
   if (_action === 'complete-and-ship-order')
-    return await completeAndShipOrders([+values.id]);
-  if (_action === 'complete-order') return await completeOrder(+values.id);
-  if (_action === 'cancel-order') return await cancelOrder(+values.id);
-  if (_action === 'activate-order') return await activateOrder(+values.id);
+    return await completeAndShipOrderAction(+values.id);
   else if (_action === 'update') return await upsertOrderAction(values);
 
-  return null;
+  return await updateStatusAction(+values.id, _action as string);
 };
 
 function resolveCoffeeCode(coffeeId: number, coffees: Coffee[]) {
@@ -100,10 +127,9 @@ function resolveCoffeeCode(coffeeId: number, coffees: Coffee[]) {
 export default function UpdateOrder() {
   const { loadedOrder, coffees } = useLoaderData() as unknown as LoaderData;
   const data = useActionData();
-  const errors = useActionData();
   const transition = useTransition();
 
-  const [resultData, setResultData] = useState<[] | null>(null);
+  const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
 
   const [order, setOrder] = useState<Order>();
@@ -113,7 +139,7 @@ export default function UpdateOrder() {
   }, [loadedOrder]);
 
   useEffect(() => {
-    setResultData(data);
+    setOpenSnack(!!data?.didUpdate);
   }, [data]);
 
   if (!order) return null;
@@ -130,7 +156,6 @@ export default function UpdateOrder() {
 
   const handleClose = (_event: any, reason: string) => {
     if (reason === 'closeBtnClick') {
-      setResultData(null);
       setOpen(false);
     }
   };
@@ -145,17 +170,21 @@ export default function UpdateOrder() {
       data: order.status,
     },
     {
+      label: 'Type',
+      data: order.type,
+    },
+    {
       label: 'Subscription',
       data: order.subscription.recipientName,
       dataLinkUrl: `/subscriptions/admin/${order.subscriptionId}`,
     },
     {
       label: 'Delivery day',
-      data: toPrettyDate(order.delivery.date),
+      data: toPrettyDateTextLong(order.delivery.date),
       dataLinkUrl: `/deliveries/admin/${order.deliveryId}`,
     },
     {
-      label: 'Created at',
+      label: 'Created/Imported at',
       data: toPrettyDateTime(order.createdAt, true),
     },
     {
@@ -164,22 +193,28 @@ export default function UpdateOrder() {
     },
   ];
 
-  if (order.wooOrderId) {
-    dataFields.push({
+  const dataFieldsWoo: any[] = [
+    {
       label: 'Woo order id',
       data: order.wooOrderId || '',
-    });
-
-    dataFields.push({
+    },
+    {
       label: 'Woo order number',
       data: order.wooOrderNumber || '',
-    });
-
-    dataFields.push({
+    },
+    {
       label: 'Woo created at',
       data: toPrettyDateTime(order.wooCreatedAt, true),
-    });
-  }
+    },
+  ];
+
+  const dataFieldsFiken: any[] = [
+    {
+      label: 'Fiken customer id',
+      data: order.subscription?.fikenContactId,
+      dataLinkUrl: `${FIKEN_CONTACT_URL}${order.subscription?.fikenContactId}`,
+    },
+  ];
 
   return (
     <Box
@@ -188,16 +223,39 @@ export default function UpdateOrder() {
         '& .MuiTextField-root': { m: 1, minWidth: 250 },
       }}
     >
-      <Typography variant="h1">Order Details</Typography>
+      <Snackbar
+        open={!openSnack}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnack(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity="success">{data?.updateMessage || 'Updated'}</Alert>
+      </Snackbar>
 
+      <Typography variant="h1">Order Details</Typography>
       <Grid container>
-        <Grid item>
+        <Grid item md={6}>
           <Box sx={{ m: 1 }}>
             <DataLabel dataFields={dataFields} />
           </Box>
         </Grid>
-        <Grid item>
-          <Box sx={{ m: 2 }}>
+        {order.wooOrderId && (
+          <Grid item md={6}>
+            <Box sx={{ m: 1 }}>
+              <DataLabel dataFields={dataFieldsWoo} />
+            </Box>
+          </Grid>
+        )}
+        {order.subscription?.fikenContactId && (
+          <Grid item md={6}>
+            <Box sx={{ m: 1 }}>
+              <DataLabel dataFields={dataFieldsFiken} />
+            </Box>
+          </Grid>
+        )}
+
+        <Grid item sm={12} md={8}>
+          <Box sx={{ my: 4, mx: 2 }}>
             <Form method="post">
               <input type="hidden" name="id" value={order.id} />
               <input
@@ -238,7 +296,7 @@ export default function UpdateOrder() {
               </FormControl>
               <FormControl>
                 <Button
-                  sx={{ mx: 3 }}
+                  sx={{ mx: 2 }}
                   type="submit"
                   name="_action"
                   value="complete-and-ship-order"
@@ -249,264 +307,256 @@ export default function UpdateOrder() {
                   <LocalShippingIcon sx={{ mx: 1 }} /> Complete & Ship Order
                 </Button>
               </FormControl>
-
-              <div></div>
             </Form>
           </Box>
         </Grid>
       </Grid>
 
-      <Form method="post">
-        <input type="hidden" name="id" value={order.id} />
-        <input type="hidden" name="status" value={order.status} />
-        <input
-          type="hidden"
-          name="subscriptionId"
-          value={order.subscriptionId}
-        />
-        <input type="hidden" name="deliveryId" value={order.deliveryId} />
-        <input type="hidden" name="type" value={order.type} />
-        <input
-          type="hidden"
-          name="customerNote"
-          value={order.customerNote || undefined}
-        />
+      <Paper sx={{ p: 2 }}>
+        <Form method="post">
+          <input type="hidden" name="id" value={order.id} />
+          <input type="hidden" name="status" value={order.status} />
+          <input
+            type="hidden"
+            name="subscriptionId"
+            value={order.subscriptionId}
+          />
+          <input type="hidden" name="deliveryId" value={order.deliveryId} />
+          <input type="hidden" name="type" value={order.type} />
+          <input
+            type="hidden"
+            name="customerNote"
+            value={order.customerNote || undefined}
+          />
 
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`type-label`}>Type</InputLabel>
-          <Select
-            labelId="type-label"
-            name="type"
-            defaultValue={order.type}
-            sx={{ minWidth: 250 }}
-            disabled={true}
-          >
-            {Object.keys(OrderType).map((type: any) => (
-              <MenuItem value={type} key={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`shipping-type-label`}>Shipping</InputLabel>
-          <Select
-            labelId="shipping-type-label"
-            name="shippingType"
-            defaultValue={order.shippingType}
-            sx={{ minWidth: 250 }}
-          >
-            {Object.keys(ShippingType).map((type: any) => (
-              <MenuItem value={type} key={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <div>
-          <Typography variant="h3">Recipient</Typography>
-          <FormControl>
-            <TextField
-              name="name"
-              label="Name"
-              variant="outlined"
-              defaultValue={order.name}
-              error={errors?.name}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              name="address1"
-              label="Address1"
-              variant="outlined"
-              defaultValue={order.address1}
-              error={errors?.address1}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              name="address2"
-              label="Address2"
-              variant="outlined"
-              defaultValue={order.address2}
-              error={errors?.address2}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              name="postalCode"
-              label="Postal code"
-              variant="outlined"
-              defaultValue={order.postalCode}
-              error={errors?.postalCode}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              name="postalPlace"
-              label="Place"
-              variant="outlined"
-              defaultValue={order.postalPlace}
-              error={errors?.postalPlace}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              name="email"
-              label="Email"
-              variant="outlined"
-              defaultValue={order.email}
-              error={errors?.email}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              name="mobile"
-              label="Mobile"
-              variant="outlined"
-              defaultValue={order.mobile}
-              error={errors?.mobile}
-            />
-          </FormControl>
-        </div>
-        <div>
-          <FormControl>
-            <TextField
-              name="internalNote"
-              label="Internal note"
-              variant="outlined"
-              multiline
-              defaultValue={order.internalNote}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              name="customerNote"
-              label="Customer note"
-              variant="outlined"
-              multiline
-              disabled
-              defaultValue={order.customerNote}
-            />
-          </FormControl>
-        </div>
-        {order.type !== OrderType.CUSTOM && (
           <div>
-            <Typography variant="h3">Coffee</Typography>
+            <Typography variant="h3">Shipping</Typography>
+            <FormControl sx={{ m: 1 }}>
+              <Select
+                name="shippingType"
+                defaultValue={order.shippingType}
+                sx={{ minWidth: 250 }}
+              >
+                {Object.keys(ShippingType).map((type: any) => (
+                  <MenuItem value={type} key={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+          <div>
+            <Typography variant="h3">Recipient</Typography>
+            <div>
+              <FormControl>
+                <TextField
+                  name="name"
+                  label="Name"
+                  variant="outlined"
+                  defaultValue={order.name}
+                  error={data?.errors?.name}
+                />
+              </FormControl>
+            </div>
+            <div>
+              <FormControl>
+                <TextField
+                  name="address1"
+                  label="Address1"
+                  variant="outlined"
+                  defaultValue={order.address1}
+                  error={data?.errors?.address1}
+                />
+              </FormControl>
+              <FormControl>
+                <TextField
+                  name="address2"
+                  label="Address2"
+                  variant="outlined"
+                  defaultValue={order.address2}
+                  error={data?.errors?.address2}
+                />
+              </FormControl>
+            </div>
+            <div>
+              <FormControl>
+                <TextField
+                  name="postalCode"
+                  label="Postal code"
+                  variant="outlined"
+                  defaultValue={order.postalCode}
+                  error={data?.errors?.postalCode}
+                />
+              </FormControl>
+              <FormControl>
+                <TextField
+                  name="postalPlace"
+                  label="Place"
+                  variant="outlined"
+                  defaultValue={order.postalPlace}
+                  error={data?.errors?.postalPlace}
+                />
+              </FormControl>
+            </div>
+            <div>
+              <FormControl>
+                <TextField
+                  name="email"
+                  label="Email"
+                  variant="outlined"
+                  defaultValue={order.email}
+                  error={data?.errors?.email}
+                />
+              </FormControl>
+              <FormControl>
+                <TextField
+                  name="mobile"
+                  label="Mobile"
+                  variant="outlined"
+                  defaultValue={order.mobile}
+                  error={data?.errors?.mobile}
+                />
+              </FormControl>
+            </div>
+          </div>
+          <div>
             <FormControl>
               <TextField
-                name="quantity250"
-                label="Quantity 250"
+                name="internalNote"
+                label="Internal note"
                 variant="outlined"
-                defaultValue={order.quantity250}
-                error={errors?.quantity250}
+                multiline
+                defaultValue={order.internalNote}
               />
             </FormControl>
             <FormControl>
               <TextField
-                name="quantity500"
-                label="Quantity 500"
+                name="customerNote"
+                label="Customer note"
                 variant="outlined"
-                defaultValue={order.quantity500}
-                error={errors?.quantity500}
-              />
-            </FormControl>
-            <FormControl>
-              <TextField
-                name="quantity1200"
-                label="Quantity 1200"
-                variant="outlined"
-                defaultValue={order.quantity1200}
-                error={errors?.quantity1200}
+                multiline
+                disabled
+                defaultValue={order.customerNote}
               />
             </FormControl>
           </div>
-        )}
-        <div>
-          <FormControl sx={{ m: 1 }}>
-            <Button
-              variant="contained"
-              type="submit"
-              disabled={isUpdating || isReadOnly}
-              name="_action"
-              value="update"
-            >
-              {isUpdating ? 'Updating...' : 'Update Order'}
-            </Button>
-          </FormControl>
-        </div>
-      </Form>
-
-      {order.type === OrderType.CUSTOM && (
-        <Box my={2}>
-          <Typography variant="h3">Items</Typography>
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Coffee</TableCell>
-                  <TableCell>Size</TableCell>
-                  <TableCell>Quantity</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {order.orderItems.map((item: OrderItem) => (
-                  <TableRow
-                    key={item.id}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell>
-                      {resolveCoffeeCode(item.coffeeId, coffees)}
-                    </TableCell>
-                    <TableCell>
-                      {coffeeVariationToLabel(item.variation)}
-                    </TableCell>
-                    <TableCell>{item.quantity}</TableCell>
+          {order.type !== OrderType.CUSTOM && (
+            <div>
+              <Typography variant="h3">Coffee</Typography>
+              <FormControl>
+                <TextField
+                  name="quantity250"
+                  label="Quantity 250"
+                  variant="outlined"
+                  defaultValue={order.quantity250}
+                  error={data?.errors?.quantity250}
+                />
+              </FormControl>
+              <FormControl>
+                <TextField
+                  name="quantity500"
+                  label="Quantity 500"
+                  variant="outlined"
+                  defaultValue={order.quantity500}
+                  error={data?.errors?.quantity500}
+                />
+              </FormControl>
+              <FormControl>
+                <TextField
+                  name="quantity1200"
+                  label="Quantity 1200"
+                  variant="outlined"
+                  defaultValue={order.quantity1200}
+                  error={data?.errors?.quantity1200}
+                />
+              </FormControl>
+            </div>
+          )}
+          <div>
+            <FormControl sx={{ m: 1 }}>
+              <Button
+                variant="contained"
+                type="submit"
+                disabled={isUpdating || isReadOnly}
+                name="_action"
+                value="update"
+              >
+                {isUpdating ? 'Updating...' : 'Update'}
+              </Button>
+            </FormControl>
+          </div>
+        </Form>
+        {order.type === OrderType.CUSTOM && (
+          <Box my={2}>
+            <Typography variant="h3">Items</Typography>
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Coffee</TableCell>
+                    <TableCell>Size</TableCell>
+                    <TableCell>Quantity</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {order.orderItems.map((item: OrderItem) => (
+                    <TableRow
+                      key={item.id}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell>
+                        {resolveCoffeeCode(item.coffeeId, coffees)}
+                      </TableCell>
+                      <TableCell>
+                        {coffeeVariationToLabel(item.variation)}
+                      </TableCell>
+                      <TableCell>{item.quantity}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-          <Box m={2}>
-            <Outlet />
+            <Box m={2}>
+              <Outlet />
+            </Box>
           </Box>
-        </Box>
-      )}
-      <div>
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          fullWidth={true}
-          maxWidth={'xl'}
-        >
-          <Box sx={modalStyle}>
-            {!resultData && (
-              <Grid container>
-                <Grid item xs={12} style={{ textAlign: 'center' }}>
-                  <CircularProgress color="primary" />
-                  <Typography>Completing order...</Typography>
-                </Grid>
+        )}
+      </Paper>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        fullWidth={true}
+        maxWidth={'xl'}
+      >
+        <Box sx={modalStyle}>
+          {!data?.completeAndShipOrderActionResult && (
+            <Grid container>
+              <Grid item xs={12} style={{ textAlign: 'center' }}>
+                <CircularProgress color="primary" />
+                <Typography>Completing order...</Typography>
               </Grid>
-            )}
-            {resultData && (
-              <Box>
-                <Typography variant="h6" component="h2">
-                  Order completed
-                </Typography>
-                <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-                  <Table sx={{ minWidth: 800 }} size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Result</TableCell>
-                        <TableCell>Order</TableCell>
-                        <TableCell>Errors</TableCell>
-                        <TableCell>Label printed</TableCell>
-                        <TableCell>Woo id/status</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {resultData.map((row: any, index: number) => (
+            </Grid>
+          )}
+          {data?.completeAndShipOrderActionResult && (
+            <Box>
+              <Typography variant="h6" component="h2">
+                Order completed
+              </Typography>
+              <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+                <Table sx={{ minWidth: 800 }} size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Result</TableCell>
+                      <TableCell>Order</TableCell>
+                      <TableCell>Errors</TableCell>
+                      <TableCell>Label printed</TableCell>
+                      <TableCell>Woo id/status</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {data.completeAndShipOrderActionResult.map(
+                      (row: any, index: number) => (
                         <TableRow key={index}>
                           <TableCell>{row.result}</TableCell>
                           <TableCell>{row.orderId}</TableCell>
@@ -521,27 +571,27 @@ export default function UpdateOrder() {
                             {row.wooOrderId || ''} {row.wooOrderStatus || ''}
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                      )
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
-                <Grid container>
-                  <Grid item xs={12} style={{ textAlign: 'right' }}>
-                    <Button
-                      variant="contained"
-                      onClick={() => handleClose(null, 'closeBtnClick')}
-                      sx={{ m: 2, marginTop: 4 }}
-                    >
-                      Close
-                    </Button>
-                  </Grid>
+              <Grid container>
+                <Grid item xs={12} style={{ textAlign: 'right' }}>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleClose(null, 'closeBtnClick')}
+                    sx={{ m: 2, marginTop: 4 }}
+                  >
+                    Close
+                  </Button>
                 </Grid>
-              </Box>
-            )}
-          </Box>
-        </Dialog>
-      </div>
+              </Grid>
+            </Box>
+          )}
+        </Box>
+      </Dialog>
     </Box>
   );
 }

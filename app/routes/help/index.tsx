@@ -184,6 +184,31 @@ export default function JobResult() {
           created, set status to <small>ACTIVE</small>.
         </p>
       </Box>
+
+      <Box sx={{ m: 2 }}>
+        <Typography variant="h2">Woo and Backoffice</Typography>
+        <p>
+          Subscriptions (ABO's) are imported daily from Woo, they appear in
+          Backoffice as subscriptions with type "PRIVATE". These cannot be
+          edited in Backoffice (changes will be overridden).
+        </p>
+        <p>
+          Orders from Woo are imported regularly (once an hour), only status are
+          synced after initial import (i.e. if the status of an order is changed
+          in Woo it will be reflected in Backoffice, but other changes are
+          ignored). When status is updated in Backoffice it is also changed in
+          Woo. (i.e. when completing/cancelling/etc.) This applies both for ABO
+          renewal orders and single custom orders.
+        </p>
+        <p>
+          Gift subscriptions are imported once from Woo (they are order items in
+          single Woo orders), the Woo order is set to complete on import (import
+          handles cases where the order also contains other order items). Gift
+          subscriptions are not subscriptions in Woo, just a "single" order, so
+          no further sync/updates are done after inital import. Renewal orders
+          and duration of subscription is handled by Backoffice.
+        </p>
+      </Box>
     </main>
   );
 }

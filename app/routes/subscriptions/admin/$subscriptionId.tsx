@@ -30,7 +30,6 @@ import {
   renderFrequency,
   renderShippingTypes,
   renderStatus,
-  renderTypes,
   updateFirstDeliveryDate,
   upsertAction,
 } from './_shared';
@@ -170,6 +169,96 @@ export default function UpdateSubscription() {
     setOpen(true);
   };
 
+  const dataFields: any[] = [
+    {
+      label: 'Status',
+      data: subscription.status,
+    },
+    {
+      label: 'Type',
+      data: subscription.type,
+    },
+    {
+      label: 'Recipient',
+      data: subscription.recipientName,
+    },
+    {
+      label: 'Created/Imported at',
+      data: toPrettyDateTime(subscription.createdAt, true),
+    },
+    {
+      label: 'Updated at',
+      data: toPrettyDateTime(subscription.updatedAt, true),
+    },
+  ];
+
+  const dataFieldsWoo: any[] = [
+    {
+      label: 'Woo subscription id',
+      data: subscription.wooSubscriptionId,
+    },
+    {
+      label: 'Woo customer name',
+      data: subscription.wooCustomerName,
+    },
+    {
+      label: 'Woo customer id',
+      data: subscription.wooCustomerId,
+    },
+    {
+      label: 'Woo created at',
+      data: toPrettyDateTime(subscription.wooCreatedAt, true),
+    },
+  ];
+
+  const dataFieldsFiken: any[] = [
+    {
+      label: 'Fiken customer id',
+      data: subscription.fikenContactId,
+      dataLinkUrl: `${FIKEN_CONTACT_URL}${subscription.fikenContactId}`,
+    },
+  ];
+
+  const dataFieldsGift: any[] = [
+    {
+      label: 'System resolved actual first delivery day',
+      data: toPrettyDateTextLong(subscription.gift_firstDeliveryDate),
+      onClick: handleOpen,
+    },
+    {
+      label: 'Customer requested first delivery date',
+      data: toPrettyDate(subscription.gift_customerFirstDeliveryDate),
+    },
+    {
+      label: 'Months',
+      data: subscription.gift_durationMonths,
+    },
+    {
+      label: 'Woo customer name',
+      data: subscription.wooCustomerName,
+    },
+    {
+      label: 'Woo customer id',
+      data: subscription.wooCustomerId,
+    },
+    {
+      label: 'Customer note',
+      data: subscription.customerNote,
+    },
+    {
+      label: 'Message to recipient',
+      data: subscription.gift_messageToRecipient,
+    },
+    {
+      label: 'Woo order id',
+      data: subscription.gift_wooOrderId,
+    },
+    {
+      label: 'Woo order created at',
+      data: toPrettyDateTime(subscription.wooCreatedAt, true),
+    },
+  ];
+
   return (
     <main>
       <Box
@@ -177,10 +266,49 @@ export default function UpdateSubscription() {
           '& .MuiTextField-root': { m: 1, minWidth: 250 },
         }}
       >
+        <Typography variant="h1">Subscription Details</Typography>
+
+        {isSystemSubscription && (
+          <Alert severity="warning">
+            This is a system subscription, it cannot be edited and no orders can
+            be created.
+          </Alert>
+        )}
+
+        {subscription.wooSubscriptionId && (
+          <Alert severity="info" sx={{ m: 1 }}>
+            This subscription is imported from Woo and cannot be edited here.
+            Update of status, customer data and quantities must be done in Woo.
+          </Alert>
+        )}
+
         <Grid container spacing={2}>
-          <Grid item md={12}>
-            <Typography variant="h1">Subscription Details</Typography>
+          <Grid item md={6}>
+            <Box sx={{ m: 1 }}>
+              <DataLabel dataFields={dataFields} />
+            </Box>
           </Grid>
+          {subscription.wooSubscriptionId && (
+            <Grid item md={6}>
+              <Box sx={{ m: 1 }}>
+                <DataLabel dataFields={dataFieldsWoo} />
+              </Box>
+            </Grid>
+          )}
+          {subscription.fikenContactId && (
+            <Grid item md={6}>
+              <Box sx={{ m: 1 }}>
+                <DataLabel dataFields={dataFieldsFiken} />
+              </Box>
+            </Grid>
+          )}
+          {subscription.type === 'PRIVATE_GIFT' && (
+            <Grid item md={6}>
+              <Box sx={{ m: 1 }}>
+                <DataLabel dataFields={dataFieldsGift} />
+              </Box>
+            </Grid>
+          )}
 
           {!subscription.wooSubscriptionId && !isSystemSubscription && (
             <Grid item md={12}>
@@ -292,7 +420,7 @@ export default function UpdateSubscription() {
             </Grid>
           )}
 
-          <Grid item md={7}>
+          <Grid item xs={12}>
             <Paper
               sx={{
                 p: 2,
@@ -308,7 +436,6 @@ export default function UpdateSubscription() {
                 />
 
                 <Box my={2}>
-                  {renderTypes(subscription.type)}
                   {renderStatus(subscription.status)}
                   {renderFrequency(subscription.frequency)}
                   {renderShippingTypes(subscription.shippingType)}
@@ -448,153 +575,11 @@ export default function UpdateSubscription() {
                       name="_action"
                       value="update"
                     >
-                      {isUpdating ? 'Updating...' : 'Update Subscription'}
+                      {isUpdating ? 'Updating...' : 'Update'}
                     </Button>
                   </FormControl>
                 </div>
               </Form>
-            </Paper>
-          </Grid>
-          <Grid item md={5}>
-            <Paper
-              sx={{
-                p: 0,
-              }}
-            >
-              {subscription.type === 'PRIVATE_GIFT' && (
-                <Box sx={{ m: 1, p: 1 }}>
-                  <Typography>Woo GABO data</Typography>
-
-                  <Box sx={{ m: 1 }}>
-                    <DataLabel
-                      dataFields={[
-                        {
-                          label: 'System resolved actual first delivery day',
-                          data: toPrettyDateTextLong(
-                            subscription.gift_firstDeliveryDate
-                          ),
-                          onClick: handleOpen,
-                        },
-                        {
-                          label: 'Customer requested first delivery date',
-                          data: toPrettyDate(
-                            subscription.gift_customerFirstDeliveryDate
-                          ),
-                        },
-                        {
-                          label: 'Months',
-                          data: subscription.gift_durationMonths,
-                        },
-                        {
-                          label: 'Customer',
-                          data: subscription.wooCustomerName,
-                        },
-                        {
-                          label: 'Woo customer id',
-                          data: subscription.wooCustomerId,
-                        },
-                        {
-                          label: 'Customer note',
-                          data: subscription.customerNote,
-                        },
-                        {
-                          label: 'Message to recipient',
-                          data: subscription.gift_messageToRecipient,
-                        },
-                        {
-                          label: 'Woo order id',
-                          data: subscription.gift_wooOrderId,
-                        },
-                        {
-                          label: 'Woo order created at',
-                          data: toPrettyDateTime(
-                            subscription.wooCreatedAt,
-                            true
-                          ),
-                        },
-                      ]}
-                    />
-                  </Box>
-                </Box>
-              )}
-              {/* <GiftSubscriptionWooData subscription={subscription} /> */}
-              {isSystemSubscription && (
-                <Alert severity="info" icon={false}>
-                  This is a system subscription, it cannot be edited and no
-                  orders can be created.
-                </Alert>
-              )}
-
-              <>
-                {subscription.fikenContactId && (
-                  <div>
-                    <Typography>B2B Fiken Customer</Typography>
-                    <Box sx={{ m: 1 }}>
-                      <DataLabel
-                        dataFields={[
-                          {
-                            label: 'Fiken id',
-                            data: subscription.fikenContactId,
-                            dataLinkUrl: `${FIKEN_CONTACT_URL}${subscription.fikenContactId}`,
-                          },
-                        ]}
-                      />
-                    </Box>
-                  </div>
-                )}
-                {subscription.wooSubscriptionId && (
-                  <div>
-                    <Box sx={{ m: 1, paddingTop: 1 }}>
-                      <Alert severity="info" sx={{ m: 1 }}>
-                        <p>
-                          This subscription is imported from Woo and cannot be
-                          updated here.
-                        </p>
-                        <p>
-                          Update of status, customer data and quantity must be
-                          done in Woo.
-                        </p>
-                        <p>
-                          Renewal orders are automatically created (imported
-                          from Woo).
-                        </p>
-                      </Alert>
-
-                      <DataLabel
-                        dataFields={[
-                          {
-                            label: 'Woo subscription id',
-                            data: subscription.wooSubscriptionId,
-                          },
-                          {
-                            label: 'Woo customer id',
-                            data: subscription.wooCustomerId,
-                          },
-                          {
-                            label: 'Woo created at',
-                            data: toPrettyDateTime(
-                              subscription.wooCreatedAt,
-                              true
-                            ),
-                          },
-                        ]}
-                      />
-                    </Box>
-                  </div>
-                )}
-                <DataLabel
-                  dataFields={[
-                    {
-                      label: 'Created/Imported',
-                      data: toPrettyDateTime(subscription.createdAt, true),
-                    },
-                    {
-                      label: 'Updated at',
-                      data: toPrettyDateTime(subscription.updatedAt, true),
-                    },
-                  ]}
-                />
-              </>
             </Paper>
           </Grid>
 

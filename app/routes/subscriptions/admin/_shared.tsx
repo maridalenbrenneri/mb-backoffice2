@@ -173,6 +173,5 @@ export const upsertAction = async (values: any) => {
 
   await upsertSubscription(id, data);
 
-  //return redirect(`/subscriptions/admin/${id}`);
   return redirect('/subscriptions');
 };

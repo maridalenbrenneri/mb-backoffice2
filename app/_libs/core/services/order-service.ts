@@ -259,7 +259,6 @@ export async function completeOrder(orderId: number) {
     await woo.updateStatus(order.wooOrderId, WOO_STATUS_COMPLETED);
   }
   await updateOrderStatus(order.id, OrderStatus.COMPLETED);
-  return null;
 }
 
 export async function cancelOrder(orderId: number) {
@@ -270,7 +269,6 @@ export async function cancelOrder(orderId: number) {
     await woo.updateStatus(order.wooOrderId, WOO_STATUS_CANCELLED);
   }
   await updateOrderStatus(order.id, OrderStatus.CANCELLED);
-  return null;
 }
 
 export async function activateOrder(orderId: number) {
@@ -281,5 +279,4 @@ export async function activateOrder(orderId: number) {
     await woo.updateStatus(order.wooOrderId, WOO_STATUS_PROCESSING);
   }
   await updateOrderStatus(order.id, OrderStatus.ACTIVE);
-  return null;
 }
