@@ -19,7 +19,6 @@ import {
   resolveSource,
 } from '~/_libs/core/services/order-service';
 import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
-import { resolve } from 'path';
 
 export default function Orders(props: {
   orders: Order[];
@@ -110,7 +109,9 @@ export default function Orders(props: {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell>{orders.length} orders</TableCell>
+              <TableCell colSpan={7 + extra.length}>
+                {orders.length} orders
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>

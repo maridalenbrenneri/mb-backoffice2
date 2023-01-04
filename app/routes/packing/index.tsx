@@ -217,7 +217,7 @@ export default function Packing() {
               {orders.length} <small>order(s)</small>
             </Typography>
           </AccordionSummary>
-          <AccordionDetails>
+          <AccordionDetails sx={{ p: 0 }}>
             <Grid container>
               <Grid item xs={12} style={{ textAlign: 'center' }}>
                 <Form method="post">
