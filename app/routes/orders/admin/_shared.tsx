@@ -7,7 +7,7 @@ import { upsertOrder } from '~/_libs/core/models/order.server';
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
 
 type OrderActionData = {
-  errors?:
+  validationErrors?:
     | {
         subscriptionId: null | string;
         deliveryId: null | string;
@@ -34,35 +34,30 @@ type OrderItemActionData =
   | undefined;
 
 export const upsertOrderAction = async (values: any) => {
-  const actionData: OrderActionData = {
-    errors: {
-      subscriptionId: values.subscriptionId ? null : 'Subscription is required',
-      deliveryId: values.deliveryId ? null : 'Delivery is required',
-      status: values.status ? null : 'Status is required',
-      type: values.type ? null : 'Type is required',
-      shippingType: values.shippingType ? null : 'Shipping Type is required',
-      postalCode: values.postalCode ? null : 'Postal code is required',
-      quantity250:
-        values.type === OrderType.CUSTOM || isUnsignedInt(values.quantity250)
-          ? null
-          : 'Must be a number greater or equal to zero',
-      quantity500:
-        values.type === OrderType.CUSTOM || isUnsignedInt(values.quantity500)
-          ? null
-          : 'Must be a number greater or equal to zero',
-      quantity1200:
-        values.type === OrderType.CUSTOM || isUnsignedInt(values.quantity1200)
-          ? null
-          : 'Must be a number greater or equal to zero',
-    },
+  const validationErrors = {
+    subscriptionId: values.subscriptionId ? null : 'Subscription is required',
+    deliveryId: values.deliveryId ? null : 'Delivery is required',
+    status: values.status ? null : 'Status is required',
+    type: values.type ? null : 'Type is required',
+    shippingType: values.shippingType ? null : 'Shipping Type is required',
+    postalCode: values.postalCode ? null : 'Postal code is required',
+    quantity250:
+      values.type === OrderType.CUSTOM || isUnsignedInt(values.quantity250)
+        ? null
+        : 'Must be a number greater or equal to zero',
+    quantity500:
+      values.type === OrderType.CUSTOM || isUnsignedInt(values.quantity500)
+        ? null
+        : 'Must be a number greater or equal to zero',
+    quantity1200:
+      values.type === OrderType.CUSTOM || isUnsignedInt(values.quantity1200)
+        ? null
+        : 'Must be a number greater or equal to zero',
   };
 
-  if (
-    actionData?.errors &&
-    Object.values(actionData.errors).some((errorMessage) => errorMessage)
-  ) {
-    console.debug('Errors in form', actionData.errors);
-    return json<OrderActionData>(actionData);
+  if (Object.values(validationErrors).some((errorMessage) => errorMessage)) {
+    console.debug('Errors in form', validationErrors);
+    return json<OrderActionData>({ validationErrors });
   }
 
   const data = {

@@ -130,7 +130,7 @@ export default function UpdateOrder() {
   const transition = useTransition();
 
   const [openSnack, setOpenSnack] = useState<boolean>(false);
-  const [open, setOpen] = useState(false);
+  const [openCompleteAndShip, setOpenCompleteAndShip] = useState(false);
 
   const [order, setOrder] = useState<Order>();
 
@@ -156,12 +156,12 @@ export default function UpdateOrder() {
 
   const handleClose = (_event: any, reason: string) => {
     if (reason === 'closeBtnClick') {
-      setOpen(false);
+      setOpenCompleteAndShip(false);
     }
   };
 
   const handleOpen = () => {
-    setOpen(true);
+    setOpenCompleteAndShip(true);
   };
 
   const dataFields: any[] = [
@@ -354,7 +354,7 @@ export default function UpdateOrder() {
                   label="Name"
                   variant="outlined"
                   defaultValue={order.name}
-                  error={data?.errors?.name}
+                  error={data?.validationErrors?.name}
                 />
               </FormControl>
             </div>
@@ -365,7 +365,7 @@ export default function UpdateOrder() {
                   label="Address1"
                   variant="outlined"
                   defaultValue={order.address1}
-                  error={data?.errors?.address1}
+                  error={data?.validationErrors?.address1}
                 />
               </FormControl>
               <FormControl>
@@ -374,7 +374,7 @@ export default function UpdateOrder() {
                   label="Address2"
                   variant="outlined"
                   defaultValue={order.address2}
-                  error={data?.errors?.address2}
+                  error={data?.validationErrors?.address2}
                 />
               </FormControl>
             </div>
@@ -385,7 +385,7 @@ export default function UpdateOrder() {
                   label="Postal code"
                   variant="outlined"
                   defaultValue={order.postalCode}
-                  error={data?.errors?.postalCode}
+                  error={data?.validationErrors?.postalCode}
                 />
               </FormControl>
               <FormControl>
@@ -394,7 +394,7 @@ export default function UpdateOrder() {
                   label="Place"
                   variant="outlined"
                   defaultValue={order.postalPlace}
-                  error={data?.errors?.postalPlace}
+                  error={data?.validationErrors?.postalPlace}
                 />
               </FormControl>
             </div>
@@ -405,7 +405,7 @@ export default function UpdateOrder() {
                   label="Email"
                   variant="outlined"
                   defaultValue={order.email}
-                  error={data?.errors?.email}
+                  error={data?.validationErrors?.email}
                 />
               </FormControl>
               <FormControl>
@@ -414,7 +414,7 @@ export default function UpdateOrder() {
                   label="Mobile"
                   variant="outlined"
                   defaultValue={order.mobile}
-                  error={data?.errors?.mobile}
+                  error={data?.validationErrors?.mobile}
                 />
               </FormControl>
             </div>
@@ -449,7 +449,7 @@ export default function UpdateOrder() {
                   label="Quantity 250"
                   variant="outlined"
                   defaultValue={order.quantity250}
-                  error={data?.errors?.quantity250}
+                  error={data?.validationErrors?.quantity250}
                 />
               </FormControl>
               <FormControl>
@@ -458,7 +458,7 @@ export default function UpdateOrder() {
                   label="Quantity 500"
                   variant="outlined"
                   defaultValue={order.quantity500}
-                  error={data?.errors?.quantity500}
+                  error={data?.validationErrors?.quantity500}
                 />
               </FormControl>
               <FormControl>
@@ -467,7 +467,7 @@ export default function UpdateOrder() {
                   label="Quantity 1200"
                   variant="outlined"
                   defaultValue={order.quantity1200}
-                  error={data?.errors?.quantity1200}
+                  error={data?.validationErrors?.quantity1200}
                 />
               </FormControl>
             </div>
@@ -524,7 +524,7 @@ export default function UpdateOrder() {
         )}
       </Paper>
       <Dialog
-        open={open}
+        open={openCompleteAndShip}
         onClose={handleClose}
         fullWidth={true}
         maxWidth={'xl'}

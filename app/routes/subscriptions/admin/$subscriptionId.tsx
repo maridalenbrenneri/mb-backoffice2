@@ -15,13 +15,14 @@ import {
   Alert,
   Box,
   Button,
+  Dialog,
   FormControl,
   Grid,
   InputLabel,
   MenuItem,
-  Modal,
   Paper,
   Select,
+  Snackbar,
   TextField,
   Typography,
 } from '@mui/material';
@@ -37,7 +38,7 @@ import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import type { Subscription } from '~/_libs/core/models/subscription.server';
 import Orders from '~/components/Orders';
 import {
-  createCustomdOrder,
+  createCustomOrder,
   createNonRecurringOrder,
 } from '~/_libs/core/services/order-service';
 import {
@@ -64,19 +65,26 @@ export const action: ActionFunction = async ({ request }) => {
 
   if (_action === 'update') return await upsertAction(values);
 
-  if (_action === 'create-order')
-    return await createNonRecurringOrder(+(values as any).id, {
+  if (_action === 'create-order') {
+    await createNonRecurringOrder(+(values as any).id, {
       _250: +(values as any).quantity250,
       _500: +(values as any).quantity500,
       _1200: +(values as any).quantity1200,
     });
+    return { didUpdate: true, updateMessage: 'Order was created' };
+  }
 
-  if (_action === 'create-custom-order')
-    return await createCustomdOrder(+(values as any).id);
+  if (_action === 'create-custom-order') {
+    const order = await createCustomOrder(+(values as any).id);
+    return redirect(`/orders/admin/${order.id}`);
+  }
 
   if (_action === 'set-first-delivery') {
     await updateFirstDeliveryDate(values);
-    return redirect(`/subscriptions/admin/${values.id}`);
+    return {
+      didUpdate: true,
+      updateMessage: 'First delivery date was updated',
+    };
   }
 
   return null;
@@ -120,20 +128,24 @@ export const loader: LoaderFunction = async ({ params }) => {
 };
 
 export default function UpdateSubscription() {
-  const errors = useActionData();
+  const data = useActionData();
   const transition = useTransition();
   const submit = useSubmit();
   const { loadedSubscription, deliveryDates } =
     useLoaderData() as unknown as LoaderData;
 
   const [subscription, setSubscription] = useState<Subscription>();
-
   const [deliveryDate, setDeliveryDate] = useState(deliveryDates[0]);
-  const [open, setOpen] = useState(false);
+  const [openSnack, setOpenSnack] = useState<boolean>(false);
+  const [openSetFirstDelivery, setOpenSetFirstDelivery] = useState(false);
 
   useEffect(() => {
     setSubscription(loadedSubscription);
   }, [loadedSubscription]);
+
+  useEffect(() => {
+    setOpenSnack(!!data?.didUpdate);
+  }, [data]);
 
   if (!subscription) return null;
 
@@ -166,7 +178,7 @@ export default function UpdateSubscription() {
   };
 
   const handleOpen = () => {
-    setOpen(true);
+    setOpenSetFirstDelivery(true);
   };
 
   const dataFields: any[] = [
@@ -266,6 +278,15 @@ export default function UpdateSubscription() {
           '& .MuiTextField-root': { m: 1, minWidth: 250 },
         }}
       >
+        <Snackbar
+          open={openSnack}
+          autoHideDuration={3000}
+          onClose={() => setOpenSnack(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert severity="success">{data?.updateMessage || 'Updated'}</Alert>
+        </Snackbar>
+
         <Typography variant="h1">Subscription Details</Typography>
 
         {isSystemSubscription && (
@@ -333,7 +354,7 @@ export default function UpdateSubscription() {
                           variant="outlined"
                           size="small"
                           defaultValue={subscription.quantity250}
-                          error={errors?.quantity250}
+                          error={data?.validationErrors?.quantity250}
                         />
                       </FormControl>
                       <FormControl>
@@ -346,7 +367,7 @@ export default function UpdateSubscription() {
                           variant="outlined"
                           size="small"
                           defaultValue={subscription.quantity500}
-                          error={errors?.quantity500}
+                          error={data?.validationErrors?.quantity500}
                         />
                       </FormControl>
                       <FormControl>
@@ -359,7 +380,7 @@ export default function UpdateSubscription() {
                           variant="outlined"
                           size="small"
                           defaultValue={subscription.quantity1200}
-                          error={errors?.quantity1200}
+                          error={data?.validationErrors?.quantity1200}
                         />
                       </FormControl>
                       <div>
@@ -448,7 +469,7 @@ export default function UpdateSubscription() {
                       variant="outlined"
                       size="small"
                       defaultValue={subscription.quantity250}
-                      error={errors?.quantity250}
+                      error={data?.validationErrors?.quantity250}
                     />
                   </FormControl>
                   <FormControl>
@@ -458,7 +479,7 @@ export default function UpdateSubscription() {
                       variant="outlined"
                       size="small"
                       defaultValue={subscription.quantity500}
-                      error={errors?.quantity500}
+                      error={data?.validationErrors?.quantity500}
                     />
                   </FormControl>
                   <FormControl>
@@ -468,7 +489,7 @@ export default function UpdateSubscription() {
                       variant="outlined"
                       size="small"
                       defaultValue={subscription.quantity1200}
-                      error={errors?.quantity1200}
+                      error={data?.validationErrors?.quantity1200}
                     />
                   </FormControl>
                 </Box>
@@ -481,7 +502,7 @@ export default function UpdateSubscription() {
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientName}
-                        error={errors?.recipientName}
+                        error={data?.validationErrors?.recipientName}
                       />
                     </FormControl>
                   </div>
@@ -493,7 +514,7 @@ export default function UpdateSubscription() {
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientAddress1}
-                        error={errors?.recipientAddress1}
+                        error={data?.validationErrors?.recipientAddress1}
                       />
                     </FormControl>
                     <FormControl>
@@ -503,7 +524,7 @@ export default function UpdateSubscription() {
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientAddress2}
-                        error={errors?.recipientAddress2}
+                        error={data?.validationErrors?.recipientAddress2}
                       />
                     </FormControl>
                   </div>
@@ -515,7 +536,7 @@ export default function UpdateSubscription() {
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientPostalCode}
-                        error={errors?.recipientPostcode}
+                        error={data?.validationErrors?.recipientPostcode}
                       />
                     </FormControl>
                     <FormControl>
@@ -525,7 +546,7 @@ export default function UpdateSubscription() {
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientPostalPlace}
-                        error={errors?.recipientPlace}
+                        error={data?.validationErrors?.recipientPlace}
                       />
                     </FormControl>
                   </div>
@@ -537,7 +558,7 @@ export default function UpdateSubscription() {
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientEmail}
-                        error={errors?.recipientEmail}
+                        error={data?.validationErrors?.recipientEmail}
                       />
                     </FormControl>
                     <FormControl>
@@ -547,7 +568,7 @@ export default function UpdateSubscription() {
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientMobile}
-                        error={errors?.recipientMobile}
+                        error={data?.validationErrors?.recipientMobile}
                       />
                     </FormControl>
                   </div>
@@ -591,66 +612,60 @@ export default function UpdateSubscription() {
           </Grid>
         </Grid>
       </Box>
-      <div>
-        <Modal
-          open={open}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={{ ...modalStyle, width: '50%' }}>
-            <Form method="post">
-              <input type="hidden" name="id" value={subscription.id} />
-              <input
-                type="hidden"
-                name="delivery_date"
-                value={deliveryDate.date.toString()}
-              />
-              <Grid container>
-                <Grid item xs={12} style={{ textAlign: 'center' }}>
-                  <FormControl sx={{ m: 1 }}>
-                    <InputLabel id="date-label">Date</InputLabel>
-                    <Select
-                      labelId="date-label"
-                      defaultValue={`${deliveryDates[0].id}`}
-                      onChange={handleChangeFirstDeliveryDate}
-                    >
-                      {deliveryDates.map((date: DeliveryDate) => (
-                        <MenuItem value={date.id} key={date.id}>
-                          {toPrettyDateTextLong(date.date)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={6} style={{ textAlign: 'left' }}>
-                  <Button
-                    variant="contained"
-                    onClick={() => setOpen(false)}
-                    sx={{ m: 2, marginTop: 4 }}
+      <Dialog open={openSetFirstDelivery}>
+        <Box sx={{ ...modalStyle }}>
+          <Form method="post">
+            <input type="hidden" name="id" value={subscription.id} />
+            <input
+              type="hidden"
+              name="delivery_date"
+              value={deliveryDate.date.toString()}
+            />
+            <Grid container>
+              <Grid item xs={12} style={{ textAlign: 'center' }}>
+                <FormControl sx={{ m: 1 }}>
+                  <InputLabel id="date-label">New Delivery day</InputLabel>
+                  <Select
+                    labelId="date-label"
+                    defaultValue={`${deliveryDates[0].id}`}
+                    onChange={handleChangeFirstDeliveryDate}
                   >
-                    Cancel
-                  </Button>
-                </Grid>
-                <Grid item xs={6} style={{ textAlign: 'right' }}>
-                  <Button
-                    variant="contained"
-                    onClick={(e) => {
-                      submit(e.currentTarget, { replace: true });
-                      setOpen(false);
-                    }}
-                    sx={{ m: 2, marginTop: 4 }}
-                    type="submit"
-                    name="_action"
-                    value="set-first-delivery"
-                  >
-                    Update First Delivery day
-                  </Button>
-                </Grid>
+                    {deliveryDates.map((date: DeliveryDate) => (
+                      <MenuItem value={date.id} key={date.id}>
+                        {toPrettyDateTextLong(date.date)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
-            </Form>
-          </Box>
-        </Modal>
-      </div>
+              <Grid item xs={6} style={{ textAlign: 'left' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => setOpenSetFirstDelivery(false)}
+                  sx={{ m: 2, marginTop: 4 }}
+                >
+                  Cancel
+                </Button>
+              </Grid>
+              <Grid item xs={6} style={{ textAlign: 'right' }}>
+                <Button
+                  variant="contained"
+                  onClick={(e) => {
+                    submit(e.currentTarget, { replace: true });
+                    setOpenSetFirstDelivery(false);
+                  }}
+                  sx={{ m: 2, marginTop: 4 }}
+                  type="submit"
+                  name="_action"
+                  value="set-first-delivery"
+                >
+                  Update
+                </Button>
+              </Grid>
+            </Grid>
+          </Form>
+        </Box>
+      </Dialog>
     </main>
   );
 }

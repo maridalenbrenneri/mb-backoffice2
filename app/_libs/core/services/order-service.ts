@@ -3,7 +3,6 @@ import { SubscriptionType } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { OrderType } from '@prisma/client';
-import { redirect } from '@remix-run/node';
 
 import { sendConsignment } from '~/_libs/cargonizer';
 import type { OrderUpsertData } from '../models/order.server';
@@ -92,13 +91,11 @@ export async function createNonRecurringOrder(
   subscriptionId: number,
   quantities: Quantites
 ) {
-  await _createOrder(subscriptionId, OrderType.NON_RENEWAL, quantities);
-  return redirect(`/subscriptions/admin/${subscriptionId}`);
+  return await _createOrder(subscriptionId, OrderType.NON_RENEWAL, quantities);
 }
 
-export async function createCustomdOrder(subscriptionId: number) {
-  const order = await _createOrder(subscriptionId, OrderType.CUSTOM);
-  return redirect(`/orders/admin/${order.id}`);
+export async function createCustomOrder(subscriptionId: number) {
+  return await _createOrder(subscriptionId, OrderType.CUSTOM);
 }
 
 export function calculateWeight(

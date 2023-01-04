@@ -1,4 +1,4 @@
-import { json, redirect } from '@remix-run/node';
+import { json } from '@remix-run/node';
 
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
@@ -13,13 +13,24 @@ import { updateFirstDeliveryDateOnSubscription } from '~/_libs/core/models/subsc
 import { upsertSubscription } from '~/_libs/core/models/subscription.server';
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
 
-type ActionData =
-  | {
-      quantity250: null | string;
-      quantity500: null | string;
-      quantity1200: null | string;
-    }
-  | undefined;
+type SubscriptionActionData = {
+  validationErrors?:
+    | {
+        status: null | string;
+        type: null | string;
+        shippingType: null | string;
+        quantity250: null | string;
+        quantity500: null | string;
+        quantity1200: null | string;
+        recipientName: null | string;
+        recipientAddress1: null | string;
+        recipientPostalCode: null | string;
+        recipientPostalPlace: null | string;
+      }
+    | undefined;
+  didUpdate?: boolean | undefined;
+  updateMessage?: string | undefined;
+};
 
 export const renderTypes = (type: SubscriptionType = SubscriptionType.B2B) => {
   return (
@@ -126,7 +137,7 @@ export const updateFirstDeliveryDate = async (values: any) => {
 };
 
 export const upsertAction = async (values: any) => {
-  const errors = {
+  const validationErrors = {
     status: values.status ? null : 'Status is required',
     type: values.type ? null : 'Type is required',
     shippingType: values.shippingType ? null : 'Shipping type is required',
@@ -139,15 +150,19 @@ export const upsertAction = async (values: any) => {
     quantity1200: isUnsignedInt(values.quantity1200)
       ? null
       : 'Must be a number greater or equal to zero',
-    name: values.recipientName ? null : 'Name is required',
-    address1: values.recipientAddress1 ? null : 'Address1 is required',
-    postalCode: values.recipientPostalCode ? null : 'Postal code is required',
-    postalPlace: values.recipientPostalPlace ? null : 'Place is required',
+    recipientName: values.recipientName ? null : 'Name is required',
+    recipientAddress1: values.recipientAddress1 ? null : 'Address1 is required',
+    recipientPostalCode: values.recipientPostalCode
+      ? null
+      : 'Postal code is required',
+    recipientPostalPlace: values.recipientPostalPlace
+      ? null
+      : 'Place is required',
   };
 
-  if (Object.values(errors).some((errorMessage) => errorMessage)) {
-    console.error('Errors in form', errors);
-    return json<ActionData>(errors);
+  if (Object.values(validationErrors).some((errorMessage) => errorMessage)) {
+    console.error('Errors in form', validationErrors);
+    return json<SubscriptionActionData>({ validationErrors });
   }
 
   const id = +values.id;
@@ -173,5 +188,8 @@ export const upsertAction = async (values: any) => {
 
   await upsertSubscription(id, data);
 
-  return redirect('/subscriptions');
+  return json<SubscriptionActionData>({
+    didUpdate: true,
+    updateMessage: 'Subscription was updated',
+  });
 };
