@@ -224,7 +224,7 @@ export default function UpdateOrder() {
       }}
     >
       <Snackbar
-        open={!openSnack}
+        open={openSnack}
         autoHideDuration={3000}
         onClose={() => setOpenSnack(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
