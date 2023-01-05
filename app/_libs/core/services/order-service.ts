@@ -5,7 +5,7 @@ import { OrderStatus } from '@prisma/client';
 import { OrderType } from '@prisma/client';
 
 import { sendConsignment } from '~/_libs/cargonizer';
-import type { OrderUpsertData } from '../models/order.server';
+import { updateOrder } from '../models/order.server';
 import { updateOrderStatus } from '../models/order.server';
 import { getOrder, upsertOrder } from '../models/order.server';
 import { getSubscription } from '../models/subscription.server';
@@ -80,7 +80,7 @@ async function _createOrder(
     quantity250: quantities?._250 || 0,
     quantity500: quantities?._500 || 0,
     quantity1200: quantities?._1200 || 0,
-  } as OrderUpsertData);
+  });
 
   if (!order) throw new Error('Failed to create order');
 
@@ -188,7 +188,7 @@ async function completeAndShipOrder(orderId: number) {
     if (order.shippingType !== ShippingType.LOCAL_PICK_UP) {
       cargonizer = await sendConsignment({
         order,
-        print: true,
+        print: false,
       });
     }
 
@@ -199,7 +199,11 @@ async function completeAndShipOrder(orderId: number) {
       );
     }
 
-    await updateOrderStatus(order.id, OrderStatus.COMPLETED);
+    // await updateOrderStatus(order.id, OrderStatus.COMPLETED);
+    await updateOrder(order.id, {
+      status: OrderStatus.COMPLETED,
+      trackingUrl: cargonizer?.trackingUrl || null,
+    });
   } catch (err) {
     genericError = err.message;
   }
@@ -219,6 +223,7 @@ async function completeAndShipOrder(orderId: number) {
   return {
     result,
     orderId,
+    trackingUrl: cargonizer?.trackingUrl || null,
     errors,
     printed: cargonizer?.printRequested || false,
     printError: cargonizer?.error || null,

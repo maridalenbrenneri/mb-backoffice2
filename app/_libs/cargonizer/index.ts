@@ -55,7 +55,7 @@ export const sendConsignment = async (
     return {
       orderId: input.order.id,
       consignmentId: 0,
-      trackingUrl: '',
+      trackingUrl: null,
       printRequested: input.print,
       error: 'Cargonizer not enabled',
     };

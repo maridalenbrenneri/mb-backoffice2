@@ -84,8 +84,6 @@ export const loader: LoaderFunction = async ({ params }) => {
 
 async function completeAndShipOrderAction(id: number) {
   return {
-    didUpdate: true,
-    updateMessage: 'Order was completed and shipped',
     completeAndShipOrderActionResult: await completeAndShipOrders([id]),
   };
 }
@@ -182,6 +180,11 @@ export default function UpdateOrder() {
       label: 'Delivery day',
       data: toPrettyDateTextLong(order.delivery.date),
       dataLinkUrl: `/deliveries/admin/${order.deliveryId}`,
+    },
+    {
+      label: 'Tracking url',
+      data: order.trackingUrl || '',
+      dataLinkUrl: `${order.trackingUrl}`,
     },
     {
       label: 'Created/Imported at',
@@ -549,9 +552,9 @@ export default function UpdateOrder() {
                     <TableRow>
                       <TableCell>Result</TableCell>
                       <TableCell>Order</TableCell>
-                      <TableCell>Errors</TableCell>
+                      <TableCell>Tracking url</TableCell>
                       <TableCell>Label printed</TableCell>
-                      <TableCell>Woo id/status</TableCell>
+                      <TableCell>Errors</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -561,14 +564,20 @@ export default function UpdateOrder() {
                           <TableCell>{row.result}</TableCell>
                           <TableCell>{row.orderId}</TableCell>
                           <TableCell>
+                            <a
+                              href={data.trackingUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {row.trackingUrl}
+                            </a>
+                          </TableCell>
+                          <TableCell>{row.printed ? 'Yes' : 'No'}</TableCell>
+                          <TableCell>
                             {row.errors &&
                               row.errors.map((error: string, index: number) => (
                                 <div key={index}>{error}</div>
                               ))}
-                          </TableCell>
-                          <TableCell>{row.printed ? 'Yes' : 'No'}</TableCell>
-                          <TableCell>
-                            {row.wooOrderId || ''} {row.wooOrderStatus || ''}
                           </TableCell>
                         </TableRow>
                       )

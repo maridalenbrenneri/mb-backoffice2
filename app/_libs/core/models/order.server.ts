@@ -6,28 +6,6 @@ import { OrderStatus, ShippingType } from '@prisma/client';
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 
 export type { Order };
-export type OrderUpsertData = Pick<
-  Order,
-  | 'subscriptionId'
-  | 'deliveryId'
-  | 'shippingType'
-  | 'type'
-  | 'status'
-  | 'name'
-  | 'address1'
-  | 'address2'
-  | 'postalCode'
-  | 'postalPlace'
-  | 'email'
-  | 'mobile'
-  | 'quantity250'
-  | 'quantity500'
-  | 'quantity1200'
-  | 'wooOrderId'
-  | 'wooOrderNumber'
-  | 'wooCreatedAt'
-  | 'internalNote'
->;
 
 export type OrderItemUpsertData = Pick<
   OrderItem,
@@ -65,7 +43,14 @@ export async function updateOrderStatus(id: number, status: OrderStatus) {
   });
 }
 
-export async function upsertOrder(id: number | null, data: OrderUpsertData) {
+export async function updateOrder(id: number, data: any) {
+  return prisma.order.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function upsertOrder(id: number | null, data: any) {
   return prisma.order.upsert({
     where: {
       id: id || 0,
@@ -87,6 +72,7 @@ export async function upsertOrder(id: number | null, data: OrderUpsertData) {
       quantity250: data.quantity250,
       quantity500: data.quantity500,
       quantity1200: data.quantity1200,
+      trackingUrl: data.trackingUrl,
     },
   });
 }
@@ -109,10 +95,7 @@ export async function upsertOrderItem(
   });
 }
 
-export async function upsertOrderFromWoo(
-  wooOrderId: number,
-  data: OrderUpsertData
-) {
+export async function upsertOrderFromWoo(wooOrderId: number, data: any) {
   const existingOrder = await prisma.order.findFirst({
     where: {
       wooOrderId,

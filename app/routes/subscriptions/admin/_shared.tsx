@@ -177,6 +177,7 @@ export const upsertAction = async (values: any) => {
     quantity500: parseIntOrZero(values.quantity500),
     quantity1200: parseIntOrZero(values.quantity1200),
     internalNote: values.internalNote,
+    wooCustomerName: values.customerName,
     recipientName: values.recipientName,
     recipientAddress1: values.recipientAddress1,
     recipientAddress2: values.recipientAddress2,

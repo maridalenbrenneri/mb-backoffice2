@@ -80,6 +80,7 @@ export default function NewSubscription() {
         <input type="hidden" name="type" value={SubscriptionType.B2B} />
         <input type="hidden" name="fikenContactId" value={customer.contactId} />
         <input type="hidden" name="recipientName" value={customer.name} />
+        <input type="hidden" name="customerName" value={customer.name} />
         <input
           type="hidden"
           name="recipientAddress1"

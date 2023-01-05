@@ -24,7 +24,7 @@ export interface CargonizerConsignment {
 export interface SendOrderResult {
   orderId: number;
   consignmentId?: number | undefined;
-  trackingUrl?: string | undefined;
+  trackingUrl?: string | null | undefined;
   printRequested: boolean;
   error: string | undefined;
 }

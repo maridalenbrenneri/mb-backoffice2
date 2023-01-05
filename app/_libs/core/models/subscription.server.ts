@@ -32,6 +32,7 @@ export type SubscriptionUpsertData = Pick<
   | 'recipientPostalPlace'
   | 'internalNote'
   | 'fikenContactId'
+  | 'wooCustomerName'
 >;
 
 // Special for Woo imported gift subscriptions
@@ -112,6 +113,7 @@ export async function upsertSubscriptionByWooSubscriptionId(data: any) {
       wooCustomerId: data.wooCustomerId,
       wooCustomerName: data.wooCustomerName,
       wooNextPaymentDate: data.wooNextPaymentDate,
+      wooCreatedAt: data.wooCreatedAt,
       status: data.status,
       shippingType: data.shippingType,
       frequency: data.frequency,
@@ -140,6 +142,7 @@ export async function upsertSubscription(
     quantity250: data.quantity250,
     quantity500: data.quantity500,
     quantity1200: data.quantity1200,
+    wooCustomerName: data.wooCustomerName,
     recipientName: data.recipientName,
     recipientAddress1: data.recipientAddress1,
     recipientAddress2: data.recipientAddress2,
