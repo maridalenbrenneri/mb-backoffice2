@@ -1,14 +1,19 @@
 import { DateTime } from 'luxon';
 
 import type { GiftSubscriptionCreateInput } from '@prisma/client';
+import { SubscriptionStatus } from '@prisma/client';
 import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 
 import { WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
 import { resolveStatusForGiftSubscription } from '~/_libs/core/services/subscription-service';
 import { resolveMetadataValue } from '../utils';
 import { resolveDateForNextMonthlyDelivery } from '~/_libs/core/utils/dates';
+import { WOO_STATUS_CANCELLED, WOO_STATUS_DELETED } from '../constants';
 
-function itemToSubscription(item: any): GiftSubscriptionCreateInput {
+function itemToSubscription(
+  item: any,
+  orderStatus: string
+): GiftSubscriptionCreateInput {
   const startDateString = resolveMetadataValue(item.meta_data, 'abo_start');
   const startDate = !startDateString
     ? DateTime.fromISO(item.date_created_gmt)
@@ -20,9 +25,15 @@ function itemToSubscription(item: any): GiftSubscriptionCreateInput {
 
   const firstDeliveryDate = resolveDateForNextMonthlyDelivery(startDate);
 
+  // HANDLE CANCELLED ORDERS CONTAINING GABO's - SET SUBSCRIPTION TO DELETED
+  const status =
+    orderStatus === WOO_STATUS_CANCELLED || orderStatus === WOO_STATUS_DELETED
+      ? SubscriptionStatus.DELETED
+      : resolveStatusForGiftSubscription(duration_months, startDate);
+
   return {
     type: SubscriptionType.PRIVATE_GIFT,
-    status: resolveStatusForGiftSubscription(duration_months, startDate),
+    status,
     frequency: SubscriptionFrequency.MONTHLY,
     quantity250: +resolveMetadataValue(item.meta_data, 'poser'),
 
@@ -79,7 +90,7 @@ export default function wooApiToGiftSubscriptions(
       item.customer_name = `${order.billing.first_name} ${order.billing.last_name}`;
       item.customer_email = order.billing.email;
 
-      const giftSubscriptionData = itemToSubscription(item);
+      const giftSubscriptionData = itemToSubscription(item, order.status);
 
       giftSubscriptionsData.push(giftSubscriptionData);
     }
