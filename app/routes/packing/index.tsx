@@ -118,6 +118,7 @@ export default function Packing() {
   const [open, setOpen] = useState(false);
   const [currentOrders, setCurrentOrders] = useState<Order[]>([]);
 
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [customPickUpOrders, setPickUpCustomOrders] = useState<Order[]>([]);
   const [renewalPickUpOrders, setPickUpRenewalOrders] = useState<Order[]>([]);
   const [customOrders, setCustomOrders] = useState<Order[]>([]);
@@ -139,6 +140,8 @@ export default function Packing() {
   const [b2bRenewalOrders, setB2bRenewalOrders] = useState<Order[]>([]);
 
   useEffect(() => {
+    setAllOrders(preview.orders.all);
+
     setPickUpCustomOrders(preview.orders.privates.custom.pickUp);
     setPickUpRenewalOrders(preview.orders.privates.renewal.pickUp);
     setCustomOrders(preview.orders.privates.custom.ship);
@@ -202,13 +205,18 @@ export default function Packing() {
     title: string,
     orders: Order[],
     ship: boolean = true,
-    isB2B: boolean = false
+    isB2B: boolean = false,
+    isAll: boolean = false
   ) => {
     const extraFields = isB2B ? ['fiken'] : [];
     extraFields.push('source');
     return (
       <>
-        <Accordion expanded={expanded === title} onChange={handleChange(title)}>
+        <Accordion
+          expanded={expanded === title}
+          onChange={handleChange(title)}
+          sx={{ marginBottom: isAll ? 2 : 0 }}
+        >
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ width: '25%', flexShrink: 0 }}>
               {title}
@@ -260,6 +268,27 @@ export default function Packing() {
                       <Grid item xs={12} style={{ textAlign: 'center' }}>
                         Remember to create invoice/delivery note in Fiken for
                         these orders.
+                      </Grid>
+                    </Alert>
+                  </Grid>
+                )}
+                {isAll && (
+                  <Grid item xs={12} style={{ textAlign: 'center' }}>
+                    <Alert
+                      severity="info"
+                      sx={{
+                        marginBottom: 1,
+                        p: 1,
+                        '& .MuiAlert-message': {
+                          textAlign: 'center',
+                          width: 'inherit',
+                        },
+                      }}
+                    >
+                      <Grid item xs={12} style={{ textAlign: 'center' }}>
+                        This will complete all active orders, remember
+                        invoice/delivery note for any B2B orders and handling of
+                        orders with local pick-up.
                       </Grid>
                     </Alert>
                   </Grid>
@@ -319,6 +348,7 @@ export default function Packing() {
           </Paper>
         </Grid>
         <Grid item xs={12}>
+          {renderAccordian(`ALL active orders`, allOrders, true, false, true)}
           {renderAccordian(`Custom - local pick-up`, customPickUpOrders, false)}
           {renderAccordian(`ABO's - local pick-up`, renewalPickUpOrders, false)}
           {renderAccordian(`Custom`, customOrders)}

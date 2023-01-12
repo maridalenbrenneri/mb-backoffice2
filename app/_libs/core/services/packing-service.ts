@@ -16,6 +16,7 @@ export type WizardOrdersSent = {
 export type WizardPreviewGroup = {
   totalCount: number;
   orders: {
+    all: Order[];
     privates: {
       custom: {
         pickUp: Order[];
@@ -98,6 +99,7 @@ export async function generatePreview(deliveryIds: number[]) {
   const preview: WizardPreviewGroup = {
     totalCount: 0,
     orders: {
+      all: [],
       privates: {
         custom: {
           pickUp: [],
@@ -209,6 +211,8 @@ export async function generatePreview(deliveryIds: number[]) {
       (o.type === OrderType.RENEWAL || o.type === OrderType.NON_RENEWAL) &&
       o.shippingType === ShippingType.SHIP
   );
+
+  preview.orders.all = orders;
 
   // TOTAL
   preview.totalCount =
