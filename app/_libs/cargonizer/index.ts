@@ -64,7 +64,7 @@ export const sendConsignment = async (
 
   if (!order) throw new Error('Order was null');
 
-  // console.debug('ORDER', order.orderItems);
+  console.debug('[Cargonizer] Creating consignment for order', order.id);
 
   const consignmentCreate = mapToCargonizerConsignment(order);
 
@@ -212,7 +212,7 @@ async function requestServicePartners(country: string, postcode: string) {
 
     const partner = json.results['service-partners']['service-partner'][0];
 
-    console.debug('[Cargonizer] service partner: ', partner.number);
+    // console.debug('[Cargonizer] service partner: ', partner.number);
 
     return {
       number: partner.number,

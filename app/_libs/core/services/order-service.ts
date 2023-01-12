@@ -9,7 +9,11 @@ import { updateOrder } from '../models/order.server';
 import { updateOrderStatus } from '../models/order.server';
 import { getOrder, upsertOrder } from '../models/order.server';
 import { getSubscription } from '../models/subscription.server';
-import { COMPLETE_ORDERS_DELAY, WEIGHT_STANDARD_PACKAGING } from '../settings';
+import {
+  COMPLETE_ORDERS_DELAY,
+  PRINT_LABEL,
+  WEIGHT_STANDARD_PACKAGING,
+} from '../settings';
 import { getNextOrCreateDelivery } from './delivery-service';
 
 import * as woo from '~/_libs/woo';
@@ -170,7 +174,7 @@ async function getOrderFromDb(orderId: number) {
 }
 
 // COMPLETE IN MB AND WOO, CREATE CONSIGNMENT IN CARGONIZER
-async function completeAndShipOrder(orderId: number) {
+async function completeAndShipOrder(orderId: number, results: any[]) {
   let genericError;
   let cargonizer;
   let wooResult;
@@ -188,7 +192,7 @@ async function completeAndShipOrder(orderId: number) {
     if (order.shippingType !== ShippingType.LOCAL_PICK_UP) {
       cargonizer = await sendConsignment({
         order,
-        print: false,
+        print: PRINT_LABEL,
       });
     }
 
@@ -199,7 +203,6 @@ async function completeAndShipOrder(orderId: number) {
       );
     }
 
-    // await updateOrderStatus(order.id, OrderStatus.COMPLETED);
     await updateOrder(order.id, {
       status: OrderStatus.COMPLETED,
       trackingUrl: cargonizer?.trackingUrl || null,
@@ -220,7 +223,7 @@ async function completeAndShipOrder(orderId: number) {
 
   const result = !genericError && wooOk && printOk ? 'Success' : 'Failed';
 
-  return {
+  results.push({
     result,
     orderId,
     trackingUrl: cargonizer?.trackingUrl || null,
@@ -230,10 +233,12 @@ async function completeAndShipOrder(orderId: number) {
     wooOrderId: wooResult?.orderId || null,
     wooOrderStatus: wooResult?.orderStatus || null,
     wooError: wooResult?.error || null,
-  };
+  });
 }
 
 export async function completeAndShipOrders(orderIds: number[]) {
+  const MAX_CONCURRANT_REQUESTS = 20;
+
   if (!orderIds.length) return [];
 
   const delay = () =>
@@ -241,11 +246,27 @@ export async function completeAndShipOrders(orderIds: number[]) {
 
   const result: any[] = [];
 
-  for (const orderId of orderIds) {
-    const res = await completeAndShipOrder(orderId);
-    result.push(res);
+  let promises: Promise<void>[] = [];
 
-    await delay();
+  let requestCounter = 1;
+  for (const orderId of orderIds) {
+    promises.push(completeAndShipOrder(orderId, result));
+
+    if (requestCounter >= MAX_CONCURRANT_REQUESTS) {
+      await Promise.all(promises);
+
+      promises = [];
+      requestCounter = 0;
+
+      await delay();
+    }
+
+    requestCounter++;
+  }
+
+  // Wait for any remaining requests
+  if (promises.length) {
+    await Promise.all(promises);
   }
 
   console.table(result);
