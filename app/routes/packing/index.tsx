@@ -40,7 +40,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import { completeAndShipOrders } from '~/_libs/core/services/order-service';
 import { generatePreview } from '~/_libs/core/services/packing-service';
 import Orders from '../../components/Orders';
-import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
+import { COMPLETE_ORDERS_BATCH_MAX, PRINT_LABEL } from '~/_libs/core/settings';
 import { modalStyle } from '~/style/theme';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
 import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
@@ -283,6 +283,11 @@ export default function Packing() {
           <p>
             Active orders ready to be packed and shipped, grouped by
             packing/shipping type.
+          </p>
+          <p>
+            <small>
+              Printing enabled: <strong>{PRINT_LABEL ? 'YES' : 'NO'}</strong>
+            </small>
           </p>
           <Paper sx={{ m: 2, px: 2, py: 1 }}>
             <Form method="post">
