@@ -287,6 +287,8 @@ export default function Packing() {
           <p>
             <small>
               Printing enabled: <strong>{PRINT_LABEL ? 'YES' : 'NO'}</strong>
+              <br />
+              Max orders in batch: <strong>{COMPLETE_ORDERS_BATCH_MAX}</strong>
             </small>
           </p>
           <Paper sx={{ m: 2, px: 2, py: 1 }}>
