@@ -32,7 +32,7 @@ import {
 } from '~/_libs/core/utils/dates';
 import Orders from '~/components/Orders';
 import { useEffect, useState } from 'react';
-import { CoffeeStatus } from '@prisma/client';
+import { CoffeeStatus, OrderStatus } from '@prisma/client';
 import DataLabel from '~/components/DataLabel';
 
 type LoaderData = { loadedDelivery: Delivery; coffees: Coffee[] };
@@ -48,6 +48,7 @@ export const loader: LoaderFunction = async ({ params }) => {
       coffee3: true,
       coffee4: true,
       orders: {
+        where: { status: { in: [OrderStatus.ACTIVE, OrderStatus.COMPLETED] } },
         include: {
           orderItems: {
             select: {
