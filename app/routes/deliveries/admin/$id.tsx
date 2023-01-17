@@ -17,6 +17,8 @@ import {
   Select,
   MenuItem,
   Grid,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
@@ -87,15 +89,20 @@ function resolveCoffeeLabel(coffee: Coffee | undefined | null) {
 export default function UpdateDelivery() {
   const { loadedDelivery, coffees } = useLoaderData() as unknown as LoaderData;
 
-  const errors = useActionData();
+  const data = useActionData();
   const transition = useTransition();
   const isUpdating = Boolean(transition.submission);
 
   const [delivery, setDelivery] = useState<Delivery>();
+  const [openSnack, setOpenSnack] = useState<boolean>(false);
 
   useEffect(() => {
     setDelivery(loadedDelivery);
   }, [loadedDelivery]);
+
+  useEffect(() => {
+    setOpenSnack(!!data?.didUpdate);
+  }, [data]);
 
   if (!delivery) return null;
 
@@ -160,6 +167,15 @@ export default function UpdateDelivery() {
   return (
     <main>
       <Box m={2}>
+        <Snackbar
+          open={openSnack}
+          autoHideDuration={3000}
+          onClose={() => setOpenSnack(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert severity="success">{data?.updateMessage || 'Updated'}</Alert>
+        </Snackbar>
+
         <Typography variant="h1">Delivery Day Details</Typography>
 
         <Grid container>

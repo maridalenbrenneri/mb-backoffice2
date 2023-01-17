@@ -3,16 +3,20 @@ import invariant from 'tiny-invariant';
 
 import { upsertCoffee } from '~/_libs/core/models/coffee.server';
 
-type ActionData =
-  | {
-      status: null | string;
-      name: null | string;
-      productCode: null | string;
-      country: null | string;
-    }
-  | undefined;
+type CoffeeActionData = {
+  validationErrors?:
+    | {
+        status: null | string;
+        name: null | string;
+        productCode: null | string;
+        country: null | string;
+      }
+    | undefined;
+  didUpdate?: boolean | undefined;
+  updateMessage?: string | undefined;
+};
 
-export const upsertAction = async (request: any) => {
+const actionBase = async (request: any) => {
   const formData = await request.formData();
 
   const id = +formData.get('id');
@@ -21,16 +25,16 @@ export const upsertAction = async (request: any) => {
   const productCode = formData.get('productCode');
   const country = formData.get('country');
 
-  const errors: ActionData = {
+  const validationErrors = {
     status: status ? null : 'Status is required',
     name: name ? null : 'Name is required',
     productCode: productCode ? null : 'Product code is required',
     country: country ? null : 'Country is required',
   };
-  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
-  if (hasErrors) {
-    console.debug('Errors in form', errors);
-    return json<ActionData>(errors);
+
+  if (Object.values(validationErrors).some((errorMessage) => errorMessage)) {
+    console.debug('Errors in form', validationErrors);
+    return json<CoffeeActionData>({ validationErrors });
   }
 
   invariant(typeof name === 'string', 'name must be a string');
@@ -46,5 +50,17 @@ export const upsertAction = async (request: any) => {
 
   await upsertCoffee({ ...data, id });
 
-  return redirect('/coffees');
+  return json<CoffeeActionData>({
+    didUpdate: true,
+    updateMessage: 'Coffee was updated',
+  });
+};
+
+export const upsertAction = async (request: any) => {
+  return await actionBase(request);
+};
+
+export const createAction = async (request: any) => {
+  await actionBase(request);
+  return redirect(`/coffees`);
 };

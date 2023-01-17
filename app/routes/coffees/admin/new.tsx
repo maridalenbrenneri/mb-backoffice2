@@ -4,7 +4,7 @@ import { Form, useActionData, useTransition } from '@remix-run/react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-import { upsertAction } from './_shared';
+import { createAction } from './_shared';
 import {
   Button,
   FormControl,
@@ -16,11 +16,11 @@ import {
 import { CoffeeStatus } from '@prisma/client';
 
 export const action: ActionFunction = async ({ request }) => {
-  return await upsertAction(request);
+  return await createAction(request);
 };
 
 export default function NewCoffee() {
-  const errors = useActionData();
+  const data = useActionData();
   const transition = useTransition();
   const isCreating = Boolean(transition.submission);
 
@@ -52,7 +52,7 @@ export default function NewCoffee() {
             name="name"
             label="Name"
             variant="outlined"
-            error={errors?.name}
+            error={data?.validationErrors?.name}
           />
         </FormControl>
         <FormControl>
@@ -60,7 +60,7 @@ export default function NewCoffee() {
             name="productCode"
             label="Code"
             variant="outlined"
-            error={errors?.productCode}
+            error={data?.validationErrors?.productCode}
           />
         </FormControl>
         <FormControl>
@@ -68,7 +68,7 @@ export default function NewCoffee() {
             name="country"
             label="Country"
             variant="outlined"
-            error={errors?.country}
+            error={data?.validationErrors?.country}
           />
         </FormControl>
 

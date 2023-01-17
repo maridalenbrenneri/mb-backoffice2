@@ -14,7 +14,7 @@ import {
 import type { SelectChangeEvent } from '@mui/material/Select';
 import Select from '@mui/material/Select';
 
-import { upsertAction } from './_shared';
+import { createAction } from './_shared';
 import type { DeliveryDate } from '~/_libs/core/utils/dates';
 import { toPrettyDateTextLong } from '~/_libs/core/utils/dates';
 import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
@@ -42,7 +42,7 @@ export const loader = async () => {
 };
 
 export const action: ActionFunction = async ({ request }) => {
-  return await upsertAction(request);
+  return await createAction(request);
 };
 
 export default function NewDelivery() {

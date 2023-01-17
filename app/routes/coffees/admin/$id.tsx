@@ -9,12 +9,14 @@ import {
 import invariant from 'tiny-invariant';
 
 import {
+  Alert,
   Box,
   Button,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
+  Snackbar,
   TextField,
   Typography,
 } from '@mui/material';
@@ -24,6 +26,7 @@ import { CoffeeStatus } from '@prisma/client';
 
 import { getCoffeeById } from '~/_libs/core/models/coffee.server';
 import { upsertAction } from './_shared';
+import { useEffect, useState } from 'react';
 
 type LoaderData = { coffee: Coffee };
 
@@ -42,10 +45,16 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function UpdateCoffee() {
   const { coffee } = useLoaderData() as unknown as LoaderData;
+  const data = useActionData();
 
-  const errors = useActionData();
+  const [openSnack, setOpenSnack] = useState<boolean>(false);
+
   const transition = useTransition();
   const isUpdating = Boolean(transition.submission);
+
+  useEffect(() => {
+    setOpenSnack(!!data?.didUpdate);
+  }, [data]);
 
   return (
     <main>
@@ -57,6 +66,15 @@ export default function UpdateCoffee() {
           '& .MuiTextField-root': { m: 1, minWidth: 250 },
         }}
       >
+        <Snackbar
+          open={openSnack}
+          autoHideDuration={3000}
+          onClose={() => setOpenSnack(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert severity="success">{data?.updateMessage || 'Updated'}</Alert>
+        </Snackbar>
+
         <Form method="post">
           <input type="hidden" name="id" value={coffee.id} />
 
@@ -66,7 +84,7 @@ export default function UpdateCoffee() {
               label="Name"
               variant="outlined"
               defaultValue={coffee.name}
-              error={errors?.name}
+              error={data?.validationErrors?.name}
               size="small"
             />
           </FormControl>
@@ -76,7 +94,7 @@ export default function UpdateCoffee() {
               label="Code"
               variant="outlined"
               defaultValue={coffee.productCode}
-              error={errors?.productCode}
+              error={data?.validationErrors?.productCode}
               size="small"
             />
           </FormControl>
@@ -86,7 +104,7 @@ export default function UpdateCoffee() {
               label="Country"
               variant="outlined"
               defaultValue={coffee.country}
-              error={errors?.country}
+              error={data?.validationErrors?.country}
               size="small"
             />
           </FormControl>

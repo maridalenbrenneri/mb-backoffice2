@@ -3,14 +3,18 @@ import { json, redirect } from '@remix-run/node';
 import type { DeliveryUpsertData } from '~/_libs/core/models/delivery.server';
 import { upsertDelivery } from '~/_libs/core/models/delivery.server';
 
-type ActionData =
-  | {
-      date: null | string;
-      type: null | string;
-    }
-  | undefined;
+type DeliveryActionData = {
+  validationErrors?:
+    | {
+        date: null | string;
+        type: null | string;
+      }
+    | undefined;
+  didUpdate?: boolean | undefined;
+  updateMessage?: string | undefined;
+};
 
-export const upsertAction = async (request: any) => {
+const actionBase = async (request: any) => {
   const formData = await request.formData();
 
   const id = +formData.get('id');
@@ -21,14 +25,14 @@ export const upsertAction = async (request: any) => {
   const coffee3Id = +formData.get('coffee3');
   const coffee4Id = +formData.get('coffee4');
 
-  const errors: ActionData = {
+  const validationErrors = {
     date: date ? null : 'Date is required',
     type: type ? null : 'Type is required',
   };
-  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
-  if (hasErrors) {
-    console.error('Errors in form', errors);
-    return json<ActionData>(errors);
+
+  if (Object.values(validationErrors).some((errorMessage) => errorMessage)) {
+    console.error('Errors in form', validationErrors);
+    return json<DeliveryActionData>({ validationErrors });
   }
 
   const data: DeliveryUpsertData = {
@@ -42,5 +46,17 @@ export const upsertAction = async (request: any) => {
 
   await upsertDelivery(id, data);
 
-  return redirect(`/deliveries/admin/${id}`);
+  return json<DeliveryActionData>({
+    didUpdate: true,
+    updateMessage: 'Delivery Day was updated',
+  });
+};
+
+export const upsertAction = async (request: any) => {
+  return await actionBase(request);
+};
+
+export const createAction = async (request: any) => {
+  await actionBase(request);
+  return redirect(`/deliveries`);
 };
