@@ -210,6 +210,8 @@ export default function Packing() {
   ) => {
     const extraFields = isB2B ? ['fiken'] : [];
     extraFields.push('source');
+    extraFields.push('delivery');
+    extraFields.push('shipping');
     return (
       <>
         <Accordion

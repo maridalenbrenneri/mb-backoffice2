@@ -24,15 +24,16 @@ export default function Orders(props: {
   orders: Order[];
   extraFields?: string[] | null | undefined; // "delivery", "fiken"
 }) {
-  const { orders, extraFields: ignoreFields } = props;
+  const { orders, extraFields } = props;
 
   if (!orders) return null;
 
   const extra = (field: string) => {
-    if (!ignoreFields) return false;
-    return !!ignoreFields.find((f) => f === field);
+    if (!extraFields) return false;
+    return !!extraFields.find((f) => f === field);
   };
 
+  console.log(' extra.length', extra.length);
   return (
     <Box>
       <TableContainer component={Paper}>
@@ -52,6 +53,7 @@ export default function Orders(props: {
               <TableCell>Recipient</TableCell>
               {extra('fiken') && <TableCell>Customer in Fiken</TableCell>}
               {extra('delivery') && <TableCell>Delivery day</TableCell>}
+              {extra('shipping') && <TableCell>Shipping</TableCell>}
               <TableCell>Item summary</TableCell>
               {extra('source') && <TableCell>Source</TableCell>}
             </TableRow>
@@ -97,6 +99,11 @@ export default function Orders(props: {
                     <Link to={`/deliveries/admin/${order.deliveryId}`}>
                       {toPrettyDateText(order.delivery.date)}
                     </Link>
+                  </TableCell>
+                )}
+                {extra('shipping') && (
+                  <TableCell>
+                    <small>{order.shippingType}</small>
                   </TableCell>
                 )}
 

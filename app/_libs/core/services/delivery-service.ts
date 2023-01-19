@@ -23,8 +23,8 @@ export async function getNextOrCreateDelivery(): Promise<Delivery> {
   const delivery = await getDelivery({
     where: {
       date: {
-        gte: today.toJSDate(),
-        lt: nextweek.toJSDate(),
+        gt: today.toJSDate(),
+        lte: nextweek.toJSDate(),
       },
     },
   });
