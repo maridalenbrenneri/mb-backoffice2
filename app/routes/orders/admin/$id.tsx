@@ -586,6 +586,13 @@ export default function UpdateOrder() {
               <Typography variant="h6" component="h2">
                 Order completed
               </Typography>
+
+              {data.completeAndShipOrderActionResult.errors && (
+                <Alert severity="error">
+                  {data.completeAndShipOrderActionResult.errors}
+                </Alert>
+              )}
+
               <TableContainer component={Paper} sx={{ marginTop: 2 }}>
                 <Table sx={{ minWidth: 800 }} size="small">
                   <TableHead>
@@ -593,12 +600,11 @@ export default function UpdateOrder() {
                       <TableCell>Result</TableCell>
                       <TableCell>Order</TableCell>
                       <TableCell>Tracking url</TableCell>
-                      <TableCell>Label printed</TableCell>
                       <TableCell>Errors</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {data.completeAndShipOrderActionResult.map(
+                    {data.completeAndShipOrderActionResult.orderResult.map(
                       (row: any, index: number) => (
                         <TableRow key={index}>
                           <TableCell>{row.result}</TableCell>
@@ -612,7 +618,6 @@ export default function UpdateOrder() {
                               {row.trackingUrl}
                             </a>
                           </TableCell>
-                          <TableCell>{row.printed ? 'Yes' : 'No'}</TableCell>
                           <TableCell>
                             {row.errors &&
                               row.errors.map((error: string, index: number) => (
@@ -625,7 +630,6 @@ export default function UpdateOrder() {
                   </TableBody>
                 </Table>
               </TableContainer>
-
               <Grid container>
                 <Grid item xs={12} style={{ textAlign: 'right' }}>
                   <Button

@@ -2,7 +2,6 @@ import type { Order } from '@prisma/client';
 
 export interface SendConsignmentInput {
   order: Order;
-  print: boolean;
 }
 
 export interface CargonizerConsignment {
@@ -25,6 +24,5 @@ export interface SendOrderResult {
   orderId: number;
   consignmentId?: number | undefined;
   trackingUrl?: string | null | undefined;
-  printRequested: boolean;
   error: string | undefined;
 }

@@ -56,7 +56,6 @@ export const sendConsignment = async (
       orderId: input.order.id,
       consignmentId: 0,
       trackingUrl: null,
-      printRequested: input.print,
       error: 'Cargonizer not enabled',
     };
 
@@ -103,10 +102,40 @@ export const sendConsignment = async (
     orderId: input.order.id,
     consignmentId: consignment.id,
     trackingUrl: consignment['tracking-url'],
-    printRequested: input.print,
     error,
   };
 };
+
+export async function printConsignmentLabels(consignmentIds: number[]) {
+  let idsParam = '';
+  for (const id of consignmentIds) {
+    idsParam = `${idsParam}&consignmentIds[]=${id}`;
+  }
+
+  const url = `${print_url}?printer_id=${settings.CARGONIZER_PRINTER_ID}${idsParam}`;
+
+  console.debug('PRINTING CONSIGNMENT LABELS FOR IDs', consignmentIds);
+  console.debug('PRINT URL', url);
+
+  try {
+    const response = await fetch(url, { method: 'post', headers });
+    const xml = await response.text();
+    const json = new XMLParser().parse(xml);
+
+    throwIfAnyError(json.errors);
+
+    return { result: 'Success', ids: consignmentIds };
+  } catch (err) {
+    console.warn(
+      '[Cargonizer] Error when printing Cargonizer label. Message: ',
+      err.message
+    );
+    return {
+      result: 'Failed',
+      error: err.message,
+    };
+  }
+}
 
 function mapToCargonizerConsignment(order: Order) {
   const reference = generateReference(order);
@@ -146,33 +175,6 @@ function throwIfAnyError(errors: any) {
   const errorMsg = isArray && errors.length ? errors.join(' | ') : errors.error;
 
   throw new Error(errorMsg);
-}
-
-async function printLabel(consignmentId: number) {
-  let url = `${print_url}?printer_id=${settings.CARGONIZER_PRINTER_ID}&consignment_ids[]=${consignmentId}`;
-
-  try {
-    const response = await fetch(url, { method: 'post', headers });
-    const xml = await response.text();
-    const json = new XMLParser().parse(xml);
-
-    // console.debug('PRINT url', url);
-    // console.debug('PRINT RESULT', xml);
-
-    throwIfAnyError(json.errors);
-
-    // TODO: IS THERE A RESULT WE CAN USE ON SUCCESS? TEST/CHANGE WHEN PRINT ACTUALLY WORKS...
-    return { result: 'Success' };
-  } catch (err) {
-    console.warn(
-      '[Cargonizer] Error when printing Cargonizer label. Message: ',
-      err.message
-    );
-    return {
-      result: 'Failed',
-      error: err.message,
-    };
-  }
 }
 
 async function requestConsignment(consignmentXml: string) {

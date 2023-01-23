@@ -4,7 +4,7 @@ import { ShippingType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { OrderType } from '@prisma/client';
 
-import { sendConsignment } from '~/_libs/cargonizer';
+import { printConsignmentLabels, sendConsignment } from '~/_libs/cargonizer';
 import { updateOrder } from '../models/order.server';
 import { updateOrderStatus } from '../models/order.server';
 import { getOrder, upsertOrder } from '../models/order.server';
@@ -192,7 +192,6 @@ async function completeAndShipOrder(orderId: number, results: any[]) {
     if (order.shippingType !== ShippingType.LOCAL_PICK_UP) {
       cargonizer = await sendConsignment({
         order,
-        print: PRINT_LABEL,
       });
     }
 
@@ -216,20 +215,17 @@ async function completeAndShipOrder(orderId: number, results: any[]) {
   if (wooResult?.error) errors.push(wooResult.error);
   if (cargonizer?.error) errors.push(cargonizer.error);
 
-  const printOk =
-    !cargonizer?.printRequested ||
-    (cargonizer?.printRequested && !cargonizer?.error);
   const wooOk = !wooResult?.error;
 
-  const result = !genericError && wooOk && printOk ? 'Success' : 'Failed';
+  const result =
+    !genericError && !cargonizer?.error && wooOk ? 'Success' : 'Failed';
 
   results.push({
     result,
     orderId,
+    consignmentId: cargonizer?.consignmentId || null,
     trackingUrl: cargonizer?.trackingUrl || null,
     errors,
-    printed: cargonizer?.printRequested || false,
-    printError: cargonizer?.error || null,
     wooOrderId: wooResult?.orderId || null,
     wooOrderStatus: wooResult?.orderStatus || null,
     wooError: wooResult?.error || null,
@@ -244,13 +240,19 @@ export async function completeAndShipOrders(orderIds: number[]) {
   const delay = () =>
     new Promise((resolve) => setTimeout(resolve, COMPLETE_ORDERS_DELAY));
 
-  const result: any[] = [];
+  const result: {
+    orderResult: any[];
+    errors: any;
+  } = {
+    orderResult: [],
+    errors: null,
+  };
 
   let promises: Promise<void>[] = [];
 
   let requestCounter = 1;
   for (const orderId of orderIds) {
-    promises.push(completeAndShipOrder(orderId, result));
+    promises.push(completeAndShipOrder(orderId, result.orderResult));
 
     if (requestCounter >= MAX_CONCURRANT_REQUESTS) {
       await Promise.all(promises);
@@ -269,7 +271,20 @@ export async function completeAndShipOrders(orderIds: number[]) {
     await Promise.all(promises);
   }
 
-  console.table(result);
+  if (PRINT_LABEL) {
+    const ids = result.orderResult
+      .filter((r) => r.result === 'Success' && r.consignmentId)
+      .map((r) => r.consignmentId);
+
+    const printResult = await printConsignmentLabels(ids);
+
+    if (printResult.error) {
+      result.errors = `Error when printing labels. All orders were most likely created as consignments in Cargonizer but print of one or many labels failed. Err message: ${printResult.error}`;
+    }
+  }
+
+  console.debug('Errors: ', result.errors);
+  console.table(result.orderResult);
 
   return result;
 }

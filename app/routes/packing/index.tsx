@@ -403,8 +403,13 @@ export default function Packing() {
             {resultData && (
               <Box>
                 <Typography variant="h6" component="h2">
-                  {resultData.length} order(s) completed
+                  {resultData.orderResult.length} order(s) completed
                 </Typography>
+
+                {data.resultData.errors && (
+                  <Alert severity="error">{data.resultData.errors}</Alert>
+                )}
+
                 <TableContainer component={Paper} sx={{ marginTop: 2 }}>
                   <Table sx={{ minWidth: 800 }} size="small">
                     <TableHead>
@@ -412,12 +417,11 @@ export default function Packing() {
                         <TableCell>Result</TableCell>
                         <TableCell>Order</TableCell>
                         <TableCell>Errors</TableCell>
-                        <TableCell>Label printed</TableCell>
                         <TableCell>Woo id/status</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {resultData.map((row: any, index: number) => (
+                      {resultData.orderResult.map((row: any, index: number) => (
                         <TableRow key={index}>
                           <TableCell>{row.result}</TableCell>
                           <TableCell>{row.orderId}</TableCell>
@@ -427,7 +431,6 @@ export default function Packing() {
                                 <div key={index}>{error}</div>
                               ))}
                           </TableCell>
-                          <TableCell>{row.printed ? 'Yes' : 'No'}</TableCell>
                           <TableCell>
                             {row.wooOrderId || ''} {row.wooOrderStatus || ''}
                           </TableCell>
