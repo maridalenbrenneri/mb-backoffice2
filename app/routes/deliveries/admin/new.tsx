@@ -61,7 +61,7 @@ export default function NewDelivery() {
 
   return (
     <Box m={2}>
-      <Typography variant="h2">Create Delivery</Typography>
+      <Typography variant="h2">Create Delivery Day</Typography>
       <Form method="post">
         <input
           type="hidden"

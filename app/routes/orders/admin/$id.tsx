@@ -658,6 +658,7 @@ export default function UpdateOrder() {
                     labelId="date-label"
                     defaultValue={`${deliveryDates[0].date}`}
                     onChange={handleChangeDeliveryDay}
+                    sx={{ minWidth: 200 }}
                   >
                     {deliveryDates.map((date: DeliveryDate) => (
                       <MenuItem value={date.id} key={date.id}>

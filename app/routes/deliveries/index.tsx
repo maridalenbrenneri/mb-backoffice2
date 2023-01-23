@@ -68,7 +68,7 @@ export default function Deliveries() {
 
       <Box sx={{ m: 2 }}>
         <Button href="/deliveries/admin/new" variant="contained">
-          Create New Delivery Day
+          Create New Delivery day
         </Button>
       </Box>
 

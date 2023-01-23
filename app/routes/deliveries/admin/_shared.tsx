@@ -48,7 +48,7 @@ const actionBase = async (request: any) => {
 
   return json<DeliveryActionData>({
     didUpdate: true,
-    updateMessage: 'Delivery Day was updated',
+    updateMessage: 'Delivery day was updated',
   });
 };
 
