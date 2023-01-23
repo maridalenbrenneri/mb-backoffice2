@@ -5,42 +5,60 @@ import type { Delivery } from '@prisma/client';
 import { getDelivery, upsertDelivery } from '../models/delivery.server';
 import { getNextDeliveryDateFrom } from '../utils/dates';
 
-// RESOLVES NEXT DELIVERY FROM TODAY OR THE DATE SPECIFIED. IF DELIVERY DOESN'T EXIST, IT IS CREATED
-export async function getNextOrCreateDelivery(): Promise<Delivery> {
-  const todayActual = DateTime.now().startOf('day');
-  const nextweekActual = todayActual.plus({ days: 7 });
-
-  // Adding 2 hours margin, to fix date compare time zone hell (kind of a hack...)
-  const today = todayActual.minus({ hours: 2 });
-  const nextweek = nextweekActual.plus({ hours: 2 });
-
-  console.debug(
-    'GET OR CREATE DELIVERY DAY, find delivery between these dates: ',
-    today.toJSDate().toISOString(),
-    nextweek.toJSDate().toISOString()
-  );
-
-  const delivery = await getDelivery({
-    where: {
-      date: {
-        gt: today.toJSDate(),
-        lte: nextweek.toJSDate(),
-      },
-    },
-  });
+// RESOLVES NEXT DELIVERY AFTER TODAY OR ON THE DATE SPECIFIED. IF DELIVERY DOESN'T EXIST, IT IS CREATED
+export async function getNextOrCreateDelivery(
+  date: DateTime | undefined = undefined
+): Promise<Delivery> {
+  const currentDate = date
+    ? date.startOf('day')
+    : DateTime.now().startOf('day');
+  const nextweek = currentDate.plus({ days: 7 });
 
   console.debug(
-    'GET OR CREATE DELIVERY DAY, delivery found: ',
-    delivery?.id,
-    delivery?.date,
-    delivery?.type
+    'getNextOrCreateDelivery, finding Delivery day between dates ',
+    currentDate.toISO(),
+    nextweek.toISO()
   );
 
-  if (delivery) return delivery;
+  const delivery = date
+    ? await getDelivery({
+        // RETURN ONLY DELIVERY DAY IF EXISTS ON THE SPECIFIC DATE
+        where: {
+          date: {
+            gte: currentDate.toJSDate(),
+            lte: currentDate.toJSDate(),
+          },
+        },
+      })
+    : await getDelivery({
+        // RETURN DELIVERY DAY IF ANY EXISTS IN THE COMING WEEK
+        where: {
+          date: {
+            gt: currentDate.toJSDate(),
+            lt: nextweek.toJSDate(),
+          },
+        },
+      });
+
+  if (delivery) {
+    console.debug(
+      'getNextOrCreateDelivery, Delivery day found, returning existing ',
+      delivery.id,
+      delivery.date,
+      delivery.type
+    );
+
+    return delivery;
+  }
 
   // DELIVERY NOT FOUND, CREATE
 
-  const nextDate = getNextDeliveryDateFrom(today);
+  console.debug(
+    'getNextOrCreateDelivery, creating new Delivery day from date',
+    currentDate.toISO()
+  );
+
+  const nextDate = getNextDeliveryDateFrom(currentDate);
 
   const nextDelivery = await upsertDelivery(null, {
     date: nextDate.date.toJSDate(),

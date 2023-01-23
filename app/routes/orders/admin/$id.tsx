@@ -6,6 +6,7 @@ import {
   useTransition,
   useLoaderData,
   Outlet,
+  useSubmit,
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
@@ -18,6 +19,7 @@ import {
   Dialog,
   FormControl,
   Grid,
+  InputLabel,
   MenuItem,
   Paper,
   Select,
@@ -40,10 +42,12 @@ import type { Coffee, Order, OrderItem } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
-import { getOrder } from '~/_libs/core/models/order.server';
+import { getOrder, updateOrder } from '~/_libs/core/models/order.server';
 import { upsertOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
 import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
+import type { DeliveryDate } from '~/_libs/core/utils/dates';
+import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
 import {
   toPrettyDateTextLong,
   toPrettyDateTime,
@@ -58,10 +62,13 @@ import {
   completeOrder,
 } from '~/_libs/core/services/order-service';
 import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
+import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
+import { DateTime } from 'luxon';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
   loadedOrder: Awaited<ReturnType<typeof getOrder>>;
+  deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
 };
 
 export const loader: LoaderFunction = async ({ params }) => {
@@ -79,7 +86,9 @@ export const loader: LoaderFunction = async ({ params }) => {
 
   const coffees = await getActiveCoffees();
 
-  return json({ loadedOrder, coffees });
+  const deliveryDates = getNextDeliveryDates(5);
+
+  return json({ loadedOrder, coffees, deliveryDates });
 };
 
 async function completeAndShipOrderAction(id: number) {
@@ -112,6 +121,19 @@ export const action: ActionFunction = async ({ request }) => {
   if (_action === 'complete-and-ship-order')
     return await completeAndShipOrderAction(+values.id);
   else if (_action === 'update') return await upsertOrderAction(values);
+  else if (_action === 'set-delivery') {
+    const date = DateTime.fromISO(values.date as string);
+    const deliveryDate = await getNextOrCreateDelivery(date);
+
+    await updateOrder(+values.id, {
+      deliveryId: deliveryDate.id,
+    });
+
+    return {
+      didUpdate: true,
+      updateMessage: 'Delivery date was updated',
+    };
+  }
 
   return await updateStatusAction(+values.id, _action as string);
 };
@@ -123,14 +145,18 @@ function resolveCoffeeCode(coffeeId: number, coffees: Coffee[]) {
 }
 
 export default function UpdateOrder() {
-  const { loadedOrder, coffees } = useLoaderData() as unknown as LoaderData;
+  const { loadedOrder, coffees, deliveryDates } =
+    useLoaderData() as unknown as LoaderData;
   const data = useActionData();
   const transition = useTransition();
+  const submit = useSubmit();
 
   const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [openCompleteAndShip, setOpenCompleteAndShip] = useState(false);
 
   const [order, setOrder] = useState<Order>();
+  const [deliveryDate, setDeliveryDate] = useState(deliveryDates[0]);
+  const [openSetNewDelivery, setOpenSetNewDelivery] = useState(false);
 
   useEffect(() => {
     setOrder(loadedOrder || undefined);
@@ -162,6 +188,20 @@ export default function UpdateOrder() {
     setOpenCompleteAndShip(true);
   };
 
+  const handleChangeDeliveryDay = (event: any) => {
+    const selectedDeliveryDate = deliveryDates.find(
+      (d) => d.id === (event.target.value as number)
+    );
+
+    if (!selectedDeliveryDate) return;
+
+    setDeliveryDate(selectedDeliveryDate);
+  };
+
+  const handleOpenDeliveryDay = () => {
+    setOpenSetNewDelivery(true);
+  };
+
   const dataFields: any[] = [
     {
       label: 'Status',
@@ -179,7 +219,7 @@ export default function UpdateOrder() {
     {
       label: 'Delivery day',
       data: toPrettyDateTextLong(order.delivery.date),
-      dataLinkUrl: `/deliveries/admin/${order.deliveryId}`,
+      onClick: handleOpenDeliveryDay,
     },
     {
       label: 'Tracking url',
@@ -599,6 +639,59 @@ export default function UpdateOrder() {
               </Grid>
             </Box>
           )}
+        </Box>
+      </Dialog>
+      <Dialog open={openSetNewDelivery}>
+        <Box sx={{ ...modalStyle }}>
+          <Form method="post">
+            <input type="hidden" name="id" value={order.id} />
+            <input
+              type="hidden"
+              name="date"
+              value={deliveryDate.date.toString()}
+            />
+            <Grid container>
+              <Grid item xs={12} style={{ textAlign: 'center' }}>
+                <FormControl sx={{ m: 1 }}>
+                  <InputLabel id="date-label">New Delivery day</InputLabel>
+                  <Select
+                    labelId="date-label"
+                    defaultValue={`${deliveryDates[0].date}`}
+                    onChange={handleChangeDeliveryDay}
+                  >
+                    {deliveryDates.map((date: DeliveryDate) => (
+                      <MenuItem value={date.id} key={date.id}>
+                        {toPrettyDateTextLong(date.date)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6} style={{ textAlign: 'left' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => setOpenSetNewDelivery(false)}
+                  sx={{ m: 2, marginTop: 4 }}
+                >
+                  Cancel
+                </Button>
+              </Grid>
+              <Grid item xs={6} style={{ textAlign: 'right' }}>
+                <Button
+                  variant="contained"
+                  onClick={(e) => {
+                    submit(e.currentTarget, { replace: true });
+                    setOpenSetNewDelivery(false);
+                  }}
+                  sx={{ m: 2, marginTop: 4 }}
+                  name="_action"
+                  value="set-delivery"
+                >
+                  Update
+                </Button>
+              </Grid>
+            </Grid>
+          </Form>
         </Box>
       </Dialog>
     </Box>

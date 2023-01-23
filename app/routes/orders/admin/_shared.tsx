@@ -1,7 +1,6 @@
 import { OrderType } from '@prisma/client';
 import { json, redirect } from '@remix-run/node';
 
-import type { OrderUpsertData } from '~/_libs/core/models/order.server';
 import { upsertOrderItem } from '~/_libs/core/models/order.server';
 import { upsertOrder } from '~/_libs/core/models/order.server';
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
@@ -77,7 +76,7 @@ export const upsertOrderAction = async (values: any) => {
     quantity500: parseIntOrZero(values.quantity500),
     quantity1200: parseIntOrZero(values.quantity1200),
     internalNote: values.internalNote,
-  } as OrderUpsertData;
+  };
 
   await upsertOrder(+values.id, data);
 
