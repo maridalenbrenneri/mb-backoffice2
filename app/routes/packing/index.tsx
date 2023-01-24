@@ -113,7 +113,7 @@ export default function Packing() {
   const isWorking = Boolean(transition.submission);
   const [delivery, setDelivery] = useState<Delivery>();
   const [deliveries, setDeliveries] = useState<Delivery[]>();
-  const [resultData, setResultData] = useState<[] | null>(null);
+  const [resultData, setResultData] = useState<any>(null);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [open, setOpen] = useState(false);
   const [currentOrders, setCurrentOrders] = useState<Order[]>([]);
@@ -406,8 +406,8 @@ export default function Packing() {
                   {resultData.orderResult.length} order(s) completed
                 </Typography>
 
-                {data.resultData.errors && (
-                  <Alert severity="error">{data.resultData.errors}</Alert>
+                {resultData.errors && (
+                  <Alert severity="error">{resultData.errors}</Alert>
                 )}
 
                 <TableContainer component={Paper} sx={{ marginTop: 2 }}>

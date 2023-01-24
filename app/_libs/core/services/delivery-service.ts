@@ -34,7 +34,7 @@ export async function getNextOrCreateDelivery(
         // RETURN DELIVERY DAY IF ANY EXISTS IN THE COMING WEEK
         where: {
           date: {
-            gt: currentDate.toJSDate(),
+            gte: currentDate.toJSDate(),
             lt: nextweek.toJSDate(),
           },
         },
