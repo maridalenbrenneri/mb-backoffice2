@@ -21,7 +21,7 @@ const transport_agreement = settings.CARGONIZER_TRANSPORT_AGREEMENT;
 const consignment_url = `${settings.CARGONIZER_API_URL}//consignments.xml`;
 const service_partners_url = `${settings.CARGONIZER_API_URL}/service_partners.xml`;
 const profile_url = `${settings.CARGONIZER_API_URL}/profile.xml`;
-const print_url = `${settings.CARGONIZER_API_URL}/consignments/label_direct.xml`;
+const print_url = `${settings.CARGONIZER_API_URL}/consignments/label_direct`;
 
 const shipping_type_standard_private = 1;
 const shipping_type_standard_business = 2;
@@ -109,7 +109,7 @@ export const sendConsignment = async (
 export async function printConsignmentLabels(consignmentIds: number[]) {
   let idsParam = '';
   for (const id of consignmentIds) {
-    idsParam = `${idsParam}&consignmentIds[]=${id}`;
+    idsParam = `${idsParam}&consignment_ids[]=${id}`;
   }
 
   const url = `${print_url}?printer_id=${settings.CARGONIZER_PRINTER_ID}${idsParam}`;
@@ -121,6 +121,8 @@ export async function printConsignmentLabels(consignmentIds: number[]) {
     const response = await fetch(url, { method: 'post', headers });
     const xml = await response.text();
     const json = new XMLParser().parse(xml);
+
+    console.debug('PRINT RESPONSE', xml);
 
     throwIfAnyError(json.errors);
 

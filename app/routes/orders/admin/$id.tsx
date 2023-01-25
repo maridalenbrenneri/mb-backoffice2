@@ -15,9 +15,12 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Checkbox,
   CircularProgress,
   Dialog,
   FormControl,
+  FormControlLabel,
+  FormGroup,
   Grid,
   InputLabel,
   MenuItem,
@@ -91,9 +94,12 @@ export const loader: LoaderFunction = async ({ params }) => {
   return json({ loadedOrder, coffees, deliveryDates });
 };
 
-async function completeAndShipOrderAction(id: number) {
+async function completeAndShipOrderAction(id: number, printLabels = false) {
   return {
-    completeAndShipOrderActionResult: await completeAndShipOrders([id]),
+    completeAndShipOrderActionResult: await completeAndShipOrders(
+      [id],
+      printLabels
+    ),
   };
 }
 
@@ -119,7 +125,7 @@ export const action: ActionFunction = async ({ request }) => {
   const { _action, ...values } = Object.fromEntries(formData);
 
   if (_action === 'complete-and-ship-order')
-    return await completeAndShipOrderAction(+values.id);
+    return await completeAndShipOrderAction(+values.id, !!values.printLabels);
   else if (_action === 'update') return await upsertOrderAction(values);
   else if (_action === 'set-delivery') {
     const date = DateTime.fromISO(values.date as string);
@@ -154,6 +160,7 @@ export default function UpdateOrder() {
   const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [openCompleteAndShip, setOpenCompleteAndShip] = useState(false);
 
+  const [printLabels, setPrintLabels] = useState(false);
   const [order, setOrder] = useState<Order>();
   const [deliveryDate, setDeliveryDate] = useState(deliveryDates[0]);
   const [openSetNewDelivery, setOpenSetNewDelivery] = useState(false);
@@ -282,6 +289,7 @@ export default function UpdateOrder() {
             <DataLabel dataFields={dataFields} />
           </Box>
         </Grid>
+
         {order.wooOrderId && (
           <Grid item md={6}>
             <Box sx={{ m: 1 }}>
@@ -289,6 +297,7 @@ export default function UpdateOrder() {
             </Box>
           </Grid>
         )}
+
         {order.subscription?.fikenContactId && (
           <Grid item md={6}>
             <Box sx={{ m: 1 }}>
@@ -305,6 +314,11 @@ export default function UpdateOrder() {
                 type="hidden"
                 name="wooOrderId"
                 value={order.wooOrderId || undefined}
+              />
+              <input
+                type="hidden"
+                name="printLabels"
+                value={printLabels ? 1 : undefined}
               />
               <FormControl>
                 <ButtonGroup>
@@ -337,19 +351,32 @@ export default function UpdateOrder() {
                   </Button>
                 </ButtonGroup>
               </FormControl>
-              <FormControl>
-                <Button
-                  sx={{ mx: 2 }}
-                  type="submit"
-                  name="_action"
-                  value="complete-and-ship-order"
-                  variant="contained"
-                  onClick={handleOpen}
-                  disabled={!canShipAndComplete || isUpdating}
-                >
-                  <LocalShippingIcon sx={{ mx: 1 }} /> Complete & Ship Order
-                </Button>
-              </FormControl>
+              <FormGroup sx={{ marginTop: 2, maxWidth: 300 }}>
+                <FormControl>
+                  <FormControlLabel
+                    sx={{ mx: 0.25 }}
+                    control={
+                      <Checkbox
+                        value={printLabels}
+                        onChange={() => setPrintLabels(!printLabels)}
+                      />
+                    }
+                    label="Print label on complete & ship"
+                  />
+                </FormControl>
+                <FormControl>
+                  <Button
+                    type="submit"
+                    name="_action"
+                    value="complete-and-ship-order"
+                    variant="contained"
+                    onClick={handleOpen}
+                    disabled={!canShipAndComplete || isUpdating}
+                  >
+                    <LocalShippingIcon sx={{ mx: 1 }} /> Complete & Ship Order
+                  </Button>
+                </FormControl>
+              </FormGroup>
             </Form>
           </Box>
         </Grid>
@@ -631,7 +658,20 @@ export default function UpdateOrder() {
                 </Table>
               </TableContainer>
               <Grid container>
-                <Grid item xs={12} style={{ textAlign: 'right' }}>
+                <Grid item xs={8} style={{ textAlign: 'left' }}>
+                  {printLabels && (
+                    <p>
+                      <small>Print label requested</small>
+                    </p>
+                  )}
+                  {!printLabels && (
+                    <p>
+                      <small>Print label was not requested</small>
+                    </p>
+                  )}
+                </Grid>
+
+                <Grid item xs={4} style={{ textAlign: 'right' }}>
                   <Button
                     variant="contained"
                     onClick={() => handleClose(null, 'closeBtnClick')}
@@ -645,6 +685,7 @@ export default function UpdateOrder() {
           )}
         </Box>
       </Dialog>
+
       <Dialog open={openSetNewDelivery}>
         <Box sx={{ ...modalStyle }}>
           <Form method="post">

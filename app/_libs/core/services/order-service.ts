@@ -9,11 +9,7 @@ import { updateOrder } from '../models/order.server';
 import { updateOrderStatus } from '../models/order.server';
 import { getOrder, upsertOrder } from '../models/order.server';
 import { getSubscription } from '../models/subscription.server';
-import {
-  COMPLETE_ORDERS_DELAY,
-  PRINT_LABEL,
-  WEIGHT_STANDARD_PACKAGING,
-} from '../settings';
+import { COMPLETE_ORDERS_DELAY, WEIGHT_STANDARD_PACKAGING } from '../settings';
 import { getNextOrCreateDelivery } from './delivery-service';
 
 import * as woo from '~/_libs/woo';
@@ -232,7 +228,10 @@ async function completeAndShipOrder(orderId: number, results: any[]) {
   });
 }
 
-export async function completeAndShipOrders(orderIds: number[]) {
+export async function completeAndShipOrders(
+  orderIds: number[],
+  printLabels = false
+) {
   const MAX_CONCURRANT_REQUESTS = 20;
 
   if (!orderIds.length) return [];
@@ -271,7 +270,7 @@ export async function completeAndShipOrders(orderIds: number[]) {
     await Promise.all(promises);
   }
 
-  if (PRINT_LABEL) {
+  if (printLabels) {
     const ids = result.orderResult
       .filter((r) => r.result === 'Success' && r.consignmentId)
       .map((r) => r.consignmentId);

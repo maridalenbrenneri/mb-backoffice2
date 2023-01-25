@@ -18,10 +18,13 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   Dialog,
   FormControl,
+  FormControlLabel,
   Grid,
+  InputLabel,
   MenuItem,
   Paper,
   Select,
@@ -40,7 +43,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import { completeAndShipOrders } from '~/_libs/core/services/order-service';
 import { generatePreview } from '~/_libs/core/services/packing-service';
 import Orders from '../../components/Orders';
-import { COMPLETE_ORDERS_BATCH_MAX, PRINT_LABEL } from '~/_libs/core/settings';
+import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
 import { modalStyle } from '~/style/theme';
 import { getDeliveries } from '~/_libs/core/models/delivery.server';
 import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
@@ -100,7 +103,9 @@ export const action: ActionFunction = async ({ request }) => {
       ? allOrderIds.slice(0, COMPLETE_ORDERS_BATCH_MAX)
       : allOrderIds;
 
-  return await completeAndShipOrders(orderIds);
+  const printLabels = !!values.printLabels;
+
+  return await completeAndShipOrders(orderIds, printLabels);
 };
 
 export default function Packing() {
@@ -117,6 +122,7 @@ export default function Packing() {
   const [expanded, setExpanded] = useState<string | false>(false);
   const [open, setOpen] = useState(false);
   const [currentOrders, setCurrentOrders] = useState<Order[]>([]);
+  const [printLabels, setPrintLabels] = useState(false);
 
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [customPickUpOrders, setPickUpCustomOrders] = useState<Order[]>([]);
@@ -236,6 +242,11 @@ export default function Packing() {
                     name="orderIds"
                     value={orders.map((o) => o.id).join()}
                   />
+                  <input
+                    type="hidden"
+                    name="printLabels"
+                    value={printLabels ? 1 : undefined}
+                  />
                   <Button
                     variant="contained"
                     type="submit"
@@ -315,19 +326,10 @@ export default function Packing() {
             Active orders ready to be packed and shipped, grouped by
             packing/shipping type.
           </p>
-          <p>
-            <small>
-              Printing enabled: <strong>{PRINT_LABEL ? 'YES' : 'NO'}</strong>
-              <br />
-              Max orders in batch: <strong>{COMPLETE_ORDERS_BATCH_MAX}</strong>
-            </small>
-          </p>
           <Paper sx={{ m: 2, px: 2, py: 1 }}>
             <Form method="post">
-              <FormControl sx={{ my: 2 }}>
-                Include orders up to and including Delivery day
-              </FormControl>
-              <FormControl sx={{ m: 1 }}>
+              <FormControl>
+                <InputLabel id={`status-label`}>Delivery day</InputLabel>
                 <Select
                   labelId={`delivery-label`}
                   name={`deliveryId`}
@@ -344,8 +346,31 @@ export default function Packing() {
                       </MenuItem>
                     ))}
                 </Select>
+                <small>
+                  Any active orders on the selected and past Delivery days are
+                  included.
+                </small>
               </FormControl>
-              <FormControl></FormControl>
+              <FormControl>
+                <FormControlLabel
+                  sx={{ marginTop: 0.5, mx: 3 }}
+                  control={
+                    <Checkbox
+                      value={printLabels}
+                      onChange={() => setPrintLabels(!printLabels)}
+                    />
+                  }
+                  label="Print labels"
+                />
+              </FormControl>
+              <div>
+                <FormControl sx={{ marginTop: 1.5 }}>
+                  <small>
+                    Max orders sent in complete-batch:{' '}
+                    <strong>{COMPLETE_ORDERS_BATCH_MAX}</strong>
+                  </small>
+                </FormControl>
+              </div>
             </Form>
           </Paper>
         </Grid>
@@ -416,6 +441,7 @@ export default function Packing() {
                       <TableRow>
                         <TableCell>Result</TableCell>
                         <TableCell>Order</TableCell>
+                        <TableCell>Tracking url</TableCell>
                         <TableCell>Errors</TableCell>
                         <TableCell>Woo id/status</TableCell>
                       </TableRow>
@@ -424,7 +450,24 @@ export default function Packing() {
                       {resultData.orderResult.map((row: any, index: number) => (
                         <TableRow key={index}>
                           <TableCell>{row.result}</TableCell>
-                          <TableCell>{row.orderId}</TableCell>
+                          <TableCell>
+                            <a
+                              href={`https://mb-backoffice.fly.dev/orders/admin/${row.orderId}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {row.orderId}
+                            </a>
+                          </TableCell>
+                          <TableCell>
+                            <a
+                              href={row.trackingUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Track
+                            </a>
+                          </TableCell>
                           <TableCell>
                             {row.errors &&
                               row.errors.map((error: string, index: number) => (
@@ -441,7 +484,19 @@ export default function Packing() {
                 </TableContainer>
 
                 <Grid container>
-                  <Grid item xs={12} style={{ textAlign: 'right' }}>
+                  <Grid item xs={8} style={{ textAlign: 'left' }}>
+                    {printLabels && (
+                      <p>
+                        <small>Print label requested</small>
+                      </p>
+                    )}
+                    {!printLabels && (
+                      <p>
+                        <small>Print label was not requested</small>
+                      </p>
+                    )}
+                  </Grid>
+                  <Grid item xs={4} style={{ textAlign: 'right' }}>
                     <Button
                       variant="contained"
                       onClick={() => handleClose(null, 'closeBtnClick')}
