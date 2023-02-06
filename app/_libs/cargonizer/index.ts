@@ -73,7 +73,7 @@ export const sendConsignment = async (
   );
   if (servicePartner.error) {
     throw new Error(
-      `Error creating consignment in Cargonizer. Order ${input.order.id} Message: ${servicePartner.error}`
+      `Error when requesting Cargonizer service partners. Is postcode correct? Order ${input.order.id} Postcode: "${consignmentCreate.customer.postcode}" Error msg: "${servicePartner.error}"`
     );
   }
 
@@ -84,19 +84,11 @@ export const sendConsignment = async (
   const consignment = await requestConsignment(xml);
   if (consignment.error) {
     throw new Error(
-      `Error creating consignment in Cargonizer. Order ${input.order.id} Message: ${consignment.error}`
+      `Error creating consignment in Cargonizer. Order ${input.order.id} Error msg: ${consignment.error}`
     );
   }
 
   let error: string | undefined = undefined;
-  let printResult;
-
-  if (input.print) {
-    printResult = await printLabel(consignment.id);
-    if (printResult.error) {
-      error = printResult.error;
-    }
-  }
 
   return {
     orderId: input.order.id,
