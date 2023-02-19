@@ -67,6 +67,7 @@ import {
 import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
 import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
 import { DateTime } from 'luxon';
+import CompleteAndShipResultBox from '~/components/CompleteAndShipResultBox';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
@@ -610,53 +611,10 @@ export default function UpdateOrder() {
           )}
           {data?.completeAndShipOrderActionResult && (
             <Box>
-              <Typography variant="h6" component="h2">
-                Order completed
-              </Typography>
+              <CompleteAndShipResultBox
+                result={data.completeAndShipOrderActionResult}
+              />
 
-              {data.completeAndShipOrderActionResult.errors && (
-                <Alert severity="error">
-                  {data.completeAndShipOrderActionResult.errors}
-                </Alert>
-              )}
-
-              <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-                <Table sx={{ minWidth: 800 }} size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Result</TableCell>
-                      <TableCell>Order</TableCell>
-                      <TableCell>Tracking url</TableCell>
-                      <TableCell>Errors</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {data.completeAndShipOrderActionResult.orderResult.map(
-                      (row: any, index: number) => (
-                        <TableRow key={index}>
-                          <TableCell>{row.result}</TableCell>
-                          <TableCell>{row.orderId}</TableCell>
-                          <TableCell>
-                            <a
-                              href={data.trackingUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              {row.trackingUrl}
-                            </a>
-                          </TableCell>
-                          <TableCell>
-                            {row.errors &&
-                              row.errors.map((error: string, index: number) => (
-                                <div key={index}>{error}</div>
-                              ))}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
               <Grid container>
                 <Grid item xs={8} style={{ textAlign: 'left' }}>
                   {printLabels && (

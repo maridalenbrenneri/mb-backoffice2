@@ -536,7 +536,7 @@ export default function UpdateSubscription() {
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientPostalCode}
-                        error={data?.validationErrors?.recipientPostcode}
+                        error={data?.validationErrors?.recipientPostalCode}
                       />
                     </FormControl>
                     <FormControl>

@@ -28,12 +28,6 @@ import {
   MenuItem,
   Paper,
   Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Typography,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -49,6 +43,7 @@ import { getDeliveries } from '~/_libs/core/models/delivery.server';
 import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
 import { toPrettyDateText } from '~/_libs/core/utils/dates';
 import { deliveryDayTypeToLabel } from '~/_libs/core/utils/labels';
+import CompleteAndShipResultBox from '~/components/CompleteAndShipResultBox';
 
 type LoaderData = {
   preview: Awaited<ReturnType<typeof generatePreview>>;
@@ -427,61 +422,7 @@ export default function Packing() {
             )}
             {resultData && (
               <Box>
-                <Typography variant="h6" component="h2">
-                  {resultData.orderResult.length} order(s) completed
-                </Typography>
-
-                {resultData.errors && (
-                  <Alert severity="error">{resultData.errors}</Alert>
-                )}
-
-                <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-                  <Table sx={{ minWidth: 800 }} size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Result</TableCell>
-                        <TableCell>Order</TableCell>
-                        <TableCell>Tracking url</TableCell>
-                        <TableCell>Errors</TableCell>
-                        <TableCell>Woo id/status</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {resultData.orderResult.map((row: any, index: number) => (
-                        <TableRow key={index}>
-                          <TableCell>{row.result}</TableCell>
-                          <TableCell>
-                            <a
-                              href={`https://mb-backoffice.fly.dev/orders/admin/${row.orderId}`}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              {row.orderId}
-                            </a>
-                          </TableCell>
-                          <TableCell>
-                            <a
-                              href={row.trackingUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Track
-                            </a>
-                          </TableCell>
-                          <TableCell>
-                            {row.errors &&
-                              row.errors.map((error: string, index: number) => (
-                                <div key={index}>{error}</div>
-                              ))}
-                          </TableCell>
-                          <TableCell>
-                            {row.wooOrderId || ''} {row.wooOrderStatus || ''}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                <CompleteAndShipResultBox result={resultData} />
 
                 <Grid container>
                   <Grid item xs={8} style={{ textAlign: 'left' }}>

@@ -171,9 +171,12 @@ async function getOrderFromDb(orderId: number) {
 
 // COMPLETE IN MB AND WOO, CREATE CONSIGNMENT IN CARGONIZER
 async function completeAndShipOrder(orderId: number, results: any[]) {
-  let genericError;
+  let error;
   let cargonizer;
   let wooResult;
+
+  let isCompletedInWoo = false;
+  let isTransferedToCargonizer = false;
 
   try {
     const order = await getOrderFromDb(orderId);
@@ -185,17 +188,31 @@ async function completeAndShipOrder(orderId: number, results: any[]) {
       return;
     }
 
-    if (order.shippingType !== ShippingType.LOCAL_PICK_UP) {
-      cargonizer = await sendConsignment({
-        order,
-      });
-    }
-
     if (order.wooOrderId) {
       wooResult = await woo.updateStatus(
         order.wooOrderId,
         WOO_STATUS_COMPLETED
       );
+
+      if (wooResult.error) {
+        console.warn(wooResult.error);
+        throw new Error('Failed to complete order in Woo');
+      }
+
+      isCompletedInWoo = true;
+    }
+
+    if (order.shippingType !== ShippingType.LOCAL_PICK_UP) {
+      cargonizer = await sendConsignment({
+        order,
+      });
+
+      if (cargonizer?.error) {
+        console.warn(cargonizer.error);
+        throw new Error('Failed to create consignment in Cargonizer');
+      }
+
+      isTransferedToCargonizer = true;
     }
 
     await updateOrder(order.id, {
@@ -203,28 +220,19 @@ async function completeAndShipOrder(orderId: number, results: any[]) {
       trackingUrl: cargonizer?.trackingUrl || null,
     });
   } catch (err) {
-    genericError = err.message;
+    error = err.message;
   }
 
-  const errors: string[] = [];
-  if (genericError) errors.push(genericError);
-  if (wooResult?.error) errors.push(wooResult.error);
-  if (cargonizer?.error) errors.push(cargonizer.error);
-
-  const wooOk = !wooResult?.error;
-
-  const result =
-    !genericError && !cargonizer?.error && wooOk ? 'Success' : 'Failed';
-
   results.push({
-    result,
+    result: !error ? 'Success' : 'Failed',
+    error,
     orderId,
-    consignmentId: cargonizer?.consignmentId || null,
-    trackingUrl: cargonizer?.trackingUrl || null,
-    errors,
+    isCompletedInWoo,
+    isTransferedToCargonizer,
+    cargonizerConsignmentId: cargonizer?.consignmentId || null,
+    cargonizerTrackingUrl: cargonizer?.trackingUrl || null,
     wooOrderId: wooResult?.orderId || null,
     wooOrderStatus: wooResult?.orderStatus || null,
-    wooError: wooResult?.error || null,
   });
 }
 
@@ -241,10 +249,10 @@ export async function completeAndShipOrders(
 
   const result: {
     orderResult: any[];
-    errors: any;
+    printErrors: any;
   } = {
     orderResult: [],
-    errors: null,
+    printErrors: null,
   };
 
   let promises: Promise<void>[] = [];
@@ -278,11 +286,11 @@ export async function completeAndShipOrders(
     const printResult = await printConsignmentLabels(ids);
 
     if (printResult.error) {
-      result.errors = `Error when printing labels. All orders were most likely created as consignments in Cargonizer but print of one or many labels failed. Err message: ${printResult.error}`;
+      result.printErrors = `Error when printing labels. All orders were most likely created as consignments in Cargonizer but print of one or many labels failed. Err message: "${printResult.error}"`;
     }
   }
 
-  console.debug('Errors: ', result.errors);
+  console.debug('Errors: ', result.printErrors);
   console.table(result.orderResult);
 
   return result;

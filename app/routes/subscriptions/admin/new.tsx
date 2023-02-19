@@ -11,6 +11,7 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import {
+  Alert,
   Button,
   FormControl,
   InputLabel,
@@ -26,7 +27,7 @@ import {
   renderShippingTypes,
   renderStatus,
   renderTypes,
-  upsertAction,
+  createAction,
 } from './_shared';
 import type { FikenCustomer } from '~/_libs/fiken';
 import { getCustomers } from '~/_libs/fiken';
@@ -46,9 +47,7 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { ...values } = Object.fromEntries(formData);
 
-  console.log(values);
-
-  return await upsertAction(values);
+  await createAction(values);
 };
 
 export default function NewSubscription() {
@@ -68,6 +67,17 @@ export default function NewSubscription() {
     );
   };
 
+  const customerHasAddressData = (customer: FikenCustomer) => {
+    if (!customer) return true;
+
+    return (
+      customer.address?.address1 &&
+      customer.address?.postalCode &&
+      customer.address?.postalPlace &&
+      customer.email
+    );
+  };
+
   return (
     <Box
       m={2}
@@ -76,6 +86,12 @@ export default function NewSubscription() {
       }}
     >
       <Typography variant="h2">Create New Subscription</Typography>
+      {!customerHasAddressData(customer) && (
+        <Alert severity="warning">
+          Customer seems to be missing address or contact info in Fiken. Must be
+          added (in Fiken) before subcription can be created.
+        </Alert>
+      )}
       <Form method="post">
         <input type="hidden" name="type" value={SubscriptionType.B2B} />
         <input type="hidden" name="fikenContactId" value={customer.contactId} />
@@ -172,12 +188,23 @@ export default function NewSubscription() {
         </div>
         <div>
           <FormControl sx={{ m: 1 }}>
-            <Button type="submit" disabled={isCreating} variant="contained">
+            <Button
+              type="submit"
+              disabled={isCreating || !customerHasAddressData(customer)}
+              variant="contained"
+            >
               {isCreating ? 'Creating...' : 'Create Subscription'}
             </Button>
           </FormControl>
         </div>
       </Form>
+
+      {customer && (
+        <div>
+          <h4>Fiken data</h4>
+          <p>{JSON.stringify(customer)}</p>
+        </div>
+      )}
     </Box>
   );
 }

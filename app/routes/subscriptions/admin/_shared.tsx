@@ -136,7 +136,7 @@ export const updateFirstDeliveryDate = async (values: any) => {
   await updateFirstDeliveryDateOnSubscription(id, values.delivery_date);
 };
 
-export const upsertAction = async (values: any) => {
+const actionBase = async (values: any) => {
   const validationErrors = {
     status: values.status ? null : 'Status is required',
     type: values.type ? null : 'Type is required',
@@ -193,4 +193,12 @@ export const upsertAction = async (values: any) => {
     didUpdate: true,
     updateMessage: 'Subscription was updated',
   });
+};
+
+export const upsertAction = async (request: any) => {
+  return await actionBase(request);
+};
+
+export const createAction = async (request: any) => {
+  return await actionBase(request);
 };
