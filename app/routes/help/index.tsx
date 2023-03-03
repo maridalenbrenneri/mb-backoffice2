@@ -58,6 +58,18 @@ export default function JobResult() {
           amount of orders seem reasonable.
           <p></p>
         </Alert>
+        <p>When an order is completed the following process is executed:</p>
+        <ol>
+          <li>
+            Complete order in Woo (Step ignored if parent subscription is B2B or
+            GABO)
+          </li>
+          <li>
+            Create consignment in Cargonizer (Step ignored if local delivery is
+            set on parent subscription)
+          </li>
+          <li>Complete order in Backoffice database</li>
+        </ol>
       </Box>
 
       <Box sx={{ m: 2 }}>
