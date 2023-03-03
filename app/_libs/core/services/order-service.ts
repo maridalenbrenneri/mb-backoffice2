@@ -240,7 +240,7 @@ export async function completeAndShipOrders(
   orderIds: number[],
   printLabels = false
 ) {
-  const MAX_CONCURRANT_REQUESTS = 20;
+  const MAX_CONCURRANT_REQUESTS = 10;
 
   if (!orderIds.length) return [];
 
