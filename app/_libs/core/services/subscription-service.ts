@@ -55,12 +55,9 @@ export function resolveStatusForGiftSubscription(
   durationMonths: number,
   firstDeliveryDate: DateTime
 ): SubscriptionStatus {
-  const first = firstDeliveryDate.startOf('day');
+  const first = firstDeliveryDate.startOf('month');
 
-  const last = first
-    .plus({ months: durationMonths })
-    .startOf('month')
-    .plus({ days: 7 });
+  const last = first.plus({ months: durationMonths - 1 }).plus({ days: 7 });
 
   const today = DateTime.now().startOf('day');
 
@@ -106,7 +103,11 @@ export async function updateStatusOnGiftSubscriptions() {
       console.debug(
         `Detected new status for gift subscription ${gift.id}. Updating from ${gift.status} to ${status}`
       );
+
+      // console.debug('GIFT', duration, date.toISO());
+
       await updateStatusOnSubscription(gift.id, status);
+
       updatedCount++;
     }
   }
