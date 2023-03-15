@@ -82,7 +82,7 @@ model Subscription {
   internalNote String?
   
   // Set on B2B
-  fikenContactId      String? // TODO: Should be uniquq but don't work..
+  fikenContactId      String? // TODO: Should be unique but don't work..
 
   // Set on PRIVATE imported from Woo
   wooSubscriptionId   Int? @unique
@@ -110,6 +110,8 @@ model Subscription {
   recipientPostalCode   String
   recipientPostalPlace  String
   recipientCountry      String? 
+
+  isPrivateDeliveryAddress  Boolean @default(true)
 
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
@@ -200,7 +202,7 @@ model Order {
   postalCode  String
   postalPlace String
   country     String?
-  
+
   quantity250 Int?
   quantity500 Int?
   quantity1200 Int?

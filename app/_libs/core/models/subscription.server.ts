@@ -30,6 +30,7 @@ export type SubscriptionUpsertData = Pick<
   | 'recipientAddress2'
   | 'recipientPostalCode'
   | 'recipientPostalPlace'
+  | 'isPrivateDeliveryAddress'
   | 'internalNote'
   | 'fikenContactId'
   | 'wooCustomerName'

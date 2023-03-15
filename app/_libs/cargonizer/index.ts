@@ -1,7 +1,6 @@
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
 import type { Order } from '@prisma/client';
-import { SubscriptionType } from '@prisma/client';
 
 import type {
   CargonizerConsignment,
@@ -134,10 +133,10 @@ export async function printConsignmentLabels(consignmentIds: number[]) {
 function mapToCargonizerConsignment(order: Order) {
   const reference = generateReference(order);
   const weight = calculateWeight(order);
-  const shippingType =
-    order.subscription.type === SubscriptionType.B2B
-      ? shipping_type_standard_business
-      : shipping_type_standard_private;
+  console.dir(order.subscription);
+  const shippingType = !order.subscription.isPrivateDeliveryAddress
+    ? shipping_type_standard_business
+    : shipping_type_standard_private;
 
   return {
     shippingType,

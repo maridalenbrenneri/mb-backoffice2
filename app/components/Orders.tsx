@@ -33,7 +33,6 @@ export default function Orders(props: {
     return !!extraFields.find((f) => f === field);
   };
 
-  console.log(' extra.length', extra.length);
   return (
     <Box>
       <TableContainer component={Paper}>

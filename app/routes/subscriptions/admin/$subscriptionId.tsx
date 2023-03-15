@@ -15,8 +15,10 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Dialog,
   FormControl,
+  FormControlLabel,
   Grid,
   InputLabel,
   MenuItem,
@@ -547,6 +549,22 @@ export default function UpdateSubscription() {
                         size="small"
                         defaultValue={subscription.recipientPostalPlace}
                         error={data?.validationErrors?.recipientPlace}
+                      />
+                    </FormControl>
+                  </div>
+                  <div>
+                    <FormControl>
+                      <FormControlLabel
+                        sx={{ margin: 0.5 }}
+                        control={
+                          <Checkbox
+                            name="isPrivateDeliveryAddress"
+                            defaultChecked={
+                              subscription.isPrivateDeliveryAddress
+                            }
+                          />
+                        }
+                        label="Private delivery address"
                       />
                     </FormControl>
                   </div>

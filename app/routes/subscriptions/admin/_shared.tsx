@@ -185,6 +185,7 @@ const actionBase = async (values: any) => {
     recipientPostalPlace: values.recipientPostalPlace,
     recipientEmail: values.recipientEmail,
     recipientMobile: values.recipientMobile,
+    isPrivateDeliveryAddress: !!values.isPrivateDeliveryAddress,
   };
 
   await upsertSubscription(id, data);
