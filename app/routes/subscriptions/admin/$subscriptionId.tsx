@@ -55,6 +55,7 @@ import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
 import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { useEffect, useState } from 'react';
 import { modalStyle } from '~/style/theme';
+import { SubscriptionSpecialRequest } from '@prisma/client';
 
 type LoaderData = {
   loadedSubscription: Subscription;
@@ -493,6 +494,28 @@ export default function UpdateSubscription() {
                       defaultValue={subscription.quantity1200}
                       error={data?.validationErrors?.quantity1200}
                     />
+                  </FormControl>
+                </Box>
+                <Box>
+                  <FormControl sx={{ m: 1 }}>
+                    <InputLabel id={`special-request-label`}>
+                      Special request
+                    </InputLabel>
+                    <Select
+                      labelId={`special-request-label`}
+                      name={`specialRequest`}
+                      defaultValue={subscription.specialRequest}
+                      sx={{ minWidth: 250 }}
+                      size="small"
+                    >
+                      {Object.keys(SubscriptionSpecialRequest).map(
+                        (request: any) => (
+                          <MenuItem value={request} key={request}>
+                            {request}
+                          </MenuItem>
+                        )
+                      )}
+                    </Select>
                   </FormControl>
                 </Box>
                 <Box my={2}>

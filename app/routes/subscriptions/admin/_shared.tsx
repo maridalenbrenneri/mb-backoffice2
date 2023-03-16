@@ -176,6 +176,7 @@ const actionBase = async (values: any) => {
     quantity250: parseIntOrZero(values.quantity250),
     quantity500: parseIntOrZero(values.quantity500),
     quantity1200: parseIntOrZero(values.quantity1200),
+    specialRequest: values.specialRequest,
     internalNote: values.internalNote,
     wooCustomerName: values.customerName,
     recipientName: values.recipientName,

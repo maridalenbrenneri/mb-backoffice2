@@ -23,6 +23,7 @@ export type SubscriptionUpsertData = Pick<
   | 'quantity250'
   | 'quantity500'
   | 'quantity1200'
+  | 'specialRequest'
   | 'recipientName'
   | 'recipientEmail'
   | 'recipientMobile'
