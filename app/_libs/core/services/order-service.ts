@@ -18,6 +18,7 @@ import {
   WOO_STATUS_COMPLETED,
   WOO_STATUS_PROCESSING,
 } from '~/_libs/woo/constants';
+import { resolveSpecialRequestCode } from './subscription-service';
 
 export interface Quantites {
   _250: number;
@@ -149,6 +150,11 @@ export function generateReference(order: Order) {
 
   if (order.quantity1200)
     reference = `${reference} ABO${order.quantity1200}x1,2kg`;
+
+  if (order.subscription?.specialRequest)
+    reference = `${reference} ${resolveSpecialRequestCode(
+      order.subscription.specialRequest
+    )}`;
 
   return reference;
 }

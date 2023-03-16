@@ -166,6 +166,9 @@ export function getRoastOverview(
           s.type === SubscriptionType.B2B)
     );
 
+    // IF !includeCompletedOrders EXLUDE SUBSCRIPTION WITH ORDER ON DELIVERY DAY
+    // const order = orders.find((o: Order) => o.subscriptionId === s.id);
+
     const aggSubscriptions = aggregateCoffeesFromSubscriptions(
       monthlySubscriptions,
       _250,
@@ -207,6 +210,12 @@ export function getRoastOverview(
 
     console.debug('_250 AFTER monthly3rd');
     console.table(_250);
+
+    console.debug('_500 AFTER monthly3rd');
+    console.table(_500);
+
+    console.debug('_1200 AFTER monthly3rd');
+    console.table(_1200);
   }
 
   // ADD PRIVATE FORTNIGHTLY (ESTIMATE BASED ON wooNextPaymentDate OR ACTUAL RENEWAL ORDERS IF EXISTS)
@@ -289,6 +298,12 @@ export function getRoastOverview(
 
     console.debug('_250 AFTER nonRecurring');
     console.table(_250);
+
+    console.debug('_500 AFTER nonRecurring');
+    console.table(_500);
+
+    console.debug('_1200 AFTER nonRecurring');
+    console.table(_1200);
   }
 
   // ADD CUSTOM ORDERS
@@ -364,6 +379,12 @@ export function getRoastOverview(
 
     console.debug('_250 AFTER custom');
     console.table(_250);
+
+    console.debug('_500 AFTER custom');
+    console.table(_500);
+
+    console.debug('_1200 AFTER custom');
+    console.table(_1200);
   }
 
   const weight = calculateWeightByCoffee(_250, _500, _1200);

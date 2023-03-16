@@ -17,6 +17,7 @@ export type WizardPreviewGroup = {
   totalCount: number;
   orders: {
     all: Order[];
+    allSpecialRequets: Order[];
     privates: {
       custom: {
         pickUp: Order[];
@@ -84,6 +85,7 @@ export async function generatePreview(deliveryIds: number[]) {
         select: {
           type: true,
           fikenContactId: true,
+          specialRequest: true,
         },
       },
       delivery: {
@@ -100,6 +102,7 @@ export async function generatePreview(deliveryIds: number[]) {
     totalCount: 0,
     orders: {
       all: [],
+      allSpecialRequets: [],
       privates: {
         custom: {
           pickUp: [],
@@ -210,6 +213,10 @@ export async function generatePreview(deliveryIds: number[]) {
     (o) =>
       (o.type === OrderType.RENEWAL || o.type === OrderType.NON_RENEWAL) &&
       o.shippingType === ShippingType.SHIP
+  );
+
+  preview.orders.allSpecialRequets = orders.filter(
+    (o) => !!o.subscription.specialRequest
   );
 
   preview.orders.all = orders;

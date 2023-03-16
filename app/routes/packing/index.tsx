@@ -120,6 +120,7 @@ export default function Packing() {
   const [printLabels, setPrintLabels] = useState(false);
 
   const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const [specialRequestOrders, setSpecialRequestOrders] = useState<Order[]>([]);
   const [customPickUpOrders, setPickUpCustomOrders] = useState<Order[]>([]);
   const [renewalPickUpOrders, setPickUpRenewalOrders] = useState<Order[]>([]);
   const [customOrders, setCustomOrders] = useState<Order[]>([]);
@@ -142,6 +143,7 @@ export default function Packing() {
 
   useEffect(() => {
     setAllOrders(preview.orders.all);
+    setSpecialRequestOrders(preview.orders.allSpecialRequets);
 
     setPickUpCustomOrders(preview.orders.privates.custom.pickUp);
     setPickUpRenewalOrders(preview.orders.privates.renewal.pickUp);
@@ -207,18 +209,20 @@ export default function Packing() {
     orders: Order[],
     ship: boolean = true,
     isB2B: boolean = false,
-    isAll: boolean = false
+    isAll: boolean = false,
+    isAllSpecialRequest: boolean = false
   ) => {
     const extraFields = isB2B ? ['fiken'] : [];
     extraFields.push('source');
     extraFields.push('delivery');
     extraFields.push('shipping');
+    extraFields.push('specialRequest');
     return (
       <>
         <Accordion
           expanded={expanded === title}
           onChange={handleChange(title)}
-          sx={{ marginBottom: isAll ? 2 : 0 }}
+          sx={{ marginBottom: isAll || isAllSpecialRequest ? 2 : 0 }}
         >
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ width: '25%', flexShrink: 0 }}>
@@ -371,6 +375,14 @@ export default function Packing() {
         </Grid>
         <Grid item xs={12}>
           {renderAccordian(`ALL active orders`, allOrders, true, false, true)}
+          {renderAccordian(
+            `Special requests`,
+            specialRequestOrders,
+            true,
+            false,
+            false,
+            true
+          )}
           {renderAccordian(`Custom - local pick-up`, customPickUpOrders, false)}
           {renderAccordian(`ABO's - local pick-up`, renewalPickUpOrders, false)}
           {renderAccordian(`Custom`, customOrders)}

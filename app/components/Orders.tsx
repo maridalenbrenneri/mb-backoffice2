@@ -51,9 +51,12 @@ export default function Orders(props: {
               <TableCell>Updated</TableCell>
               <TableCell>Recipient</TableCell>
               {extra('fiken') && <TableCell>Customer in Fiken</TableCell>}
+              <TableCell>Item summary</TableCell>
+              {extra('specialRequest') && (
+                <TableCell>Special request</TableCell>
+              )}
               {extra('delivery') && <TableCell>Delivery day</TableCell>}
               {extra('shipping') && <TableCell>Shipping</TableCell>}
-              <TableCell>Item summary</TableCell>
               {extra('source') && <TableCell>Source</TableCell>}
             </TableRow>
           </TableHead>
@@ -93,6 +96,10 @@ export default function Orders(props: {
                     </a>
                   </TableCell>
                 )}
+                <TableCell>{generateReference(order)}</TableCell>
+                {extra('specialRequest') && (
+                  <TableCell>{order.subscription.specialRequest}</TableCell>
+                )}
                 {extra('delivery') && order.delivery && (
                   <TableCell>
                     <Link to={`/deliveries/admin/${order.deliveryId}`}>
@@ -105,8 +112,6 @@ export default function Orders(props: {
                     <small>{order.shippingType}</small>
                   </TableCell>
                 )}
-
-                <TableCell>{generateReference(order)}</TableCell>
                 {extra('source') && (
                   <TableCell>{resolveSource(order)}</TableCell>
                 )}

@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 
 import type { Subscription } from '@prisma/client';
+import { SubscriptionSpecialRequest } from '@prisma/client';
 import {
   SubscriptionFrequency,
   SubscriptionStatus,
@@ -21,6 +22,21 @@ function calculateSubscriptionWeight(subscription: Subscription) {
   if (subscription.quantity1200) weight += subscription.quantity1200 * 1200;
 
   return weight / 1000;
+}
+
+export function resolveSpecialRequestCode(
+  specialRequest: SubscriptionSpecialRequest
+) {
+  switch (specialRequest) {
+    case SubscriptionSpecialRequest.TWO_COFFEE_TYPES:
+      return '__R2';
+    case SubscriptionSpecialRequest.NO_DRY_PROCESSED:
+      return '__R5';
+    case SubscriptionSpecialRequest.ONLY_DRY_PROCESSED:
+      return '__R6';
+    default:
+      return '';
+  }
 }
 
 export function resolveSubscriptionCode(subscription: Subscription) {
