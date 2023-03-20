@@ -1,4 +1,5 @@
 import type { Order } from '@prisma/client';
+import { SubscriptionSpecialRequest } from '@prisma/client';
 import { SubscriptionType } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
@@ -151,7 +152,10 @@ export function generateReference(order: Order) {
   if (order.quantity1200)
     reference = `${reference} ABO${order.quantity1200}x1,2kg`;
 
-  if (order.subscription?.specialRequest)
+  if (
+    order.subscription &&
+    order.subscription.specialRequest !== SubscriptionSpecialRequest.NONE
+  )
     reference = `${reference} ${resolveSpecialRequestCode(
       order.subscription.specialRequest
     )}`;

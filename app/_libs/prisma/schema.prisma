@@ -66,6 +66,7 @@ enum SubscriptionFrequency {
 }
 
 enum SubscriptionSpecialRequest {
+  NONE
   TWO_COFFEE_TYPES
   NO_DRY_PROCESSED
   ONLY_DRY_PROCESSED

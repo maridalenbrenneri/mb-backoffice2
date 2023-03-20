@@ -1,4 +1,5 @@
 import type { Order } from '@prisma/client';
+import { SubscriptionSpecialRequest } from '@prisma/client';
 import { OrderType, ShippingType, SubscriptionType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { getOrders } from '../models/order.server';
@@ -216,7 +217,7 @@ export async function generatePreview(deliveryIds: number[]) {
   );
 
   preview.orders.allSpecialRequets = orders.filter(
-    (o) => !!o.subscription.specialRequest
+    (o) => o.subscription.specialRequest !== SubscriptionSpecialRequest.NONE
   );
 
   preview.orders.all = orders;

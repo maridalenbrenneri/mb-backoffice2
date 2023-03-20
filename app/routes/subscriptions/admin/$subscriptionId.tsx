@@ -508,7 +508,6 @@ export default function UpdateSubscription() {
                       sx={{ minWidth: 250 }}
                       size="small"
                     >
-                      <MenuItem value={'NONE'}>NONE</MenuItem>
                       {Object.keys(SubscriptionSpecialRequest).map(
                         (request: any) => (
                           <MenuItem value={request} key={request}>

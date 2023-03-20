@@ -12,7 +12,6 @@ import {
 import { updateFirstDeliveryDateOnSubscription } from '~/_libs/core/models/subscription.server';
 import { upsertSubscription } from '~/_libs/core/models/subscription.server';
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
-import { isStringNullOrEmpty } from '~/_libs/core/utils/strings';
 
 type SubscriptionActionData = {
   validationErrors?:
@@ -168,12 +167,6 @@ const actionBase = async (values: any) => {
 
   const id = +values.id;
 
-  const specialRequest =
-    isStringNullOrEmpty(values.specialRequest) ||
-    values.specialRequest === 'NONE'
-      ? null
-      : values.specialRequest;
-
   const data = {
     fikenContactId: values.fikenContactId,
     type: values.type,
@@ -183,7 +176,7 @@ const actionBase = async (values: any) => {
     quantity250: parseIntOrZero(values.quantity250),
     quantity500: parseIntOrZero(values.quantity500),
     quantity1200: parseIntOrZero(values.quantity1200),
-    specialRequest,
+    specialRequest: values.specialRequest,
     internalNote: values.internalNote,
     wooCustomerName: values.customerName,
     recipientName: values.recipientName,
