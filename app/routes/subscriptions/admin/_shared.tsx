@@ -168,9 +168,11 @@ const actionBase = async (values: any) => {
 
   const id = +values.id;
 
-  const specialRequest = isStringNullOrEmpty(values.specialRequest)
-    ? null
-    : values.specialRequest;
+  const specialRequest =
+    isStringNullOrEmpty(values.specialRequest) ||
+    values.specialRequest === 'NONE'
+      ? null
+      : values.specialRequest;
 
   const data = {
     fikenContactId: values.fikenContactId,
