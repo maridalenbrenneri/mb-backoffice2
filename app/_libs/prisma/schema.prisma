@@ -83,7 +83,7 @@ model Subscription {
   quantity500  Int @default(0)
   quantity1200 Int @default(0)
 
-  specialRequest SubscriptionSpecialRequest?
+  specialRequest SubscriptionSpecialRequest @default(NONE)
 
   shippingType ShippingType
 
