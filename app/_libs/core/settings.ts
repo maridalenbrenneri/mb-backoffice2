@@ -42,8 +42,8 @@ export const WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS = 7;
 export const TAKE_MAX_ROWS = 500;
 export const TAKE_DEFAULT_ROWS = 30;
 
-export const COMPLETE_ORDERS_DELAY = 400; // milliseconds. being gentle with requests to Cargonizer and Woo on completeing multiple orders (small delay between every 10th request)
-export const COMPLETE_ORDERS_BATCH_MAX = 20;
+export const COMPLETE_ORDERS_DELAY = 400; // milliseconds. being gentle with requests to Cargonizer and Woo on completeing multiple orders (small delay between every 5th request)
+export const COMPLETE_ORDERS_BATCH_MAX = 50;
 
 export const WOO_RENEWALS_SUBSCRIPTION_ID = 1;
 export const WOO_NON_RECURRENT_SUBSCRIPTION_ID = 2;
