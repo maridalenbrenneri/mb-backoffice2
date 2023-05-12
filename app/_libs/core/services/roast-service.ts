@@ -3,7 +3,7 @@ import { OrderStatus } from '@prisma/client';
 import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 import { OrderType } from '@prisma/client';
 import { DateTime } from 'luxon';
-import { isSameDate, resolveDateForNextDelivery } from '../utils/dates';
+import { isSameDate, getNextTuesday } from '../utils/dates';
 
 function calculateWeightByCoffee(_250: any, _500: any, _1200: any) {
   const coffee1kg =
@@ -241,7 +241,7 @@ export function getRoastOverview(
     if (!s.wooNextPaymentDate) return;
 
     const next = DateTime.fromISO(s.wooNextPaymentDate.toString());
-    const nextRenewalDate = resolveDateForNextDelivery(next);
+    const nextRenewalDate = getNextTuesday(next);
 
     if (isSameDate(delivery.date, nextRenewalDate)) {
       const aggSubscriptions = aggregateCoffeesFromSubscriptions(

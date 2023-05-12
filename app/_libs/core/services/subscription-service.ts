@@ -12,7 +12,7 @@ import {
   updateStatusOnSubscription,
 } from '../models/subscription.server';
 import { TAKE_MAX_ROWS } from '../settings';
-import { resolveDateForNextMonthlyDelivery } from '../utils/dates';
+import { getNextFirstTuesday } from '../utils/dates';
 
 function calculateSubscriptionWeight(subscription: Subscription) {
   let weight = 0;
@@ -77,7 +77,7 @@ export function resolveStatusForGiftSubscription(
 
   const today = DateTime.now().startOf('day');
 
-  const nextMonthly = resolveDateForNextMonthlyDelivery();
+  const nextMonthly = getNextFirstTuesday();
 
   if (today > last) return SubscriptionStatus.COMPLETED;
 

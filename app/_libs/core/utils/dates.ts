@@ -42,68 +42,13 @@ export function isSameDate(date: Date, dateTime: DateTime) {
   return date1.toISO() === date2.toISO();
 }
 
-function getFirstTuesdayOfMonth(date: DateTime) {
-  const firstOfMonth = date.startOf('month');
-  return firstOfMonth
-    .plus({ days: 7 }) // ONE WEEK INTO CURRENT MONTH
-    .startOf('week') // FIRST MONDAY OF THE MONTH
-    .plus({ days: 1 }); // FIRST TUESDAY OF THE MONTH - DELIVERY DAY!
-}
-
-function getFirstTuesdayOfNextMonth(date: DateTime) {
-  const nextMonth = date.startOf('month').plus({ months: 1 });
-  return getFirstTuesdayOfMonth(nextMonth);
-}
-
-export function resolveDateForNextDelivery(date?: DateTime) {
-  date = date?.startOf('day') || DateTime.now().startOf('day');
-
-  const tuesdayThisWeek = date.startOf('week').plus({ days: 1 });
-
-  if (date <= tuesdayThisWeek) return tuesdayThisWeek;
-
-  // RETURN TUESDAY NEXT WEEK
-  return date.startOf('week').plus({ week: 1, days: 1 });
-}
-
-export function resolveDateForNextMonthlyDelivery(date?: DateTime) {
-  date = date?.startOf('day') || DateTime.now().startOf('day');
-
-  const firstTuesdayOfMonth = getFirstTuesdayOfMonth(date);
-
-  if (date <= firstTuesdayOfMonth) {
-    // INPUT DATE IS ON OR BEFORE THE MONTHLY DELIVERY DAY OF THIS MONTH
-    return firstTuesdayOfMonth;
-  }
-
-  return getFirstTuesdayOfNextMonth(date);
-}
-
-export function resolveDateForNextMonthly3rdDelivery(date?: DateTime) {
-  date = date?.startOf('day') || DateTime.now().startOf('day');
-
-  const firstTuesdayOfMonth = getFirstTuesdayOfMonth(date);
-
-  const thirdTuesdayOfMonth = firstTuesdayOfMonth.plus({ weeks: 2 });
-
-  if (date <= thirdTuesdayOfMonth) {
-    // INPUT DATE IS ON OR BEFORE THE MONTHLY_3RD DELIVERY DAY OF THE MONTH
-    return thirdTuesdayOfMonth;
-  }
-
-  const firstTuesdayOfNextMonth = getFirstTuesdayOfNextMonth(date);
-
-  console.log('firstTuesdayOfNextMonth', firstTuesdayOfNextMonth.toString());
-
-  return firstTuesdayOfNextMonth.plus({ weeks: 2 });
-}
-
+// GENERATES DELIVERY DATE DATA
 function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
   const fromDate = DateTime.now().plus({ days: daysFromNow }).startOf('day');
 
-  const nextDeliveryDateAnyType = resolveDateForNextDelivery(fromDate);
-  const nextMonthly = resolveDateForNextMonthlyDelivery(fromDate);
-  const nextMonthly3rd = resolveDateForNextMonthly3rdDelivery(fromDate);
+  const nextDeliveryDateAnyType = getNextTuesday(fromDate);
+  const nextMonthly = getNextFirstTuesday(fromDate);
+  const nextMonthly3rd = getNextThirdTuesday(fromDate);
 
   // console.debug(' === DATES === ');
   // console.debug('getDate, input date', fromDate.toString());
@@ -159,4 +104,47 @@ export function getNextDeliveryDateFrom(date: DateTime): DeliveryDate {
   console.debug('getNextDeliveryDateFrom', date.toString(), diff.days);
 
   return getDate(diff.days);
+}
+
+//
+// NEW FUNCTIONS
+//
+
+export function getNextTuesday(date: DateTime): DateTime {
+  const nextTuesday = date.plus({ days: 1 }); // start with the day after the input date
+  const dayOfWeek = nextTuesday.weekday; // weekday property of a DateTime object returns a 1-based index
+  const daysUntilTuesday = (2 + 7 - dayOfWeek) % 7; // 2 corresponds to Tuesday
+  return nextTuesday.plus({ days: daysUntilTuesday });
+}
+
+export function getNextFirstTuesday(date: DateTime): DateTime {
+  const firstOfMonth = date.startOf('month');
+  const dayOfWeek = firstOfMonth.weekday; // weekday property of a DateTime object returns a 1-based index
+  const daysUntilTuesday = (2 + 7 - dayOfWeek) % 7; // 2 corresponds to Tuesday
+  const firstTuesdayOfMonth = firstOfMonth.plus({ days: daysUntilTuesday });
+  if (firstTuesdayOfMonth <= date) {
+    // if the first Tuesday of this month has already passed, get the first Tuesday of next month
+    return getNextFirstTuesday(firstOfMonth.plus({ months: 1 }));
+  } else {
+    return firstTuesdayOfMonth;
+  }
+}
+
+export function getNextThirdTuesday(date: DateTime): DateTime {
+  const firstOfMonth = date.startOf('month');
+  const dayOfWeek = firstOfMonth.weekday; // weekday property of a DateTime object returns a 1-based index
+  const daysUntilTuesday = (2 + 7 - dayOfWeek) % 7; // 2 corresponds to Tuesday
+  const thirdTuesdayOfMonth = firstOfMonth.plus({
+    days: daysUntilTuesday + 14,
+  });
+  if (thirdTuesdayOfMonth <= date) {
+    // if the third Tuesday of this month has already passed, get the third Tuesday of next month
+    return getNextThirdTuesday(firstOfMonth.plus({ months: 1 }));
+  } else {
+    return thirdTuesdayOfMonth;
+  }
+}
+
+export function testTestFunc(number: number) {
+  return number * 2;
 }

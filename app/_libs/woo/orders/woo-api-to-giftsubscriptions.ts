@@ -7,7 +7,7 @@ import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 import { WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
 import { resolveStatusForGiftSubscription } from '~/_libs/core/services/subscription-service';
 import { resolveMetadataValue } from '../utils';
-import { resolveDateForNextMonthlyDelivery } from '~/_libs/core/utils/dates';
+import { getNextFirstTuesday } from '~/_libs/core/utils/dates';
 import { WOO_STATUS_CANCELLED, WOO_STATUS_DELETED } from '../constants';
 
 function itemToSubscription(
@@ -23,7 +23,7 @@ function itemToSubscription(
     'antall-maneder'
   );
 
-  const firstDeliveryDate = resolveDateForNextMonthlyDelivery(startDate);
+  const firstDeliveryDate = getNextFirstTuesday(startDate);
 
   // HANDLE CANCELLED ORDERS CONTAINING GABO's - SET SUBSCRIPTION TO DELETED
   const status =
