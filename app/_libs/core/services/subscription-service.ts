@@ -77,7 +77,7 @@ export function resolveStatusForGiftSubscription(
 
   const today = DateTime.now().startOf('day');
 
-  const nextMonthly = getNextFirstTuesday();
+  const nextMonthly = getNextFirstTuesday(today);
 
   if (today > last) return SubscriptionStatus.COMPLETED;
 
