@@ -587,7 +587,7 @@ export default function UpdateSubscription() {
                             }
                           />
                         }
-                        label="Private delivery address"
+                        label="Is private address (Private product in Cargonizer/Bring will be used - OBS max 5kg)"
                       />
                     </FormControl>
                   </div>
