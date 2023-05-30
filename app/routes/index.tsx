@@ -19,7 +19,7 @@ import RoastOverviewBox from '~/components/RoastOverviewBox';
 import { getCargonizerProfile } from '~/_libs/cargonizer';
 import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
-import { CircularProgress, Grid, Paper } from '@mui/material';
+import { Alert, CircularProgress, Grid, Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 
@@ -135,14 +135,26 @@ export default function Index() {
   const [coffees, setCoffees] = useState<Coffee[]>();
   const [cargonizer, setCargonizer] = useState();
 
+  const [wooImportWarning, setWooImportWarning] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    function wooImportOrdersNotImported() {
+      const importResult = wooOrderImportResult[0].result;
+
+      if (!importResult) return null;
+
+      const result = JSON.parse(importResult);
+
+      return result.ordersNotImported.length ? result.ordersNotImported : null;
+    }
+
     if (allActiveSubscriptions && currentDeliveries && cargonizerProfile) {
       setSubscriptions(allActiveSubscriptions);
       setDeliveries(currentDeliveries);
       setCoffees(currentCoffees);
       setCargonizer(cargonizerProfile);
+      setWooImportWarning(wooImportOrdersNotImported());
 
       setLoading(false);
     }
@@ -151,6 +163,7 @@ export default function Index() {
     currentDeliveries,
     currentCoffees,
     cargonizerProfile,
+    wooOrderImportResult,
   ]);
 
   if (loading)
@@ -171,6 +184,32 @@ export default function Index() {
 
   return (
     <main>
+      {wooImportWarning && (
+        <Grid item xs={12} style={{ textAlign: 'center' }}>
+          <Alert
+            severity="error"
+            sx={{
+              marginBottom: 1,
+              p: 1,
+              '& .MuiAlert-message': {
+                textAlign: 'center',
+                width: 'inherit',
+              },
+            }}
+          >
+            <Grid item xs={12} style={{ textAlign: 'center' }}>
+              Some orders couldn't be imported from Woo. Most likely because the
+              product (coffee code) doesnt exist in Backoffice. Add the missing
+              coffee and the orders will be included the next time the import is
+              triggered.
+              <p>
+                Orders not imported (woo order ids): {wooImportWarning.join()}
+              </p>
+            </Grid>
+          </Alert>
+        </Grid>
+      )}
+
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h2">Roast overview</Typography>
         <RoastOverviewBox
