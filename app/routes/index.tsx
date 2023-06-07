@@ -135,18 +135,26 @@ export default function Index() {
   const [coffees, setCoffees] = useState<Coffee[]>();
   const [cargonizer, setCargonizer] = useState();
 
-  const [wooImportWarning, setWooImportWarning] = useState<any>(null);
+  const [orderImportResult, setOrderImportResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    function wooImportOrdersNotImported() {
+    function resolveOrderImportResult() {
+      const result = {
+        ordersNotImported: null,
+        hasErrors: false,
+      };
+
       const importResult = wooOrderImportResult[0].result;
+      if (importResult) {
+        const res = JSON.parse(importResult);
+        result.ordersNotImported = res.ordersNotImported.length
+          ? res.ordersNotImported
+          : null;
+      }
 
-      if (!importResult) return null;
-
-      const result = JSON.parse(importResult);
-
-      return result.ordersNotImported.length ? result.ordersNotImported : null;
+      result.hasErrors = !!wooOrderImportResult[0].errors;
+      return result;
     }
 
     if (allActiveSubscriptions && currentDeliveries && cargonizerProfile) {
@@ -154,8 +162,7 @@ export default function Index() {
       setDeliveries(currentDeliveries);
       setCoffees(currentCoffees);
       setCargonizer(cargonizerProfile);
-      setWooImportWarning(wooImportOrdersNotImported());
-
+      setOrderImportResult(resolveOrderImportResult());
       setLoading(false);
     }
   }, [
@@ -164,6 +171,7 @@ export default function Index() {
     currentCoffees,
     cargonizerProfile,
     wooOrderImportResult,
+    orderImportResult,
   ]);
 
   if (loading)
@@ -184,7 +192,7 @@ export default function Index() {
 
   return (
     <main>
-      {wooImportWarning && (
+      {orderImportResult.ordersNotImported && (
         <Grid item xs={12} style={{ textAlign: 'center' }}>
           <Alert
             severity="error"
@@ -198,12 +206,52 @@ export default function Index() {
             }}
           >
             <Grid item xs={12} style={{ textAlign: 'center' }}>
-              Some orders couldn't be imported from Woo. Most likely because the
-              product (coffee code) doesnt exist in Backoffice. Add the missing
-              coffee and the orders will be included the next time the import is
-              triggered.
+              SOME ORDERS COULDN'T BE IMPORTED FROM WOO
               <p>
-                Orders not imported (woo order ids): {wooImportWarning.join()}
+                Most likely because the product (coffee code) doesn't exist in
+                Backoffice. Check active orders in Woo to resolve which coffee
+                is missing and add it to Backoffice.
+              </p>
+              <p>
+                Orders not imported (woo order ids):{' '}
+                {orderImportResult.ordersNotImported.join()}
+              </p>
+            </Grid>
+          </Alert>
+        </Grid>
+      )}
+      {orderImportResult.hasErrors && (
+        <Grid item xs={12} style={{ textAlign: 'center' }}>
+          <Alert
+            severity="error"
+            sx={{
+              marginBottom: 1,
+              p: 1,
+              '& .MuiAlert-message': {
+                textAlign: 'center',
+                width: 'inherit',
+              },
+            }}
+          >
+            <Grid item xs={12} style={{ textAlign: 'center' }}>
+              LAST IMPORT OF WOO ORDERS FAILED
+              <p>
+                It can be active orders in Woo that haven't been imported to
+                Backoffice. This is most likely because the Woo REST API is not
+                available.
+              </p>
+              <p>
+                If it's time for packing, complete/ship all orders from Woo
+                admin.{' '}
+                <small>
+                  (B2B and GABO orders not affected, they can still be completed
+                  from Backoffice)
+                </small>
+              </p>
+              <p>
+                If this error doesn't disappear after next import, call Björn.
+                Order import runs every hour, it can also be triggered manually
+                from "Scheduled jobs" page.
               </p>
             </Grid>
           </Alert>

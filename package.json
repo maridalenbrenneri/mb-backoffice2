@@ -14,9 +14,9 @@
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^5.10.10",
     "@prisma/client": "^4.8.0",
-    "@remix-run/node": "^1.7.3",
-    "@remix-run/react": "^1.7.3",
-    "@remix-run/serve": "^1.7.3",
+    "@remix-run/node": "^1.16.1",
+    "@remix-run/react": "^1.16.1",
+    "@remix-run/serve": "^1.16.1",
     "@types/bcrypt": "^5.0.0",
     "@types/node": "^18.11.5",
     "bcrypt": "^5.1.0",
@@ -31,8 +31,8 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",
-    "@remix-run/dev": "^1.7.3",
-    "@remix-run/eslint-config": "^1.7.3",
+    "@remix-run/dev": "^1.16.1",
+    "@remix-run/eslint-config": "^1.16.1",
     "@swc/core": "^1.3.57",
     "@swc/jest": "^0.2.26",
     "@types/jest": "^29.5.1",
@@ -49,6 +49,6 @@
     "schema": "app/_libs/prisma/schema.prisma"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=20"
   }
 }

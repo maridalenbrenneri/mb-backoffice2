@@ -1,7 +1,7 @@
 # Docker file from Remix Jokes App example, with minor modifications
 
 # base node image
-FROM node:16-bullseye-slim as base
+FROM node:20-bullseye-slim as base
 
 # set for base and all layer that inherit from it
 ENV NODE_ENV production
