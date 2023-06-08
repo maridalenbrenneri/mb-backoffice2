@@ -14,9 +14,7 @@ import type { Coffee, Delivery, Subscription } from '@prisma/client';
 import { toPrettyDateText } from '~/_libs/core/utils/dates';
 import { getRoastOverview } from '~/_libs/core/services/roast-service';
 import {
-  Checkbox,
   FormControl,
-  FormControlLabel,
   FormGroup,
   InputLabel,
   MenuItem,
@@ -37,7 +35,6 @@ export default function RoastOverviewBox(props: {
   const { subscriptions, deliveries, coffees } = props;
   const [delivery, setDelivery] = useState<Delivery>();
   const [overview, setOverview] = useState<any>();
-  const [includeCompleted, setIncludeCompleted] = useState<boolean>(false);
 
   const notSetLabel = '[Not set]';
 
@@ -49,15 +46,10 @@ export default function RoastOverviewBox(props: {
   useEffect(() => {
     if (!delivery) return;
 
-    const overview = getRoastOverview(
-      subscriptions,
-      delivery,
-      coffees,
-      includeCompleted
-    );
+    const overview = getRoastOverview(subscriptions, delivery, coffees);
 
     setOverview(overview);
-  }, [delivery, coffees, subscriptions, includeCompleted]);
+  }, [delivery, coffees, subscriptions]);
 
   if (!deliveries?.length)
     return (
@@ -72,11 +64,6 @@ export default function RoastOverviewBox(props: {
 
   const handleChange = (e: any) => {
     setDelivery(deliveries.find((c) => c.id === e.target.value) as Delivery);
-  };
-
-  const handleChangeIncludeCompleted = () => {
-    console.log(includeCompleted);
-    setIncludeCompleted(!includeCompleted);
   };
 
   return (
@@ -107,16 +94,6 @@ export default function RoastOverviewBox(props: {
                           </MenuItem>
                         ))}
                       </Select>
-                      <FormControlLabel
-                        sx={{ marginTop: 0.5 }}
-                        control={
-                          <Checkbox
-                            value={includeCompleted}
-                            onChange={handleChangeIncludeCompleted}
-                          />
-                        }
-                        label="Include completed orders"
-                      />
                     </FormGroup>
                   </FormControl>
                 </Form>

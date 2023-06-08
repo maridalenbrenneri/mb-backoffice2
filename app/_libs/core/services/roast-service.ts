@@ -131,13 +131,10 @@ function resolveCoffee(coffees: Coffee[], coffeeId: number) {
 export function getRoastOverview(
   subscriptions: Subscription[],
   delivery: Delivery | undefined = undefined,
-  coffees: Coffee[] = [],
-  includeCompletedOrders: boolean = false
+  coffees: Coffee[] = []
 ) {
   if (!delivery)
     throw new Error('No delivery set, cannot resolve roast overview');
-
-  console.debug('getRoastOverview', includeCompletedOrders);
 
   let includedSubscriptionCount = 0;
   let includedOrderCount = 0;
@@ -165,9 +162,6 @@ export function getRoastOverview(
         (s.frequency === SubscriptionFrequency.FORTNIGHTLY &&
           s.type === SubscriptionType.B2B)
     );
-
-    // IF !includeCompletedOrders EXLUDE SUBSCRIPTION WITH ORDER ON DELIVERY DAY
-    // const order = orders.find((o: Order) => o.subscriptionId === s.id);
 
     const aggSubscriptions = aggregateCoffeesFromSubscriptions(
       monthlySubscriptions,
@@ -271,15 +265,14 @@ export function getRoastOverview(
     console.debug('_250 BEFORE fortnigthlyPrivateOrdersOnDelivery');
     console.table(_250);
 
-    const fortnightly = includeCompletedOrders
-      ? fortnigthlyPrivateOrdersOnDelivery
-      : fortnigthlyPrivateOrdersOnDelivery.filter(
-          (o) => o.status === OrderStatus.ACTIVE
-        );
+    aggregateCoffeesOrders(
+      fortnigthlyPrivateOrdersOnDelivery,
+      _250,
+      _500,
+      _1200
+    );
 
-    aggregateCoffeesOrders(fortnightly, _250, _500, _1200);
-
-    includedOrderCount += fortnightly.length;
+    includedOrderCount += fortnigthlyPrivateOrdersOnDelivery.length;
 
     console.debug('_250 AFTER fortnigthlyPrivateOrdersOnDelivery');
     console.table(_250);
@@ -287,9 +280,7 @@ export function getRoastOverview(
 
   // ADD NON-RENEWAL ORDERS TO OVERVIEW (FROM PASSIVE SUBSCRIPTIONS OR MANUALLY CREATED ORDERS ON ACTIVE SUBSCRIPTIONS)
   const nonRecurringOrders = orders.filter(
-    (o: Order) =>
-      o.type === OrderType.NON_RENEWAL &&
-      (includeCompletedOrders || o.status === OrderStatus.ACTIVE)
+    (o: Order) => o.type === OrderType.NON_RENEWAL
   );
   if (nonRecurringOrders.length) {
     aggregateCoffeesOrders(nonRecurringOrders, _250, _500, _1200);
@@ -307,11 +298,7 @@ export function getRoastOverview(
   }
 
   // ADD CUSTOM ORDERS
-  const customOrders = orders.filter(
-    (o: Order) =>
-      o.type === OrderType.CUSTOM &&
-      (includeCompletedOrders || o.status === OrderStatus.ACTIVE)
-  );
+  const customOrders = orders.filter((o: Order) => o.type === OrderType.CUSTOM);
   if (customOrders.length) {
     const map = fromItems(customOrders);
 
