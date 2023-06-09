@@ -15,8 +15,8 @@ export default function JobResult() {
             orders)
           </li>
           <li>
-            ABO, fortnightly - a mix of estimation (based on nextPaymentDate in
-            Woo) and/or actual active renewal orders
+            ABO, fortnightly - a mix of estimated (estimation based on
+            <small>nextPaymentDate</small> in Woo) and active renewal orders
           </li>
           <li>GABO - count from active gift subscriptions</li>
           <li>B2B - count from active B2B subscriptions</li>
@@ -25,7 +25,7 @@ export default function JobResult() {
         <Alert severity="info">
           If an order is completed, it is still included in the overview. All
           orders with delivery on the selected Delivery day are included (except
-          orders with status <small>CANCELLED / ON-HOLD / DELETED)</small>).
+          orders with status <small>CANCELLED / ON-HOLD / DELETED</small>)
         </Alert>
       </Box>
 
