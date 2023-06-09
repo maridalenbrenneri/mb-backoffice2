@@ -23,15 +23,9 @@ export default function JobResult() {
           <li>Custom orders</li>
         </ul>
         <Alert severity="info">
-          If "Include completed orders" is checked both active and completed
-          orders set on the Delivery day are included, this means the overview
-          will NOT change when orders are completed/shipped. This is intended to
-          be used when we're roasting and packing at the same time. The default
-          behaviour is to not include completed orders.
-          <p>
-            Orders with other status's, such as <small>ON-HOLD</small> and{' '}
-            <small>CANCELLED</small> is never included in the overview.
-          </p>
+          If an order is completed, it is still included in the overview. All
+          orders with delivery on the selected Delivery day are included (except
+          orders with status <small>CANCELLED / ON-HOLD / DELETED)</small>).
         </Alert>
       </Box>
 
