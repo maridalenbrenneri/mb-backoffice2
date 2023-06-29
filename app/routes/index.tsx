@@ -157,7 +157,14 @@ export default function Index() {
       return result;
     }
 
-    if (allActiveSubscriptions && currentDeliveries && cargonizerProfile) {
+    if (
+      loading &&
+      allActiveSubscriptions &&
+      currentDeliveries &&
+      currentCoffees &&
+      cargonizerProfile &&
+      wooOrderImportResult
+    ) {
       setSubscriptions(allActiveSubscriptions);
       setDeliveries(currentDeliveries);
       setCoffees(currentCoffees);
@@ -166,6 +173,7 @@ export default function Index() {
       setLoading(false);
     }
   }, [
+    loading,
     allActiveSubscriptions,
     currentDeliveries,
     currentCoffees,
