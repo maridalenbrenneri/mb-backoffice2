@@ -1,23 +1,24 @@
 # MB Backoffice
 
-MB Backoffice is a Node app written in Typescript. The app was initially created based on official Remix template/example with Fly.io deployment.
+MB Backoffice is a Node app written in Typescript using the React and Remix frameworks.
+
+The app was initially created based on official Remix template/example with Fly.io deployment.
 
 Github repo: https://github.com/maridalenbrenneri/mb-backoffice2
 
 ## Development
 
-Before first run:
+Prerequisites and setup:
 
-- Install/Run Node >= 16
+- Install Node >= 20
 - Install flyctl (Fly.io command util), https://fly.io/docs/hands-on/install-flyctl/
-- Start local database proxy (see command below)
-- Run "npm install" (in app root folder)
-- Copy .env.example => .env (in app root folder)
+- Run "npm install" (in repo root folder)
+- Copy .env.example => .env (in repo root folder)
 
 Run app:
 
-- "flyctl proxy 5432 -a mb-pg"
-- Run "npm run dev"
+- Start database proxy: "flyctl proxy 5432 -a mb-pg"
+- Run: "npm run dev"
 
 ## Tools and frameworks
 
@@ -32,7 +33,7 @@ Run app:
 Organization name: Maridalen Brenneri
 App name: mb-backoffice
 
-### Deply app
+### Deploy app
 
 ```sh
 fly deploy
@@ -74,8 +75,6 @@ postgres://username:password@localhost:5432/mb_backoffice_dev
 - Deploy scripts were initially created by the "fly launch" command.
 - DATABASE_URL was set by the "fly pg attach" command.
 
-### TODOs
-
 #### Task: Deploy dev and prod versions (with different DATABASE_URL)
 
 - How to configure this with Fly.io?
@@ -111,29 +110,25 @@ npx prisma migrate dev --name init
 fly deploy
 ```
 
-# Code
-
-/api
-
 # Concepts
 
-Everything is based on a subscription, either a private imported from Woo, a gift subscription or a B2B subscription.
+Everything is based on subscriptions, either a private (PRIVATE) subscription imported from Woo, a gift subscription (PRIVATE_GIFT) or a business subscription (B2B). Non-subscription
+orders from Woo are added to a read-only system subscription ("Woo Custom Orders Subscription", id: 2)
 
-For Gift and B2B with status ACTIVE is re-curring orders created automatically. Gifts on STOR-ABO, B2B on 3rd tuesday.
+For Gift and B2B subscriptions with status ACTIVE re-curring orders are created automatically by a job. Gift subscription orders on STOR-ABO and B2B on 3rd tuesday Delivery days.
 
-There's no LILL-ABO. Monthly and fortnighly is supperted.
-
-# TODOs
-
-- Filtering Fiken contacts (only customers)
-- Cargonizer info (limit, printer, etc.)
-- Settings
+There's no "Lill-abo" in the system. Monthly and fortnighly are supported.
 
 # Jobs
 
-- Import Woo
-- Complete expired gift subscriptions
-- Create re-curring orders for active GIFT and B2B
+Jobs are implemented as REST endpoints in the routes/api folder. This are triggered from "Scheduled jobs" in Google Cloud. Fly.io doesn't
+have this functionality (consider moving to Fly when/if it can be configured there.)
+
+- Import/Sync Woo subscriptions
+- Import/Sync Woo gift subscription orders
+- Import/Sync Woo orders (recurring and one-time orders)
+- Set status on gift subscriptions (activate or complete due to start/end dates)
+- Create renewal orders for active gift and B2B subscriptions
 
 # Integrations
 
@@ -142,7 +137,6 @@ Integration libs are located in app/\_libs folder. All code referencing third pa
 ## Cargonizer
 
 - https://logistra.no/cargonizer-api-documentation.html
-- Woo Commerce
 
 ## Fiken
 
@@ -151,6 +145,6 @@ Integration libs are located in app/\_libs folder. All code referencing third pa
 ## Woo
 
 - https://woocommerce.github.io/woocommerce-rest-api-docs
-- https://woocommerce.github.io/subscriptions-rest-api-docs)
+- https://woocommerce.github.io/subscriptions-rest-api-docs
 
 View/Set API key: In Word Press admin go to Woo Commerce => Settings => Advanced => Rest API
