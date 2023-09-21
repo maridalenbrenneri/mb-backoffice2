@@ -15,11 +15,9 @@ import {
   Box,
   Button,
   ButtonGroup,
-  Checkbox,
   CircularProgress,
   Dialog,
   FormControl,
-  FormControlLabel,
   FormGroup,
   Grid,
   InputLabel,
@@ -95,12 +93,9 @@ export const loader: LoaderFunction = async ({ params }) => {
   return json({ loadedOrder, coffees, deliveryDates });
 };
 
-async function completeAndShipOrderAction(id: number, printLabels = false) {
+async function completeAndShipOrderAction(id: number) {
   return {
-    completeAndShipOrderActionResult: await completeAndShipOrders(
-      [id],
-      printLabels
-    ),
+    completeAndShipOrderActionResult: await completeAndShipOrders([id]),
   };
 }
 
@@ -126,7 +121,7 @@ export const action: ActionFunction = async ({ request }) => {
   const { _action, ...values } = Object.fromEntries(formData);
 
   if (_action === 'complete-and-ship-order')
-    return await completeAndShipOrderAction(+values.id, !!values.printLabels);
+    return await completeAndShipOrderAction(+values.id);
   else if (_action === 'update') return await upsertOrderAction(values);
   else if (_action === 'set-delivery') {
     const date = DateTime.fromISO(values.date as string);
@@ -161,7 +156,6 @@ export default function UpdateOrder() {
   const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [openCompleteAndShip, setOpenCompleteAndShip] = useState(false);
 
-  const [printLabels, setPrintLabels] = useState(false);
   const [order, setOrder] = useState<Order>();
   const [deliveryDate, setDeliveryDate] = useState(deliveryDates[0]);
   const [openSetNewDelivery, setOpenSetNewDelivery] = useState(false);
@@ -315,11 +309,6 @@ export default function UpdateOrder() {
                 type="hidden"
                 name="wooOrderId"
                 value={order.wooOrderId || undefined}
-              />
-              <input
-                type="hidden"
-                name="printLabels"
-                value={printLabels ? 1 : undefined}
               />
               <FormControl>
                 <ButtonGroup>
