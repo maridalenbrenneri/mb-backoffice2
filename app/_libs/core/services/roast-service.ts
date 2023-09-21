@@ -237,7 +237,8 @@ export function getRoastOverview(
     const next = DateTime.fromISO(s.wooNextPaymentDate.toString());
     const nextRenewalDate = getNextTuesday(next);
 
-    if (isSameDate(delivery.date, nextRenewalDate)) {
+    const deliveryDate = DateTime.fromISO(delivery.date.toString());
+    if (deliveryDate.hasSame(nextRenewalDate, 'day')) {
       const aggSubscriptions = aggregateCoffeesFromSubscriptions(
         [s],
         _250,

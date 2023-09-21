@@ -1,22 +1,57 @@
-import { testTestFunc, getNextFirstTuesday } from './dates';
+import { getNextFirstTuesday, getNextThirdTuesday } from './dates';
 import { describe, expect, test } from '@jest/globals';
 import { DateTime } from 'luxon';
 
-describe('sum module', () => {
-  test('adds 1 + 2 to equal 3', () => {
-    expect(testTestFunc(1)).toBe(2);
+describe('getNextFirstTuesday', () => {
+  test('date is First Tuesday, should return same', () => {
+    const date = DateTime.fromISO('2023-09-05');
+
+    expect(getNextFirstTuesday(date)).toStrictEqual(
+      DateTime.fromISO('2023-09-05')
+    );
+  });
+
+  test('date is day before First Tuesday', () => {
+    const date = DateTime.fromISO('2023-09-04');
+
+    expect(getNextFirstTuesday(date)).toStrictEqual(
+      DateTime.fromISO('2023-09-05')
+    );
+  });
+
+  test('date is day after First Tuesday, return next month', () => {
+    const date = DateTime.fromISO('2023-09-06');
+
+    expect(getNextFirstTuesday(date)).toStrictEqual(
+      DateTime.fromISO('2023-10-03')
+    );
   });
 });
 
-const date = DateTime.now(); //.fromISO('2023-05-11T00:00:00.000Z'); // Wednesday, May 11 2023
+describe('getNextThirdTuesday', () => {
+  test('date is Third Tuesday, should return same', () => {
+    const date = DateTime.fromISO('2023-09-19');
 
-describe('getNextFirstTuesday', () => {
-  test('getNextFirstTuesday', () => {
-    const nextFirstTuesday = getNextFirstTuesday(date);
-    console.log(nextFirstTuesday.toISO()); // 2023-06-06T00:00:00.000Z
+    expect(getNextThirdTuesday(date)).toStrictEqual(
+      DateTime.fromISO('2023-09-19')
+    );
+  });
 
-    expect(getNextFirstTuesday(date)).toBe(
-      DateTime.fromISO('2023-06-06T00:00:00.000+02:00')
+  test('date is day before Third Tuesday', () => {
+    const date = DateTime.fromISO('2023-09-18');
+
+    expect(getNextThirdTuesday(date)).toStrictEqual(
+      DateTime.fromISO('2023-09-19')
+    );
+  });
+
+  test('date is day after Third Tuesday, return next month', () => {
+    const date = DateTime.fromISO('2023-09-20');
+
+    console.log('DATE', date.toISO());
+
+    expect(getNextThirdTuesday(date)).toStrictEqual(
+      DateTime.fromISO('2023-10-17')
     );
   });
 });

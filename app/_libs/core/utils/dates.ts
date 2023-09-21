@@ -35,13 +35,6 @@ export function toPrettyDateTime(
   return DateTime.fromISO(date.toString()).toFormat(`dd.MM.yy HH:mm${seconds}`);
 }
 
-export function isSameDate(date: Date, dateTime: DateTime) {
-  const date1 = DateTime.fromISO(date.toString()).startOf('day');
-  const date2 = dateTime.startOf('day');
-
-  return date1.toISO() === date2.toISO();
-}
-
 // GENERATES DELIVERY DATE DATA
 function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
   const fromDate = DateTime.now().plus({ days: daysFromNow }).startOf('day');
@@ -59,12 +52,10 @@ function getDate(daysFromNow: number, id: number = 0): DeliveryDate {
 
   let type;
   let date;
-  if (nextMonthly.toISODate() === nextDeliveryDateAnyType.toISODate()) {
+  if (nextMonthly.hasSame(nextDeliveryDateAnyType, 'day')) {
     type = 'MONTHLY';
     date = nextMonthly;
-  } else if (
-    nextMonthly3rd.toISODate() === nextDeliveryDateAnyType.toISODate()
-  ) {
+  } else if (nextMonthly3rd.hasSame(nextDeliveryDateAnyType, 'day')) {
     type = 'MONTHLY_3RD';
     date = nextMonthly3rd;
   } else {
@@ -106,10 +97,7 @@ export function getNextDeliveryDateFrom(date: DateTime): DeliveryDate {
   return getDate(diff.days);
 }
 
-//
-// NEW FUNCTIONS
-//
-
+// GET DATE FOR NEXT TUESDAY
 export function getNextTuesday(date: DateTime): DateTime {
   const nextTuesday = date.plus({ days: 1 }); // start with the day after the input date
   const dayOfWeek = nextTuesday.weekday; // weekday property of a DateTime object returns a 1-based index
@@ -117,34 +105,52 @@ export function getNextTuesday(date: DateTime): DateTime {
   return nextTuesday.plus({ days: daysUntilTuesday });
 }
 
-export function getNextFirstTuesday(date: DateTime): DateTime {
-  const firstOfMonth = date.startOf('month');
+// GET DATE FOR NEXT FIRST TUESDAY OF MONTH
+export function getNextFirstTuesday(
+  date: DateTime,
+  handleSameDateAsNext: boolean = true
+): DateTime {
+  const firstOfMonth = date.startOf('month').startOf('day');
   const dayOfWeek = firstOfMonth.weekday; // weekday property of a DateTime object returns a 1-based index
   const daysUntilTuesday = (2 + 7 - dayOfWeek) % 7; // 2 corresponds to Tuesday
   const firstTuesdayOfMonth = firstOfMonth.plus({ days: daysUntilTuesday });
-  if (firstTuesdayOfMonth <= date) {
-    // if the first Tuesday of this month has already passed, get the first Tuesday of next month
-    return getNextFirstTuesday(firstOfMonth.plus({ months: 1 }));
+
+  // date is a First Tuesday, return same
+  if (handleSameDateAsNext && firstTuesdayOfMonth.hasSame(date, 'day')) {
+    return firstTuesdayOfMonth;
+  }
+
+  // if the first Tuesday of this month has already passed, get the first Tuesday of next month
+  if (firstTuesdayOfMonth < date.startOf('day')) {
+    return getNextFirstTuesday(
+      firstOfMonth.plus({ months: 1 }),
+      handleSameDateAsNext
+    );
   } else {
     return firstTuesdayOfMonth;
   }
 }
 
-export function getNextThirdTuesday(date: DateTime): DateTime {
-  const firstOfMonth = date.startOf('month');
+// GET DATE FOR NEXT THIRD TUESDAY OF MONTH
+export function getNextThirdTuesday(
+  date: DateTime,
+  handleSameDateAsNext: boolean = true
+): DateTime {
+  const firstOfMonth = date.startOf('month').startOf('day');
   const dayOfWeek = firstOfMonth.weekday; // weekday property of a DateTime object returns a 1-based index
   const daysUntilTuesday = (2 + 7 - dayOfWeek) % 7; // 2 corresponds to Tuesday
   const thirdTuesdayOfMonth = firstOfMonth.plus({
     days: daysUntilTuesday + 14,
   });
-  if (thirdTuesdayOfMonth <= date) {
+
+  if (handleSameDateAsNext && thirdTuesdayOfMonth.hasSame(date, 'day')) {
+    return thirdTuesdayOfMonth;
+  }
+
+  if (thirdTuesdayOfMonth < date.startOf('day')) {
     // if the third Tuesday of this month has already passed, get the third Tuesday of next month
     return getNextThirdTuesday(firstOfMonth.plus({ months: 1 }));
   } else {
     return thirdTuesdayOfMonth;
   }
-}
-
-export function testTestFunc(number: number) {
-  return number * 2;
 }
