@@ -366,7 +366,7 @@ export default function UpdateOrder() {
                   </Button>
                 </FormControl>
               </FormGroup>
-              {!canComplete && order.status !== 'CANCELLED' && (
+              {!canComplete && order.status === 'ACTIVE' && (
                 <FormGroup sx={{ marginTop: 2 }}>
                   <small>
                     Order cannot be completed because it has no order items.
