@@ -18,11 +18,9 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
   CircularProgress,
   Dialog,
   FormControl,
-  FormControlLabel,
   Grid,
   InputLabel,
   MenuItem,
@@ -88,7 +86,7 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { ...values } = Object.fromEntries(formData);
 
-  const allOrderIds = values.orderIds
+  const allOrderIds: number[] = values.orderIds
     .toString()
     .split(',')
     .map((s) => +s);
@@ -98,9 +96,7 @@ export const action: ActionFunction = async ({ request }) => {
       ? allOrderIds.slice(0, COMPLETE_ORDERS_BATCH_MAX)
       : allOrderIds;
 
-  const printLabels = !!values.printLabels;
-
-  return await completeAndShipOrders(orderIds, printLabels);
+  return await completeAndShipOrders(orderIds);
 };
 
 export default function Packing() {
@@ -117,8 +113,6 @@ export default function Packing() {
   const [expanded, setExpanded] = useState<string | false>(false);
   const [open, setOpen] = useState(false);
   const [currentOrders, setCurrentOrders] = useState<Order[]>([]);
-  const [printLabels, setPrintLabels] = useState(false);
-
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [specialRequestOrders, setSpecialRequestOrders] = useState<Order[]>([]);
   const [customPickUpOrders, setPickUpCustomOrders] = useState<Order[]>([]);
@@ -241,11 +235,6 @@ export default function Packing() {
                     name="orderIds"
                     value={orders.map((o) => o.id).join()}
                   />
-                  <input
-                    type="hidden"
-                    name="printLabels"
-                    value={printLabels ? 1 : undefined}
-                  />
                   <Button
                     variant="contained"
                     type="submit"
@@ -350,18 +339,6 @@ export default function Packing() {
                   included.
                 </small>
               </FormControl>
-              <FormControl>
-                <FormControlLabel
-                  sx={{ marginTop: 0.5, mx: 3 }}
-                  control={
-                    <Checkbox
-                      value={printLabels}
-                      onChange={() => setPrintLabels(!printLabels)}
-                    />
-                  }
-                  label="Print labels"
-                />
-              </FormControl>
               <div>
                 <FormControl sx={{ marginTop: 1.5 }}>
                   <small>
@@ -437,18 +414,6 @@ export default function Packing() {
                 <CompleteAndShipResultBox result={resultData} />
 
                 <Grid container>
-                  <Grid item xs={8} style={{ textAlign: 'left' }}>
-                    {printLabels && (
-                      <p>
-                        <small>Print label requested</small>
-                      </p>
-                    )}
-                    {!printLabels && (
-                      <p>
-                        <small>Print label was not requested</small>
-                      </p>
-                    )}
-                  </Grid>
                   <Grid item xs={4} style={{ textAlign: 'right' }}>
                     <Button
                       variant="contained"

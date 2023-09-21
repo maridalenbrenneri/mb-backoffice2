@@ -179,7 +179,7 @@ export default function UpdateOrder() {
   const isUpdating = Boolean(transition.submission);
   const isReadOnly = !!order.wooOrderId;
 
-  const canShipAndComplete =
+  const canComplete =
     order.status === OrderStatus.ACTIVE &&
     (order.orderItems.length > 0 ||
       order.quantity250 ||
@@ -337,7 +337,7 @@ export default function UpdateOrder() {
                     name="_action"
                     value="complete-order"
                     variant="contained"
-                    disabled={order.status !== OrderStatus.ACTIVE || isUpdating}
+                    disabled={!canComplete || isUpdating}
                   >
                     <DoneIcon sx={{ mx: 1 }} /> Complete
                   </Button>
@@ -354,30 +354,25 @@ export default function UpdateOrder() {
               </FormControl>
               <FormGroup sx={{ marginTop: 2, maxWidth: 300 }}>
                 <FormControl>
-                  <FormControlLabel
-                    sx={{ mx: 0.25 }}
-                    control={
-                      <Checkbox
-                        value={printLabels}
-                        onChange={() => setPrintLabels(!printLabels)}
-                      />
-                    }
-                    label="Print label on complete & ship"
-                  />
-                </FormControl>
-                <FormControl>
                   <Button
                     type="submit"
                     name="_action"
                     value="complete-and-ship-order"
                     variant="contained"
                     onClick={handleOpen}
-                    disabled={!canShipAndComplete || isUpdating}
+                    disabled={!canComplete || isUpdating}
                   >
                     <LocalShippingIcon sx={{ mx: 1 }} /> Complete & Ship Order
                   </Button>
                 </FormControl>
               </FormGroup>
+              {!canComplete && order.status !== 'CANCELLED' && (
+                <FormGroup sx={{ marginTop: 2 }}>
+                  <small>
+                    Order cannot be completed because it has no order items.
+                  </small>
+                </FormGroup>
+              )}
             </Form>
           </Box>
         </Grid>
@@ -616,19 +611,6 @@ export default function UpdateOrder() {
               />
 
               <Grid container>
-                <Grid item xs={8} style={{ textAlign: 'left' }}>
-                  {printLabels && (
-                    <p>
-                      <small>Print label requested</small>
-                    </p>
-                  )}
-                  {!printLabels && (
-                    <p>
-                      <small>Print label was not requested</small>
-                    </p>
-                  )}
-                </Grid>
-
                 <Grid item xs={4} style={{ textAlign: 'right' }}>
                   <Button
                     variant="contained"
