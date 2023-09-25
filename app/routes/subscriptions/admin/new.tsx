@@ -47,7 +47,7 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const { ...values } = Object.fromEntries(formData);
 
-  await createAction(values);
+  return await createAction(values);
 };
 
 export default function NewSubscription() {

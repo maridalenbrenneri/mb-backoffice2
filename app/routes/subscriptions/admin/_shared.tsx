@@ -1,4 +1,4 @@
-import { json } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
@@ -202,5 +202,6 @@ export const upsertAction = async (request: any) => {
 };
 
 export const createAction = async (request: any) => {
-  return await actionBase(request);
+  await actionBase(request);
+  return redirect(`/subscriptions`);
 };
