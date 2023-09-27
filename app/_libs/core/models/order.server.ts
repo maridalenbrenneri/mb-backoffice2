@@ -95,21 +95,32 @@ export async function upsertOrderItem(
   });
 }
 
-export async function upsertOrderFromWoo(wooOrderId: number, data: any) {
-  const existingOrder = await prisma.order.findFirst({
+export async function upsertOrderFromWoo(
+  wooOrderId: number,
+  data: any
+): Promise<
+  | { result: 'updated' | 'new' | 'notChanged'; orderId: number }
+  | { result: 'ignored' }
+> {
+  let dbOrder = await prisma.order.findFirst({
     where: {
       wooOrderId,
     },
   });
 
   // WE ONLY UPDATE STATUS FROM WOO ON EXISTING ORDERS, NOTHING ELSE IS OVERWRITTEN
-  if (existingOrder) {
-    return prisma.order.update({
-      where: { id: existingOrder.id },
-      data: {
-        status: data.status,
-      },
-    });
+  if (dbOrder) {
+    if (dbOrder.status !== data.status) {
+      await prisma.order.update({
+        where: { id: dbOrder.id },
+        data: {
+          status: data.status,
+        },
+      });
+      return { result: 'updated', orderId: dbOrder.id };
+    } else {
+      return { result: 'notChanged', orderId: dbOrder.id };
+    }
   }
 
   console.log(
@@ -126,10 +137,10 @@ export async function upsertOrderFromWoo(wooOrderId: number, data: any) {
       data.wooOrderId,
       data.status
     );
-    return null;
+    return { result: 'ignored' };
   }
 
-  return prisma.order.create({
+  let order = await prisma.order.create({
     data: {
       wooOrderId,
       // wooOrderNumber: data.wooOrderNumber, // TODO: Throws exception, why?
@@ -151,6 +162,8 @@ export async function upsertOrderFromWoo(wooOrderId: number, data: any) {
       quantity1200: 0,
     },
   });
+
+  return { result: 'new', orderId: order.id };
 }
 
 export async function upsertOrderItemFromWoo(

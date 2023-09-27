@@ -17,6 +17,7 @@ import { getCoffees } from '../core/models/coffee.server';
 import { OrderStatus, OrderType, SubscriptionStatus } from '@prisma/client';
 import updateStatus from './update-status';
 import { WOO_STATUS_COMPLETED } from './constants';
+import { type WooOrder } from './types';
 
 async function resolveSubscription(wooOrder: any) {
   // console.debug('Resolving subscription for order', wooOrder.wooOrderId);
@@ -60,7 +61,7 @@ async function resolveSubscription(wooOrder: any) {
 export default async function importWooOrders() {
   console.debug('FETCHING WOO ORDERS...');
 
-  let wooOrders: any[] = [];
+  let wooOrders: WooOrder[] = [];
   const ordersNotImported: number[] = [];
   let ordersUpsertedCount = 0;
 
@@ -106,9 +107,12 @@ export default async function importWooOrders() {
     orderInfos.filter((o) => o.order.status !== OrderStatus.ACTIVE).length
   );
 
-  for (const info of orderInfos) {
-    let included = false;
+  let created = 0;
+  let updated = 0;
+  let notChanged = 0;
+  let ignored = 0;
 
+  for (const info of orderInfos) {
     // GIFT SUBSCRIPTIONS
     if (info.gifts.length)
       console.debug(
@@ -118,7 +122,14 @@ export default async function importWooOrders() {
     // TODO: Handle status === "cancelled", stop gift subscription if already exists (set to "deleted"), don't create if not exists
 
     for (const gift of info.gifts) {
-      await createGiftSubscription(gift);
+      let exists = await getSubscription({
+        gift_wooOrderLineItemId: gift.wooOrderLineItemId,
+      });
+      if (!exists) {
+        await createGiftSubscription(gift);
+        created++;
+      }
+
       // Set order to complete in Woo after import, don't if order has other items as well
       if (!info.items.length && info.order.status === OrderStatus.ACTIVE) {
         console.debug(
@@ -127,7 +138,6 @@ export default async function importWooOrders() {
         );
         await updateStatus(info.order.wooOrderId, WOO_STATUS_COMPLETED);
       }
-      included = true;
     }
 
     // SUBSCRIPTION RENEWALS
@@ -135,9 +145,13 @@ export default async function importWooOrders() {
       info.order.subscriptionId = await resolveSubscription(info.order);
       info.order.deliveryId = nextDelivery.id;
 
-      await upsertOrderFromWoo(info.order.wooOrderId as number, info.order);
+      let res = await upsertOrderFromWoo(
+        info.order.wooOrderId as number,
+        info.order
+      );
 
-      included = true;
+      if (res.result === 'new') created++;
+      else if (res.result === 'updated') updated++;
 
       // SINGLE ORDERS (IF ONLY GIFT, ITEMS IS EMPTY, ALREADY HANDLED ABOVE)
     } else if (info.items.length) {
@@ -147,34 +161,41 @@ export default async function importWooOrders() {
       info.order.subscriptionId = WOO_NON_RECURRENT_SUBSCRIPTION_ID;
       info.order.deliveryId = nextDelivery.id;
 
-      const orderCreated = await upsertOrderFromWoo(
+      let res = await upsertOrderFromWoo(
         info.order.wooOrderId as number,
         info.order
       );
 
-      // IF ORDER NOT CREATED IT'S LIKELY A COMPLETED ORDER NOT PREVIOSLY IMPORTED, SHOULD BE IGNORED
-      if (orderCreated) {
+      if (res.result === 'new') {
         for (const item of info.items) {
           const coffeeId = getCoffeeIdFromCode(
             item.productCode
           ) as unknown as number;
 
           await upsertOrderItemFromWoo(item.wooOrderItemId, {
-            orderId: orderCreated.id,
+            orderId: res.orderId,
             coffeeId,
             variation: '_250',
             quantity: item.quantity,
           });
         }
-        included = true;
+
+        created++;
+      } else if (res.result === 'updated') {
+        updated++;
+      } else if (res.result === 'notChanged') {
+        notChanged++;
+      } else {
+        // IF ORDER IS IGNORED IT'S LIKELY ALREADY COMPLETED IN WOO AND NOT PREVIOUSLY IMPORTED
+        ignored++;
       }
     }
-
-    if (included) ordersUpsertedCount++;
   }
 
   return {
-    ordersUpsertedCount,
-    ordersNotImported,
+    created,
+    updated,
+    notChanged,
+    ignored,
   };
 }

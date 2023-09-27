@@ -1,5 +1,6 @@
 import { SubscriptionFrequency } from '@prisma/client';
 import * as settings from '../core/settings';
+import { type WooOrderMetaData } from './types';
 
 export function resolveQuantityAndFrequency(variationId: number) {
   const resolve = (frequency: SubscriptionFrequency, quantity: number) => {
@@ -42,9 +43,13 @@ export function resolveQuantityAndFrequency(variationId: number) {
   }
 }
 
-export function resolveMetadataValue(meta_data: Array<any>, key: string) {
+export function resolveMetadataValue(
+  meta_data: Array<WooOrderMetaData>,
+  key: string,
+  valueIfNull: any = null
+) {
   const res = meta_data.find((data) => data.key === key);
-  return !res ? null : res.value;
+  return !res ? valueIfNull : res.value;
 }
 
 export function getSubstringInsideParentheses(str: string) {

@@ -39,6 +39,10 @@ App name: mb-backoffice
 fly deploy
 ```
 
+```sh
+fly deploy --local-only
+```
+
 Deploys app to https://mb-backoffice.fly.dev
 
 #### Secrets / env vars

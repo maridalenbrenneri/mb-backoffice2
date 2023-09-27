@@ -7,6 +7,7 @@ import {
 } from '../utils';
 import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
 import { WOO_NO_SHIPPING_COUPON } from '../../core/settings';
+import { type WooOrderLineItem, type WooOrder } from '../types';
 
 const resolveOrderStatus = (
   wooStatus: string,
@@ -63,12 +64,12 @@ export function hasSupportedStatus(wooApiOrder: any) {
   return false;
 }
 
-export default async function wooApiToOrder(wooApiOrder: any) {
+export default async function wooApiToOrder(wooApiOrder: WooOrder) {
   if (!wooApiOrder.line_items?.length) {
     throw new Error(`No line items on order. Woo order id ${wooApiOrder.id}`);
   }
 
-  const items: any[] = wooApiOrder.line_items.map((item: any) => {
+  const items: any[] = wooApiOrder.line_items.map((item: WooOrderLineItem) => {
     return {
       wooOrderItemId: item.id,
       name: item.name,
