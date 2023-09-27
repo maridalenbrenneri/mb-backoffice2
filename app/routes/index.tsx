@@ -141,15 +141,15 @@ export default function Index() {
   useEffect(() => {
     function resolveOrderImportResult() {
       const result = {
-        ordersNotImported: null,
+        ordersWithUnknownProduct: null,
         hasErrors: false,
       };
 
       const importResult = wooOrderImportResult[0].result;
       if (importResult) {
         const res = JSON.parse(importResult);
-        result.ordersNotImported = res.ordersNotImported.length
-          ? res.ordersNotImported
+        result.ordersWithUnknownProduct = res.ordersWithUnknownProduct.length
+          ? res.ordersWithUnknownProduct
           : null;
       }
 
@@ -200,7 +200,7 @@ export default function Index() {
 
   return (
     <main>
-      {orderImportResult.ordersNotImported && (
+      {orderImportResult.ordersWithUnknownProduct && (
         <Grid item xs={12} style={{ textAlign: 'center' }}>
           <Alert
             severity="error"
@@ -222,7 +222,7 @@ export default function Index() {
               </p>
               <p>
                 Orders not imported (woo order ids):{' '}
-                {orderImportResult.ordersNotImported.join()}
+                {orderImportResult.ordersWithUnknownProduct.join()}
               </p>
             </Grid>
           </Alert>
