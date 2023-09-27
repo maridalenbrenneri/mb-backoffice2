@@ -1,4 +1,4 @@
-import { upsertSubscriptionByWooSubscriptionId } from '../core/models/subscription.server';
+import { upsertSubscriptionFromWoo } from '../core/models/subscription.server';
 import fetchSubscriptions from './subscriptions/fetch';
 
 export default async function importWooSubscriptionStats() {
@@ -6,13 +6,26 @@ export default async function importWooSubscriptionStats() {
 
   const subscriptions = await fetchSubscriptions();
 
-  console.debug(`Upserting ${subscriptions.length} subscriptions from Woo`);
+  console.debug(`Fetched ${subscriptions.length} subscriptions from Woo`);
+
+  let created = 0;
+  let updated = 0;
+  let notChanged = 0;
 
   for (const subscription of subscriptions) {
-    await upsertSubscriptionByWooSubscriptionId(subscription);
+    let res = await upsertSubscriptionFromWoo(subscription);
+
+    if (res.result === 'new') created++;
+    else if (res.result === 'updated') updated++;
+    else if (res.result === 'notChanged') notChanged++;
+    else throw new Error(`Error when writing to database`);
   }
 
-  console.debug(`=> DONE (${subscriptions.length} fetched)`);
+  console.debug(`=> DONE (${subscriptions.length} synced)`);
 
-  return `Upserted ${subscriptions.length} Woo subscriptions`;
+  return {
+    created,
+    updated,
+    notChanged,
+  };
 }
