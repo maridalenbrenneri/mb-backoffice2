@@ -1,6 +1,6 @@
 import { SubscriptionFrequency } from '@prisma/client';
 import * as settings from '../core/settings';
-import { type WooOrderMetaData } from './types';
+import { type WooOrderMetaData } from './orders/types';
 
 export function resolveQuantityAndFrequency(variationId: number) {
   const resolve = (frequency: SubscriptionFrequency, quantity: number) => {

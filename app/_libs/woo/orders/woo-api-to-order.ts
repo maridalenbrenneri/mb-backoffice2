@@ -1,3 +1,4 @@
+import type { Order } from '@prisma/client';
 import { OrderStatus, OrderType, ShippingType } from '@prisma/client';
 import { WOO_ABO_PRODUCT_ID, WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
 import * as constants from '../constants';
@@ -7,7 +8,13 @@ import {
 } from '../utils';
 import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
 import { WOO_NO_SHIPPING_COUPON } from '../../core/settings';
-import { type WooOrderLineItem, type WooOrder } from '../types';
+import { type WooOrderLineItem, type WooOrder } from './types';
+
+export type OrderInfo = {
+  order: Order;
+  items: any[];
+  gifts: any[];
+};
 
 const resolveOrderStatus = (
   wooStatus: string,
@@ -64,12 +71,14 @@ export function hasSupportedStatus(wooApiOrder: any) {
   return false;
 }
 
-export default async function wooApiToOrder(wooApiOrder: WooOrder) {
-  if (!wooApiOrder.line_items?.length) {
-    throw new Error(`No line items on order. Woo order id ${wooApiOrder.id}`);
+export default async function wooApiToOrderInfo(
+  wooOrder: WooOrder
+): Promise<OrderInfo> {
+  if (!wooOrder.line_items?.length) {
+    throw new Error(`No line items on order. Woo order id ${wooOrder.id}`);
   }
 
-  const items: any[] = wooApiOrder.line_items.map((item: WooOrderLineItem) => {
+  const items: any[] = wooOrder.line_items.map((item: WooOrderLineItem) => {
     return {
       wooOrderItemId: item.id,
       name: item.name,
@@ -82,36 +91,33 @@ export default async function wooApiToOrder(wooApiOrder: WooOrder) {
 
   const isRenewalOrder = items[0].wooProductId === WOO_ABO_PRODUCT_ID;
 
-  const orderBaseData = {
-    wooOrderId: wooApiOrder.id,
-    wooOrderNumber: wooApiOrder.number,
-    wooCustomerId: wooApiOrder.customer_id,
-    wooCreatedAt: new Date(wooApiOrder.date_created),
-    status: resolveOrderStatus(wooApiOrder.status, wooApiOrder.payment_method),
-    shippingType: resolveShippingType(wooApiOrder),
-    name: resolveFullname(wooApiOrder),
-    address1: wooApiOrder.shipping?.address_1,
-    address2: wooApiOrder.shipping?.address_2,
-    postalCode: wooApiOrder.shipping?.postcode,
-    postalPlace: wooApiOrder.shipping?.city,
-    email: wooApiOrder.billing?.email,
-    mobile: wooApiOrder.billing?.phone,
-    customerNote: wooApiOrder.customer_note,
+  const orderBaseData: any = {
+    wooOrderId: wooOrder.id,
+    wooOrderNumber: wooOrder.number,
+    wooCreatedAt: new Date(wooOrder.date_created),
+    status: resolveOrderStatus(wooOrder.status, wooOrder.payment_method),
+    shippingType: resolveShippingType(wooOrder),
+    name: resolveFullname(wooOrder),
+    address1: wooOrder.shipping?.address_1,
+    address2: wooOrder.shipping?.address_2,
+    postalCode: wooOrder.shipping?.postcode,
+    postalPlace: wooOrder.shipping?.city,
+    email: wooOrder.billing?.email,
+    mobile: wooOrder.billing?.phone,
+    customerNote: wooOrder.customer_note,
     quantity500: 0,
     quantity1200: 0,
   };
 
   if (isRenewalOrder) {
     // A RENEWAL ORDER WILL ALWAYS ONLY HAVE 1 ITEM
-    const item = items[0];
-
     return {
       gifts: [],
       items: [],
       order: {
         ...orderBaseData,
         type: OrderType.RENEWAL,
-        quantity250: resolveQuantity(item.wooVariationId),
+        quantity250: resolveQuantity(items[0].wooVariationId),
       },
     };
   }
@@ -122,7 +128,7 @@ export default async function wooApiToOrder(wooApiOrder: WooOrder) {
   );
 
   return {
-    gifts: hasGifts ? wooApiToGiftSubscriptions([wooApiOrder]) : [],
+    gifts: hasGifts ? wooApiToGiftSubscriptions([wooOrder]) : [],
     order: {
       ...orderBaseData,
       type: OrderType.CUSTOM,

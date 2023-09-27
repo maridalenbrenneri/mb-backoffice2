@@ -9,7 +9,7 @@ import { resolveStatusForGiftSubscription } from '~/_libs/core/services/subscrip
 import { resolveMetadataValue } from '../utils';
 import { getNextFirstTuesday } from '~/_libs/core/utils/dates';
 import { WOO_STATUS_CANCELLED, WOO_STATUS_DELETED } from '../constants';
-import { type WooOrderLineItem, type WooOrder } from '../types';
+import { type WooOrderLineItem, type WooOrder } from './types';
 
 function createGiftSubscription(
   order: WooOrder,

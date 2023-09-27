@@ -8,7 +8,7 @@ import {
 } from '~/_libs/core/settings';
 import { WOO_API_DEFAULT_PER_PAGE, WOO_API_BASE_URL } from '../constants';
 import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
-import { WooOrderData, type WooOrder } from '../types';
+import { WooOrderData, type WooOrder } from './types';
 
 async function fetchPage(
   page: number = 1,

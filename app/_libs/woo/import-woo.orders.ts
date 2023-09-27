@@ -1,23 +1,27 @@
+import { OrderStatus, OrderType, SubscriptionStatus } from '@prisma/client';
 import { fetchOrders } from './orders/fetch';
 import {
   createGiftSubscription,
   getSubscription,
 } from '../core/models/subscription.server';
 import {
+  updateOrderStatus,
   upsertOrderFromWoo,
   upsertOrderItemFromWoo,
 } from '../core/models/order.server';
 import { getNextOrCreateDelivery } from '../core/services/delivery-service';
-import wooApiToOrder, { hasSupportedStatus } from './orders/woo-api-to-order';
+import type { OrderInfo } from './orders/woo-api-to-order';
+import wooApiToOrderInfo, {
+  hasSupportedStatus,
+} from './orders/woo-api-to-order';
 import {
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
 } from '../core/settings';
 import { getCoffees } from '../core/models/coffee.server';
-import { OrderStatus, OrderType, SubscriptionStatus } from '@prisma/client';
 import updateStatus from './update-status';
 import { WOO_STATUS_COMPLETED } from './constants';
-import { type WooOrder } from './types';
+import { type WooOrder } from './orders/types';
 
 async function resolveSubscription(wooOrder: any) {
   // console.debug('Resolving subscription for order', wooOrder.wooOrderId);
@@ -62,8 +66,7 @@ export default async function importWooOrders() {
   console.debug('FETCHING WOO ORDERS...');
 
   let wooOrders: WooOrder[] = [];
-  const ordersNotImported: number[] = [];
-  let ordersUpsertedCount = 0;
+  const ordersWithUnknownProduct: number[] = [];
 
   const allWooOrders = await fetchOrders();
 
@@ -84,17 +87,17 @@ export default async function importWooOrders() {
       console.warn(
         `[woo-import-orders] Order contained item with invalid product code, import will ignore order. Woo order id: ${wooOrderId}`
       );
-      ordersNotImported.push(wooOrderId);
+      ordersWithUnknownProduct.push(wooOrderId);
       return false;
     }
 
     return true;
   };
 
-  const orderInfos: any[] = [];
+  const orderInfos: OrderInfo[] = [];
   for (const wooOrder of wooOrders) {
-    const mapped = await wooApiToOrder(wooOrder);
-    orderInfos.push(mapped);
+    const info = await wooApiToOrderInfo(wooOrder);
+    orderInfos.push(info);
   }
 
   console.debug(
@@ -114,17 +117,16 @@ export default async function importWooOrders() {
 
   for (const info of orderInfos) {
     // GIFT SUBSCRIPTIONS
-    if (info.gifts.length)
-      console.debug(
-        `Creating ${info.gifts.length} gift subscription(s) from Woo order ${info.order.wooOrderId} (if not already exist)`
-      );
-
-    // TODO: Handle status === "cancelled", stop gift subscription if already exists (set to "deleted"), don't create if not exists
-
     for (const gift of info.gifts) {
       let exists = await getSubscription({
         gift_wooOrderLineItemId: gift.wooOrderLineItemId,
       });
+
+      if (info.order.status === OrderStatus.CANCELLED && exists) {
+        await updateOrderStatus(exists.id, OrderStatus.CANCELLED);
+        updated++;
+      }
+
       if (!exists) {
         await createGiftSubscription(gift);
         created++;
@@ -136,7 +138,10 @@ export default async function importWooOrders() {
           'Imported order with nothing but gift subscription, completing order in Woo',
           info.order.wooOrderId
         );
-        await updateStatus(info.order.wooOrderId, WOO_STATUS_COMPLETED);
+        await updateStatus(
+          info.order.wooOrderId as number,
+          WOO_STATUS_COMPLETED
+        );
       }
     }
 
@@ -155,7 +160,8 @@ export default async function importWooOrders() {
 
       // SINGLE ORDERS (IF ONLY GIFT, ITEMS IS EMPTY, ALREADY HANDLED ABOVE)
     } else if (info.items.length) {
-      if (!verifyThatItemsAreValid(info.items, info.order.wooOrderId)) continue;
+      if (!verifyThatItemsAreValid(info.items, info.order.wooOrderId as number))
+        continue;
 
       // ALL WOO SINGLE ORDERS ENDS UP ON DEFAULT SYSTEM SUBSCRIPTION
       info.order.subscriptionId = WOO_NON_RECURRENT_SUBSCRIPTION_ID;
@@ -197,5 +203,6 @@ export default async function importWooOrders() {
     updated,
     notChanged,
     ignored,
+    ordersWithUnknownProduct,
   };
 }
