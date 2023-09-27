@@ -103,7 +103,6 @@ model Subscription {
   // Set on PRIVATE_GIFT (created from Woo order)
   gift_wooOrderId          Int?
   gift_wooOrderLineItemId  String? @unique
-  gift_wooCustomerName     String? // TODO: OBSOLETE - use wooCustomerName
   gift_durationMonths      Int?
   gift_messageToRecipient  String?
   gift_firstDeliveryDate   DateTime? @db.Timestamptz
