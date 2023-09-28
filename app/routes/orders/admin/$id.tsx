@@ -258,6 +258,10 @@ export default function UpdateOrder() {
       label: 'Woo created at',
       data: toPrettyDateTime(order.wooCreatedAt, true),
     },
+    {
+      label: 'Woo updated at',
+      data: toPrettyDateTime(order.wooUpdatedAt, true),
+    },
   ];
 
   const dataFieldsFiken: any[] = [

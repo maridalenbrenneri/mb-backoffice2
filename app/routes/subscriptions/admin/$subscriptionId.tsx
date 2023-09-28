@@ -228,6 +228,10 @@ export default function UpdateSubscription() {
       label: 'Woo created at',
       data: toPrettyDateTime(subscription.wooCreatedAt, true),
     },
+    {
+      label: 'Woo updated at',
+      data: toPrettyDateTime(subscription.wooUpdatedAt, true),
+    },
   ];
 
   const dataFieldsFiken: any[] = [
