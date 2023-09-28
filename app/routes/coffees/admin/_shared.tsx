@@ -1,7 +1,7 @@
 import { json, redirect } from '@remix-run/node';
 import invariant from 'tiny-invariant';
 
-import { upsertCoffee } from '~/_libs/core/models/coffee.server';
+import { upsertCoffee } from '~/_libs/core/repositories/coffee.server';
 
 type CoffeeActionData = {
   validationErrors?:

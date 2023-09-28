@@ -1,6 +1,7 @@
+import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
+import type { GiftSubscriptionCreateInput } from '~/_libs/core/repositories/subscription';
+
 import { fetchGiftSubscriptionOrders } from './orders/fetch';
-import type { GiftSubscriptionCreateInput } from '../core/models/subscription.server';
-import { createGiftSubscription } from '../core/models/subscription.server';
 
 export default async function importWooGiftSubscriptions() {
   console.debug('FETCHING WOO GIFT SUBSCRIPTIONS...');
@@ -10,7 +11,7 @@ export default async function importWooGiftSubscriptions() {
   giftSubscriptions = await fetchGiftSubscriptionOrders();
 
   for (const subscription of giftSubscriptions) {
-    await createGiftSubscription(subscription);
+    await subscriptionRepository.createGiftSubscription(subscription);
   }
 
   console.debug(' => DONE');

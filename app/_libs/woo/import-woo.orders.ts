@@ -1,14 +1,12 @@
-import { OrderStatus, OrderType, SubscriptionStatus } from '@prisma/client';
+import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
+import * as orderRepository from '~/_libs/core/repositories/order';
+
+import { SubscriptionStatus } from '~/_libs/core/repositories/subscription';
+import { OrderStatus, OrderType } from '~/_libs/core/repositories/order';
+
+import { getCoffees } from '../core/repositories/coffee.server';
+
 import { fetchOrders } from './orders/fetch';
-import {
-  createGiftSubscription,
-  getSubscription,
-} from '../core/models/subscription.server';
-import {
-  updateOrderStatus,
-  upsertOrderFromWoo,
-  upsertOrderItemFromWoo,
-} from '../core/models/order.server';
 import { getNextOrCreateDelivery } from '../core/services/delivery-service';
 import type { OrderInfo } from './orders/woo-api-to-order';
 import wooApiToOrderInfo, {
@@ -18,7 +16,6 @@ import {
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
 } from '../core/settings';
-import { getCoffees } from '../core/models/coffee.server';
 import updateStatus from './update-status';
 import { WOO_STATUS_COMPLETED } from './constants';
 import { type WooOrder } from './orders/types';
@@ -30,7 +27,7 @@ async function resolveSubscription(wooOrder: any) {
     return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
   }
 
-  const subscription = await getSubscription({
+  const subscription = await subscriptionRepository.getSubscription({
     where: {
       AND: [
         {
@@ -118,17 +115,20 @@ export default async function importWooOrders() {
   for (const info of orderInfos) {
     // GIFT SUBSCRIPTIONS
     for (const gift of info.gifts) {
-      let exists = await getSubscription({
+      let exists = await subscriptionRepository.getSubscription({
         gift_wooOrderLineItemId: gift.wooOrderLineItemId,
       });
 
       if (info.order.status === OrderStatus.CANCELLED && exists) {
-        await updateOrderStatus(exists.id, OrderStatus.CANCELLED);
+        await orderRepository.updateOrderStatus(
+          exists.id,
+          OrderStatus.CANCELLED
+        );
         updated++;
       }
 
       if (!exists) {
-        await createGiftSubscription(gift);
+        await subscriptionRepository.createGiftSubscription(gift);
         created++;
       }
 
@@ -150,7 +150,7 @@ export default async function importWooOrders() {
       info.order.subscriptionId = await resolveSubscription(info.order);
       info.order.deliveryId = nextDelivery.id;
 
-      let res = await upsertOrderFromWoo(
+      let res = await orderRepository.upsertOrderFromWoo(
         info.order.wooOrderId as number,
         info.order
       );
@@ -167,7 +167,7 @@ export default async function importWooOrders() {
       info.order.subscriptionId = WOO_NON_RECURRENT_SUBSCRIPTION_ID;
       info.order.deliveryId = nextDelivery.id;
 
-      let res = await upsertOrderFromWoo(
+      let res = await orderRepository.upsertOrderFromWoo(
         info.order.wooOrderId as number,
         info.order
       );
@@ -178,7 +178,7 @@ export default async function importWooOrders() {
             item.productCode
           ) as unknown as number;
 
-          await upsertOrderItemFromWoo(item.wooOrderItemId, {
+          await orderRepository.upsertOrderItemFromWoo(item.wooOrderItemId, {
             orderId: res.orderId,
             coffeeId,
             variation: '_250',

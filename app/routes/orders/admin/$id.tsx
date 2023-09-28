@@ -43,10 +43,13 @@ import type { Coffee, Order, OrderItem } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
-import { getOrder, updateOrder } from '~/_libs/core/models/order.server';
+import {
+  getOrder,
+  updateOrder,
+} from '~/_libs/core/repositories/order/order.server';
 import { upsertOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
-import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
+import { getActiveCoffees } from '~/_libs/core/repositories/coffee.server';
 import type { DeliveryDate } from '~/_libs/core/utils/dates';
 import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
 import {
@@ -217,6 +220,10 @@ export default function UpdateOrder() {
       label: 'Subscription',
       data: order.subscription.recipientName,
       dataLinkUrl: `/subscriptions/admin/${order.subscriptionId}`,
+    },
+    {
+      label: 'Special request',
+      data: order.subscription.specialRequest,
     },
     {
       label: 'Delivery day',

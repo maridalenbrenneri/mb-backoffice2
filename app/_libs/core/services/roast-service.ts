@@ -3,7 +3,7 @@ import { OrderStatus } from '@prisma/client';
 import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 import { OrderType } from '@prisma/client';
 import { DateTime } from 'luxon';
-import { isSameDate, getNextTuesday } from '../utils/dates';
+import { getNextTuesday } from '../utils/dates';
 
 function calculateWeightByCoffee(_250: any, _500: any, _1200: any) {
   const coffee1kg =

@@ -24,7 +24,7 @@ import {
 import type { Coffee } from '@prisma/client';
 import { CoffeeStatus } from '@prisma/client';
 
-import { getCoffeeById } from '~/_libs/core/models/coffee.server';
+import { getCoffeeById } from '~/_libs/core/repositories/coffee.server';
 import { upsertAction } from './_shared';
 import { useEffect, useState } from 'react';
 

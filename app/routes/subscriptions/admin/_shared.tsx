@@ -2,15 +2,14 @@ import { json, redirect } from '@remix-run/node';
 
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
+import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
 import {
   ShippingType,
   SubscriptionFrequency,
   SubscriptionStatus,
   SubscriptionType,
-} from '@prisma/client';
+} from '~/_libs/core/repositories/subscription';
 
-import { updateFirstDeliveryDateOnSubscription } from '~/_libs/core/models/subscription.server';
-import { upsertSubscription } from '~/_libs/core/models/subscription.server';
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
 
 type SubscriptionActionData = {
@@ -133,7 +132,10 @@ export const updateFirstDeliveryDate = async (values: any) => {
   }
 
   const id = +values.id;
-  await updateFirstDeliveryDateOnSubscription(id, values.delivery_date);
+  await subscriptionRepository.updateFirstDeliveryDateOnSubscription(
+    id,
+    values.delivery_date
+  );
 };
 
 const actionBase = async (values: any) => {
@@ -189,7 +191,7 @@ const actionBase = async (values: any) => {
     isPrivateDeliveryAddress: !!values.isPrivateDeliveryAddress,
   };
 
-  await upsertSubscription(id, data);
+  await subscriptionRepository.upsertSubscription(id, data);
 
   return json<SubscriptionActionData>({
     didUpdate: true,

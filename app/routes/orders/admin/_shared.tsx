@@ -1,8 +1,8 @@
 import { OrderType } from '@prisma/client';
 import { json, redirect } from '@remix-run/node';
 
-import { upsertOrderItem } from '~/_libs/core/models/order.server';
-import { upsertOrder } from '~/_libs/core/models/order.server';
+import { upsertOrderItem } from '~/_libs/core/repositories/order/order.server';
+import { upsertOrder } from '~/_libs/core/repositories/order/order.server';
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
 
 type OrderActionData = {

@@ -2,7 +2,7 @@ import type { Order } from '@prisma/client';
 import { SubscriptionSpecialRequest } from '@prisma/client';
 import { OrderType, ShippingType, SubscriptionType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
-import { getOrders } from '../models/order.server';
+import { getOrders } from '../repositories/order/order.server';
 import {
   TAKE_MAX_ROWS,
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,

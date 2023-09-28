@@ -2,7 +2,7 @@ import { json } from '@remix-run/node';
 import type { ActionFunction } from '@remix-run/node';
 import { DateTime } from 'luxon';
 
-import { createJobResult } from '~/_libs/core/models/job-result.server';
+import { createJobResult } from '~/_libs/core/repositories/job-result.server';
 import * as woo from '~/_libs/woo';
 
 // IMPORTS ALL GIFT SUBSCRIPTION FROM UPDATE AFTER TODAY - 13 MONTHS

@@ -21,11 +21,11 @@ import {
   Alert,
 } from '@mui/material';
 
-import { getDeliveries } from '~/_libs/core/models/delivery.server';
-import type { Delivery } from '~/_libs/core/models/delivery.server';
+import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
+import type { Delivery } from '~/_libs/core/repositories/delivery.server';
 import { upsertAction } from './_shared';
-import type { Coffee } from '~/_libs/core/models/coffee.server';
-import { getCoffees } from '~/_libs/core/models/coffee.server';
+import type { Coffee } from '~/_libs/core/repositories/coffee.server';
+import { getCoffees } from '~/_libs/core/repositories/coffee.server';
 import {
   toPrettyDateTextLong,
   toPrettyDateTime,

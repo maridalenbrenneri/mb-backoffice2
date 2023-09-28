@@ -18,8 +18,8 @@ import { createAction } from './_shared';
 import type { DeliveryDate } from '~/_libs/core/utils/dates';
 import { toPrettyDateTextLong } from '~/_libs/core/utils/dates';
 import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
-import type { Coffee } from '~/_libs/core/models/coffee.server';
-import { getCoffees } from '~/_libs/core/models/coffee.server';
+import type { Coffee } from '~/_libs/core/repositories/coffee.server';
+import { getCoffees } from '~/_libs/core/repositories/coffee.server';
 import { CoffeeStatus } from '@prisma/client';
 
 type LoaderData = {

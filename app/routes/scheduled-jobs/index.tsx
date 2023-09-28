@@ -14,7 +14,7 @@ import { Box, Button, FormControl } from '@mui/material';
 
 import type { JobResult } from '@prisma/client';
 
-import { getJobResults } from '~/_libs/core/models/job-result.server';
+import { getJobResults } from '~/_libs/core/repositories/job-result.server';
 import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { useEffect, useState } from 'react';
 

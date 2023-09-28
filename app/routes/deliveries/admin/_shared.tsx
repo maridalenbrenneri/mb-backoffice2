@@ -1,7 +1,7 @@
 import { json, redirect } from '@remix-run/node';
 
-import type { DeliveryUpsertData } from '~/_libs/core/models/delivery.server';
-import { upsertDelivery } from '~/_libs/core/models/delivery.server';
+import type { DeliveryUpsertData } from '~/_libs/core/repositories/delivery.server';
+import { upsertDelivery } from '~/_libs/core/repositories/delivery.server';
 
 type DeliveryActionData = {
   validationErrors?:

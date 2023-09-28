@@ -19,7 +19,7 @@ import Typography from '@mui/material/Typography';
 import type { Order } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 
-import { getOrders } from '~/_libs/core/models/order.server';
+import { getOrders } from '~/_libs/core/repositories/order/order.server';
 import { useEffect, useState } from 'react';
 import {
   Box,

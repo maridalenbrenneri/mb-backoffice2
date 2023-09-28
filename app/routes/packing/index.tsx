@@ -37,7 +37,7 @@ import { generatePreview } from '~/_libs/core/services/packing-service';
 import Orders from '../../components/Orders';
 import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
 import { modalStyle } from '~/style/theme';
-import { getDeliveries } from '~/_libs/core/models/delivery.server';
+import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
 import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
 import { toPrettyDateText } from '~/_libs/core/utils/dates';
 import { deliveryDayTypeToLabel } from '~/_libs/core/utils/labels';
@@ -353,7 +353,7 @@ export default function Packing() {
         <Grid item xs={12}>
           {renderAccordian(`ALL active orders`, allOrders, true, false, true)}
           {renderAccordian(
-            `Special requests`,
+            `Orders with special request`,
             specialRequestOrders,
             true,
             false,

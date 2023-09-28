@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 
 import type { Delivery } from '@prisma/client';
 
-import { getDelivery, upsertDelivery } from '../models/delivery.server';
+import { getDelivery, upsertDelivery } from '../repositories/delivery.server';
 import { getNextDeliveryDateFrom } from '../utils/dates';
 
 // RESOLVES NEXT DELIVERY AFTER TODAY OR ON THE DATE SPECIFIED. IF DELIVERY DOESN'T EXIST, IT IS CREATED

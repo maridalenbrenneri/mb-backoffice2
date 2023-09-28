@@ -1,68 +1,15 @@
 import { prisma } from '~/db.server';
 
-import type { Subscription } from '@prisma/client';
-import { ShippingType } from '@prisma/client';
-import {
-  SubscriptionType,
+import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../../settings';
+import { nullIfEmptyOrWhitespace } from '../../utils/strings';
+import { areEqual } from '../../utils/are-equal';
+import type {
+  GiftSubscriptionCreateInput,
+  Subscription,
   SubscriptionStatus,
-  SubscriptionFrequency,
-} from '@prisma/client';
-
-import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
-import { nullIfEmptyOrWhitespace } from '../utils/strings';
-import { areEqual } from '../utils/are-equal';
-
-export type { Subscription };
-export { SubscriptionType, SubscriptionStatus, SubscriptionFrequency };
-
-export type SubscriptionUpsertData = Pick<
-  Subscription,
-  | 'type'
-  | 'status'
-  | 'frequency'
-  | 'shippingType'
-  | 'quantity250'
-  | 'quantity500'
-  | 'quantity1200'
-  | 'specialRequest'
-  | 'recipientName'
-  | 'recipientEmail'
-  | 'recipientMobile'
-  | 'recipientAddress1'
-  | 'recipientAddress2'
-  | 'recipientPostalCode'
-  | 'recipientPostalPlace'
-  | 'isPrivateDeliveryAddress'
-  | 'internalNote'
-  | 'fikenContactId'
-  | 'wooCustomerName'
->;
-
-// Special for Woo imported gift subscriptions
-export type GiftSubscriptionCreateInput = Pick<
-  Subscription,
-  | 'status'
-  | 'frequency'
-  | 'quantity250'
-  | 'quantity500'
-  | 'quantity1200'
-  | 'recipientName'
-  | 'recipientEmail'
-  | 'recipientMobile'
-  | 'recipientAddress1'
-  | 'recipientAddress2'
-  | 'recipientPostalCode'
-  | 'recipientPostalPlace'
-  | 'customerNote'
-  | 'internalNote'
-  | 'gift_wooOrderId'
-  | 'gift_wooOrderLineItemId'
-  | 'wooCustomerName'
-  | 'gift_firstDeliveryDate'
-  | 'gift_customerFirstDeliveryDate'
-  | 'gift_durationMonths'
-  | 'gift_messageToRecipient'
->;
+  SubscriptionUpsertData,
+} from './types';
+import { ShippingType, SubscriptionType } from './types';
 
 export async function getSubscription(filter: any) {
   return prisma.subscription.findFirst(filter);
@@ -152,6 +99,7 @@ export async function upsertSubscriptionFromWoo(data: any): Promise<{
       wooCustomerName: data.wooCustomerName,
       wooNextPaymentDate: data.wooNextPaymentDate,
       wooCreatedAt: data.wooCreatedAt,
+      wooUpdatedAt: data.wooUpdatedAt,
       status: data.status,
       shippingType: data.shippingType,
       frequency: data.frequency,

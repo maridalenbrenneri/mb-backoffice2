@@ -96,9 +96,10 @@ model Subscription {
   // Set on PRIVATE imported from Woo
   wooSubscriptionId   Int? @unique
   wooCustomerId       Int?
-  wooCustomerName     String?
+  wooCustomerName     String? // TODO: Replace with "customerName" (also used for non-Woo subscriptions)
   wooNextPaymentDate  DateTime? @db.Timestamptz
   wooCreatedAt        DateTime? @db.Timestamptz
+  wooUpdatedAt        DateTime? @db.Timestamptz
 
   // Set on PRIVATE_GIFT (created from Woo order)
   gift_wooOrderId          Int?
@@ -201,6 +202,7 @@ model Order {
   wooOrderId      Int? @unique
   wooOrderNumber  String? @unique
   wooCreatedAt    DateTime? @db.Timestamptz
+  wooUpdatedAt    DateTime? @db.Timestamptz
 
   name        String
   email       String?

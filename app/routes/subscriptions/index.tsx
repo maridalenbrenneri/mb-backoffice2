@@ -27,10 +27,13 @@ import {
   TextField,
 } from '@mui/material';
 
-import type { Subscription } from '@prisma/client';
-import { SubscriptionStatus, SubscriptionType } from '@prisma/client';
+import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
+import type { Subscription } from '~/_libs/core/repositories/subscription';
+import {
+  SubscriptionStatus,
+  SubscriptionType,
+} from '~/_libs/core/repositories/subscription';
 
-import { getSubscriptions } from '~/_libs/core/models/subscription.server';
 import { resolveSubscriptionCode } from '~/_libs/core/services/subscription-service';
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
@@ -39,7 +42,9 @@ const defaultStatus = '_all';
 const defaultType = '_all';
 
 type LoaderData = {
-  loadedSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
+  loadedSubscriptions: Awaited<
+    ReturnType<typeof subscriptionRepository.getSubscriptions>
+  >;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -98,7 +103,9 @@ export const loader = async ({ request }) => {
 
   const filter = buildFilter(search);
 
-  const loadedSubscriptions = await getSubscriptions(filter);
+  const loadedSubscriptions = await subscriptionRepository.getSubscriptions(
+    filter
+  );
 
   return json<LoaderData>({
     loadedSubscriptions,

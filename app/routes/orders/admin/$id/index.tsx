@@ -20,10 +20,10 @@ import {
   TextField,
 } from '@mui/material';
 
-import type { Coffee } from '~/_libs/core/models/coffee.server';
-import { getActiveCoffees } from '~/_libs/core/models/coffee.server';
+import type { Coffee } from '~/_libs/core/repositories/coffee.server';
+import { getActiveCoffees } from '~/_libs/core/repositories/coffee.server';
 import { upsertOrderItemAction } from '../_shared';
-import { getOrderById } from '~/_libs/core/models/order.server';
+import { getOrderById } from '~/_libs/core/repositories/order/order.server';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getActiveCoffees>>;

@@ -3,7 +3,7 @@ import type { ActionFunction } from '@remix-run/node';
 import { DateTime } from 'luxon';
 
 import { updateStatusOnGiftSubscriptions } from '~/_libs/core/services/subscription-service';
-import { createJobResult } from '~/_libs/core/models/job-result.server';
+import { createJobResult } from '~/_libs/core/repositories/job-result.server';
 
 export const action: ActionFunction = async ({ request }) => {
   if (request.method !== 'POST')

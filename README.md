@@ -96,7 +96,7 @@ postgres://username:password@localhost:5432/mb_backoffice_dev
 flyctl proxy 5432 -a mb-pg
 ```
 
-### Prisma: Sync database with schema.prisma
+### Prisma: Sync database and types with schema.prisma
 
 ```sh
 npx prisma db push

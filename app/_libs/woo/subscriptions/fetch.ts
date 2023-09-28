@@ -1,4 +1,5 @@
 import * as constants from '../constants';
+import type { WooSubscription } from './types';
 import wooApiToSubscription from './woo-api-to-subscription';
 
 async function _fetchSubscriptions(page: number = 1): Promise<any> {
@@ -31,7 +32,7 @@ async function _fetchSubscriptions(page: number = 1): Promise<any> {
   };
 }
 
-export default async function fetchSubscriptions(): Promise<any[]> {
+export default async function fetchSubscriptions(): Promise<WooSubscription[]> {
   let subscriptions: Array<any> = [];
   let page: number | null = 1;
 

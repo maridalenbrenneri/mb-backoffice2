@@ -1,15 +1,17 @@
-import type { Order } from '@prisma/client';
-import { SubscriptionSpecialRequest } from '@prisma/client';
-import { SubscriptionType } from '@prisma/client';
-import { ShippingType } from '@prisma/client';
-import { OrderStatus } from '@prisma/client';
-import { OrderType } from '@prisma/client';
+import type { Order } from '../repositories/order';
+import { OrderStatus, OrderType } from '../repositories/order';
+
+import * as subscriptionRepository from '../repositories/subscription';
+import {
+  SubscriptionType,
+  SubscriptionSpecialRequest,
+  ShippingType,
+} from '../repositories/subscription/';
 
 import { printConsignmentLabels, sendConsignment } from '~/_libs/cargonizer';
-import { updateOrder } from '../models/order.server';
-import { updateOrderStatus } from '../models/order.server';
-import { getOrder, upsertOrder } from '../models/order.server';
-import { getSubscription } from '../models/subscription.server';
+import { updateOrder } from '../repositories/order/order.server';
+import { updateOrderStatus } from '../repositories/order/order.server';
+import { getOrder, upsertOrder } from '../repositories/order/order.server';
 import { COMPLETE_ORDERS_DELAY, WEIGHT_STANDARD_PACKAGING } from '../settings';
 import { getNextOrCreateDelivery } from './delivery-service';
 
@@ -36,7 +38,7 @@ async function _createOrder(
     _1200: 0,
   }
 ): Promise<Order> {
-  const subscription = await getSubscription({
+  const subscription = await subscriptionRepository.getSubscription({
     where: { id: subscriptionId },
     include: {
       orders: {
@@ -229,7 +231,7 @@ async function completeAndShipOrder(orderId: number, results: any[]) {
       status: OrderStatus.COMPLETED,
       trackingUrl: cargonizer?.trackingUrl || null,
     });
-  } catch (err) {
+  } catch (err: any) {
     error = err.message;
   }
 

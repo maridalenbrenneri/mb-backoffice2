@@ -1,17 +1,27 @@
 import { json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
+import { useEffect, useState } from 'react';
 
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import {
+  Alert,
+  CircularProgress,
+  Grid,
+  Paper,
+  Box,
+  Typography,
+} from '@mui/material';
 
 import type { Coffee, Delivery } from '@prisma/client';
-import { OrderStatus, SubscriptionStatus } from '@prisma/client';
 
-import { getLastJobResult } from '~/_libs/core/models/job-result.server';
-import type { Subscription } from '~/_libs/core/models/subscription.server';
-import { getSubscriptions } from '~/_libs/core/models/subscription.server';
-import { getDeliveries } from '~/_libs/core/models/delivery.server';
-import { getCoffees } from '~/_libs/core/models/coffee.server';
+import { SubscriptionStatus } from '~/_libs/core/repositories/subscription';
+import type { Subscription } from '~/_libs/core/repositories/subscription';
+import * as subscriptionRepo from '~/_libs/core/repositories/subscription';
+
+import { OrderStatus } from '~/_libs/core/repositories/order';
+
+import { getLastJobResult } from '~/_libs/core/repositories/job-result.server';
+import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
+import { getCoffees } from '~/_libs/core/repositories/coffee.server';
 
 import { resolveAboStats } from '~/_libs/core/services/subscription-stats';
 import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
@@ -19,8 +29,7 @@ import RoastOverviewBox from '~/components/RoastOverviewBox';
 import { getCargonizerProfile } from '~/_libs/cargonizer';
 import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
-import { Alert, CircularProgress, Grid, Paper } from '@mui/material';
-import { useEffect, useState } from 'react';
+
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 
 type LoaderData = {
@@ -28,7 +37,9 @@ type LoaderData = {
   wooOrderImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   updateGaboStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
   createRenewalOrdersResult: Awaited<ReturnType<typeof getLastJobResult>>;
-  allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
+  allActiveSubscriptions: Awaited<
+    ReturnType<typeof subscriptionRepo.getSubscriptions>
+  >;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
   currentCoffees: Awaited<ReturnType<typeof getCoffees>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
@@ -46,7 +57,7 @@ export const loader = async () => {
     'create-renewal-orders'
   );
 
-  const allActiveSubscriptions = await getSubscriptions({
+  const allActiveSubscriptions = await subscriptionRepo.getSubscriptions({
     where: {
       status: SubscriptionStatus.ACTIVE,
     },

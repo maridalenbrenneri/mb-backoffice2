@@ -1,18 +1,15 @@
 import { DateTime } from 'luxon';
 
-import type { Subscription } from '@prisma/client';
-import { SubscriptionSpecialRequest } from '@prisma/client';
-import {
-  SubscriptionFrequency,
-  SubscriptionStatus,
-  SubscriptionType,
-} from '@prisma/client';
-import {
-  getSubscriptions,
-  updateStatusOnSubscription,
-} from '../models/subscription.server';
 import { TAKE_MAX_ROWS } from '../settings';
 import { getNextFirstTuesday } from '../utils/dates';
+import type { Subscription } from '../repositories/subscription';
+import {
+  SubscriptionFrequency,
+  SubscriptionSpecialRequest,
+  SubscriptionStatus,
+  SubscriptionType,
+} from '../repositories/subscription/';
+import * as subscriptionRepository from '../repositories/subscription';
 
 function calculateSubscriptionWeight(subscription: Subscription) {
   let weight = 0;
@@ -87,7 +84,7 @@ export function resolveStatusForGiftSubscription(
 }
 
 export async function updateStatusOnGiftSubscriptions() {
-  const gifts = await getSubscriptions({
+  const gifts = await subscriptionRepository.getSubscriptions({
     where: {
       status: {
         in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.NOT_STARTED],
@@ -122,7 +119,7 @@ export async function updateStatusOnGiftSubscriptions() {
 
       // console.debug('GIFT', duration, date.toISO());
 
-      await updateStatusOnSubscription(gift.id, status);
+      await subscriptionRepository.updateStatusOnSubscription(gift.id, status);
 
       updatedCount++;
     }

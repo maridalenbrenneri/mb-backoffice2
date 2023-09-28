@@ -24,8 +24,8 @@ import {
   Select,
 } from '@mui/material';
 
-import type { Coffee } from '~/_libs/core/models/coffee.server';
-import { getCoffees } from '~/_libs/core/models/coffee.server';
+import type { Coffee } from '~/_libs/core/repositories/coffee.server';
+import { getCoffees } from '~/_libs/core/repositories/coffee.server';
 import { CoffeeStatus } from '@prisma/client';
 import { useState } from 'react';
 

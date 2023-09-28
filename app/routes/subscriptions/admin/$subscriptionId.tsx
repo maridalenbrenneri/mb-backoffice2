@@ -36,13 +36,14 @@ import {
   updateFirstDeliveryDate,
   upsertAction,
 } from './_shared';
-import { getSubscriptions } from '~/_libs/core/models/subscription.server';
-import type { Subscription } from '~/_libs/core/models/subscription.server';
-import Orders from '~/components/Orders';
+
+import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
 import {
-  createCustomOrder,
-  createNonRecurringOrder,
-} from '~/_libs/core/services/order-service';
+  SubscriptionSpecialRequest,
+  type Subscription,
+} from '~/_libs/core/repositories/subscription';
+
+import Orders from '~/components/Orders';
 import {
   FIKEN_CONTACT_URL,
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
@@ -55,7 +56,10 @@ import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
 import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
 import { useEffect, useState } from 'react';
 import { modalStyle } from '~/style/theme';
-import { SubscriptionSpecialRequest } from '@prisma/client';
+import {
+  createCustomOrder,
+  createNonRecurringOrder,
+} from '~/_libs/core/services/order-service';
 
 type LoaderData = {
   loadedSubscription: Subscription;
@@ -96,7 +100,7 @@ export const action: ActionFunction = async ({ request }) => {
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.subscriptionId, `params.id is required`);
 
-  const subscriptions = await getSubscriptions({
+  const subscriptions = await subscriptionRepository.getSubscriptions({
     where: { id: +params.subscriptionId },
     include: {
       orders: {

@@ -1,4 +1,4 @@
-import { upsertSubscriptionFromWoo } from '../core/models/subscription.server';
+import * as subscriptionRepository from '../core/repositories/subscription';
 import fetchSubscriptions from './subscriptions/fetch';
 
 export default async function importWooSubscriptionStats() {
@@ -13,7 +13,9 @@ export default async function importWooSubscriptionStats() {
   let notChanged = 0;
 
   for (const subscription of subscriptions) {
-    let res = await upsertSubscriptionFromWoo(subscription);
+    let res = await subscriptionRepository.upsertSubscriptionFromWoo(
+      subscription
+    );
 
     if (res.result === 'new') created++;
     else if (res.result === 'updated') updated++;

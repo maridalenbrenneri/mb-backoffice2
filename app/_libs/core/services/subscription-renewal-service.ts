@@ -1,16 +1,15 @@
-import {
-  ShippingType,
-  OrderStatus,
-  OrderType,
-  SubscriptionType,
-} from '@prisma/client';
+import { OrderStatus, OrderType } from '@prisma/client';
 import { DateTime } from 'luxon';
-import { createOrders } from '../models/order.server';
+import { createOrders } from '../repositories/order/order.server';
+
+import * as subscriptionRepository from '../repositories/subscription';
 import {
-  getSubscriptions,
   SubscriptionFrequency,
   SubscriptionStatus,
-} from '../models/subscription.server';
+  SubscriptionType,
+  ShippingType,
+} from '../repositories/subscription/';
+
 import { SUBSCRIPTION_RENEWAL_WEEKDAY, TAKE_MAX_ROWS } from '../settings';
 import { getNextOrCreateDelivery } from './delivery-service';
 
@@ -20,7 +19,7 @@ function isTimeToCreateRenewalOrders() {
 
 // B2B MONTHTLY_3RD AND FORTNIGHTLY
 async function getActiveSubscriptions3RD() {
-  return await getSubscriptions({
+  return await subscriptionRepository.getSubscriptions({
     where: {
       type: SubscriptionType.B2B,
       status: SubscriptionStatus.ACTIVE,
@@ -48,7 +47,7 @@ async function getActiveSubscriptions3RD() {
 
 // GET MONTHLY AND B2B FORTNIGHTLY
 async function getActiveSubscriptionsMonthly() {
-  return await getSubscriptions({
+  return await subscriptionRepository.getSubscriptions({
     where: {
       OR: [
         {
@@ -111,7 +110,7 @@ export async function createRenewalOrders(ignoreRenewalDay: boolean = false) {
   }
 
   // EXCLUDE ALL SUBSCRIPTIONS THAT ALREADY HAS A RECURRENT ORDER ON CURRENT DELIVERY
-  const subscriptionsToCreateOrderOn = subscriptions.filter((s) => {
+  const subscriptionsToCreateOrderOn = subscriptions.filter((s: any) => {
     return !s.orders.some((order: any) => order.deliveryId === delivery.id);
   });
 

@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { z } from 'zod';
 
-import type { GiftSubscriptionCreateInput } from '~/_libs/core/models/subscription.server';
+import type { GiftSubscriptionCreateInput } from '~/_libs/core/repositories/subscription';
 import {
   WOO_GABO_PRODUCT_ID,
   WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS,

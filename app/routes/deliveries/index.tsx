@@ -11,8 +11,8 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Box, Button, TableFooter } from '@mui/material';
 
-import type { Delivery } from '~/_libs/core/models/delivery.server';
-import { getDeliveries } from '~/_libs/core/models/delivery.server';
+import type { Delivery } from '~/_libs/core/repositories/delivery.server';
+import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
 import { toPrettyDate } from '~/_libs/core/utils/dates';
 import { useEffect, useState } from 'react';
 

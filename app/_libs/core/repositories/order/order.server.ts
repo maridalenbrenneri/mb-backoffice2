@@ -1,16 +1,9 @@
 import { prisma } from '~/db.server';
 
-import type { Order, OrderItem } from '@prisma/client';
-import { OrderStatus, ShippingType } from '@prisma/client';
-
-import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
-
-export type { Order };
-
-export type OrderItemUpsertData = Pick<
-  OrderItem,
-  'orderId' | 'coffeeId' | 'variation' | 'quantity'
->;
+import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../../settings';
+import type { OrderItemUpsertData } from './types';
+import { OrderStatus } from './types';
+import { ShippingType } from '../subscription/types';
 
 export async function getOrders(filter?: any) {
   filter = filter || {};

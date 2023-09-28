@@ -8,27 +8,20 @@ import {
 } from '../constants';
 
 import * as settings from '../../core/settings';
-
-import { SubscriptionFrequency } from '~/_libs/core/models/subscription.server';
-import { WOO_NO_SHIPPING_COUPON } from '../../core/settings';
 import {
   ShippingType,
+  SubscriptionFrequency,
   SubscriptionStatus,
   SubscriptionType,
-} from '@prisma/client';
-
-interface IWooSubscriptionProduct {
-  name: string;
-  productId: string;
-  variationId: string;
-}
+} from '../../core/repositories/subscription/types';
+import type { WooSubscription, WooSubscriptionLineItem } from './types';
 
 const resolveSubscriptionVariation = (
-  wooProduct: IWooSubscriptionProduct
+  item: WooSubscriptionLineItem
 ): { frequency: SubscriptionFrequency; bagCount250: number } => {
-  if (+wooProduct.productId !== settings.WOO_ABO_PRODUCT_ID)
+  if (+item.product_id !== settings.WOO_ABO_PRODUCT_ID)
     throw new Error(
-      `Unknown Woo product, don't know what to do with this. Woo Product id: ${wooProduct.productId}`
+      `Unknown Woo product, don't know what to do with this. Woo Product id: ${item.product_id}`
     );
 
   const resolve = (frequency: SubscriptionFrequency, bagCount250: number) => {
@@ -38,7 +31,7 @@ const resolveSubscriptionVariation = (
     };
   };
 
-  switch (+wooProduct.variationId) {
+  switch (item.variation_id) {
     case settings.WOO_ABO_PRODUCT_VARIATION_1_1:
       return resolve(SubscriptionFrequency.MONTHLY, 1);
     case settings.WOO_ABO_PRODUCT_VARIATION_2_1:
@@ -71,7 +64,7 @@ const resolveSubscriptionVariation = (
 
     default:
       throw new Error(
-        `Unknown Woo product variation, don't know what to do with this. Woo Product Variation id: ${wooProduct.variationId}`
+        `Unknown Woo product variation, don't know what to do with this. Woo Product Variation id: ${item.variation_id}`
       );
   }
 };
@@ -97,41 +90,37 @@ const resolveSubscriptionStatus = (wooStatus: string): SubscriptionStatus => {
   }
 };
 
-function resolveShippingType(wooSubscription: any) {
-  const couponLines = wooSubscription.coupon_lines;
-
-  if (couponLines?.some((d: any) => d.code === WOO_NO_SHIPPING_COUPON))
+function resolveShippingType(subscription: WooSubscription) {
+  if (
+    subscription.coupon_lines?.some(
+      (d: any) => d.code === settings.WOO_NO_SHIPPING_COUPON
+    )
+  )
     return ShippingType.LOCAL_PICK_UP;
 
   return ShippingType.SHIP;
 }
 
-const wooApiToSubscription = (subscription: any): any => {
+const wooApiToSubscription = (subscription: WooSubscription): any => {
   if (!subscription.line_items?.length)
     throw new Error(
       `ERROR when importing Woo subscription, no line items on subscription. Woo subscription id ${subscription.id}`
     );
 
-  if (subscription.line_items.length > 1)
+  if (subscription.line_items.length !== 1)
     console.warn(
       `Woo subscription contains more than one line item, dont know what to do with that. First one will be used. Woo subscription id ${subscription.id}`
     );
 
-  const variation = resolveSubscriptionVariation({
-    name: subscription.line_items[0].name,
-    productId: subscription.line_items[0].product_id,
-    variationId: subscription.line_items[0].variation_id,
-  });
-
-  const status = resolveSubscriptionStatus(subscription.status);
-
-  console.debug('wooNextPaymentDate', subscription.next_payment_date);
+  let variation = resolveSubscriptionVariation(subscription.line_items[0]);
+  let status = resolveSubscriptionStatus(subscription.status);
 
   return {
     wooSubscriptionId: subscription.id,
     wooCustomerId: subscription.customer_id,
     wooCustomerName: `${subscription.billing.first_name} ${subscription.billing.last_name} `,
     wooCreatedAt: new Date(subscription.date_created),
+    wooUpdatedAt: new Date(subscription.date_modified),
     wooNextPaymentDate: subscription.next_payment_date
       ? new Date(subscription.next_payment_date)
       : null,
