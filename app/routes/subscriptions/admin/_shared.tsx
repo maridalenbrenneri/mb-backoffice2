@@ -1,16 +1,26 @@
 import { json, redirect } from '@remix-run/node';
 
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-
 import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
-import {
-  ShippingType,
-  SubscriptionFrequency,
-  SubscriptionStatus,
-  SubscriptionType,
-} from '~/_libs/core/repositories/subscription';
+import type { CreateSubscriptionData } from '~/_libs/core/repositories/subscription';
+import { isEmpty } from '~/_libs/core/utils/are-equal';
 
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
+
+type CreateActionData = {
+  validationErrors?:
+    | {
+        status: null | string;
+        type: null | string;
+        frequency: null | string;
+        shippingType: null | string;
+        quantity250: null | string;
+        quantity500: null | string;
+        quantity1200: null | string;
+      }
+    | undefined;
+  didUpdate?: boolean | undefined;
+  updateMessage?: string | undefined;
+};
 
 type SubscriptionActionData = {
   validationErrors?:
@@ -31,97 +41,7 @@ type SubscriptionActionData = {
   updateMessage?: string | undefined;
 };
 
-export const renderTypes = (type: SubscriptionType = SubscriptionType.B2B) => {
-  return (
-    <FormControl sx={{ m: 1 }}>
-      <InputLabel id={`customer-label`}>Type</InputLabel>
-      <Select
-        labelId={`type-label`}
-        defaultValue={type}
-        sx={{ minWidth: 250 }}
-        disabled
-        size="small"
-      >
-        {Object.keys(SubscriptionType).map((type: any) => (
-          <MenuItem value={type} key={type}>
-            {type}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-};
-
-export const renderStatus = (
-  status: SubscriptionStatus = SubscriptionStatus.ACTIVE
-) => {
-  return (
-    <FormControl sx={{ m: 1 }}>
-      <InputLabel id={`status-label`}>Status</InputLabel>
-      <Select
-        labelId={`status-label`}
-        name={`status`}
-        defaultValue={status}
-        sx={{ minWidth: 250 }}
-        size="small"
-      >
-        {Object.keys(SubscriptionStatus).map((status: any) => (
-          <MenuItem value={status} key={status}>
-            {status}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-};
-
-export const renderFrequency = (
-  frequency: SubscriptionFrequency = SubscriptionFrequency.MONTHLY
-) => {
-  return (
-    <FormControl sx={{ m: 1 }}>
-      <InputLabel id={`frequency-label`}>Frequency</InputLabel>
-      <Select
-        labelId={`frequency-label`}
-        name={`frequency`}
-        defaultValue={frequency}
-        sx={{ minWidth: 250 }}
-        size="small"
-      >
-        {Object.keys(SubscriptionFrequency).map((freq: any) => (
-          <MenuItem value={freq} key={freq}>
-            {freq}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-};
-
-export const renderShippingTypes = (
-  shippingType: ShippingType = ShippingType.SHIP
-) => {
-  return (
-    <FormControl sx={{ m: 1 }}>
-      <InputLabel id={`shipping-type-label`}>Shipping type</InputLabel>
-      <Select
-        labelId={`shipping-type-label`}
-        name={`shippingType`}
-        defaultValue={shippingType}
-        sx={{ minWidth: 250 }}
-        size="small"
-      >
-        {Object.keys(ShippingType).map((type: any) => (
-          <MenuItem value={type} key={type}>
-            {type}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-};
 export const updateFirstDeliveryDate = async (values: any) => {
-  console.debug('updateFirstDeliveryDate', values);
   const errors = {
     status: values.delivery_date ? null : 'FirstDeliveryDate is required',
   };
@@ -132,16 +52,40 @@ export const updateFirstDeliveryDate = async (values: any) => {
   }
 
   const id = +values.id;
-  await subscriptionRepository.updateFirstDeliveryDateOnSubscription(
+  await subscriptionRepository.updateFirstDeliveryDateOnGiftSubscription(
     id,
     values.delivery_date
   );
 };
 
-const actionBase = async (values: any) => {
-  const validationErrors = {
+export const updateSpecialRequest = async (values: any) => {
+  console.log('HELLO', values);
+  await subscriptionRepository.update(+values.id, {
+    specialRequest: values.specialRequest,
+  });
+
+  return json<SubscriptionActionData>({
+    didUpdate: true,
+    updateMessage: 'Special request was updated',
+  });
+};
+
+export const updateInternalNote = async (values: any) => {
+  await subscriptionRepository.update(+values.id, {
+    internalNote: values.internalNote,
+  });
+
+  return json<SubscriptionActionData>({
+    didUpdate: true,
+    updateMessage: 'Internal note was updated',
+  });
+};
+
+const validate = (values: any) => {
+  return {
     status: values.status ? null : 'Status is required',
     type: values.type ? null : 'Type is required',
+    frequency: values.frequency ? null : 'Frequency is required',
     shippingType: values.shippingType ? null : 'Shipping type is required',
     quantity250: isUnsignedInt(values.quantity250)
       ? null
@@ -161,6 +105,10 @@ const actionBase = async (values: any) => {
       ? null
       : 'Place is required',
   };
+};
+
+export const updateAction = async (values: any) => {
+  const validationErrors = validate(values);
 
   if (Object.values(validationErrors).some((errorMessage) => errorMessage)) {
     console.error('Errors in form', validationErrors);
@@ -169,7 +117,63 @@ const actionBase = async (values: any) => {
 
   const id = +values.id;
 
-  const data = {
+  const data: any = {};
+  if (values.status !== undefined) data.status = values.status;
+  if (values.type !== undefined) data.type = values.type;
+  if (values.frequency !== undefined) data.frequency = values.frequency;
+  if (values.shippingType !== undefined)
+    data.shippingType = values.shippingType;
+  if (values.quantity250 !== undefined)
+    data.quantity250 = parseIntOrZero(values.quantity250);
+  if (values.quantity500 !== undefined)
+    data.quantity500 = parseIntOrZero(values.quantity500);
+  if (values.quantity1200 !== undefined)
+    data.quantity1200 = parseIntOrZero(values.quantity1200);
+  if (values.specialRequest !== undefined)
+    data.specialRequest = values.specialRequest;
+  if (values.internalNote !== undefined)
+    data.internalNote = values.internalNote;
+  if (values.recipientName !== undefined)
+    data.recipientName = values.recipientName;
+  if (values.recipientAddress1 !== undefined)
+    data.recipientAddress1 = values.recipientAddress1;
+  if (values.recipientAddress2 !== undefined)
+    data.recipientAddress2 = values.recipientAddress2;
+  if (values.recipientPostalCode !== undefined)
+    data.recipientPostalCode = values.recipientPostalCode;
+  if (values.recipientPostalPlace !== undefined)
+    data.recipientPostalPlace = values.recipientPostalPlace;
+  if (values.recipientEmail !== undefined)
+    data.recipientEmail = values.recipientEmail;
+  if (values.recipientMobile !== undefined)
+    data.recipientMobile = values.recipientMobile;
+  if (values.isPrivateDeliveryAddress !== undefined)
+    data.isPrivateDeliveryAddress = !!values.isPrivateDeliveryAddress;
+
+  if (isEmpty(data)) {
+    return json<SubscriptionActionData>({
+      didUpdate: false,
+      updateMessage: 'No changes were made',
+    });
+  }
+
+  await subscriptionRepository.update(id, data);
+
+  return json<SubscriptionActionData>({
+    didUpdate: true,
+    updateMessage: 'Subscription was updated',
+  });
+};
+
+export const createAction = async (values: any) => {
+  const validationErrors = validate(values);
+
+  if (Object.values(validationErrors).some((errorMessage) => errorMessage)) {
+    console.error('Errors in form', validationErrors);
+    return json<CreateActionData>({ validationErrors });
+  }
+
+  const data: CreateSubscriptionData = {
     fikenContactId: values.fikenContactId,
     type: values.type,
     status: values.status,
@@ -191,19 +195,7 @@ const actionBase = async (values: any) => {
     isPrivateDeliveryAddress: !!values.isPrivateDeliveryAddress,
   };
 
-  await subscriptionRepository.upsertSubscription(id, data);
+  let res = await subscriptionRepository.create(data);
 
-  return json<SubscriptionActionData>({
-    didUpdate: true,
-    updateMessage: 'Subscription was updated',
-  });
-};
-
-export const upsertAction = async (request: any) => {
-  return await actionBase(request);
-};
-
-export const createAction = async (request: any) => {
-  await actionBase(request);
-  return redirect(`/subscriptions`);
+  return redirect(`/subscriptions/admin/${res.id}`);
 };

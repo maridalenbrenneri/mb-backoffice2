@@ -26,43 +26,43 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontSize: 12,
+    fontSize: 13,
     allVariants: {
       fontFamily: 'dtl-nobel',
     },
     body1: {
       fontFamily: 'dtl-nobel',
       color: colors.COLOR_BLACK,
-      fontSize: 16,
+      fontSize: 13,
       lineHeight: 1.5,
     },
     body2: {
       fontFamily: 'dtl-nobel',
-      fontSize: 14,
+      fontSize: 13,
       color: colors.COLOR_BLACK,
     },
     h1: {
       fontFamily: 'dtl-nobel-bold',
-      fontSize: 42,
+      fontSize: 32,
     },
     h2: {
       margin: '0 0 0.75em 0',
       fontFamily: 'dtl-nobel-bold',
-      fontSize: 28,
+      fontSize: 26,
     },
     h3: {
       margin: '0 0 0.75em 0',
       fontFamily: 'dtl-nobel-bold',
-      fontSize: 22,
+      fontSize: 20,
     },
     h4: {
       margin: '0 0 0.75em 0',
       fontFamily: 'dtl-nobel-bold',
-      fontSize: 18,
+      fontSize: 16,
     },
     h5: {
       fontFamily: 'dtl-nobel',
-      fontSize: 20,
+      fontSize: 14,
       margin: '1em 0 0.5em',
       maxWidth: '820px',
       lineHeight: 1.5,
@@ -99,6 +99,16 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           color: colors.COLOR_GREY2,
+        },
+      },
+    },
+    MuiSnackbar: {
+      styleOverrides: {
+        root: {
+          '& .MuiSnackbarContent-root': {
+            background: 'orange',
+            fontSize: 18,
+          },
         },
       },
     },

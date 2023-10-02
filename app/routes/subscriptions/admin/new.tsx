@@ -13,22 +13,25 @@ import Typography from '@mui/material/Typography';
 import {
   Alert,
   Button,
+  Checkbox,
   FormControl,
+  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
   TextField,
 } from '@mui/material';
 
-import { SubscriptionType } from '@prisma/client';
+import { SubscriptionType } from '~/_libs/core/repositories/subscription/types';
 
+import { createAction } from './_shared';
 import {
   renderFrequency,
   renderShippingTypes,
   renderStatus,
   renderTypes,
-  createAction,
-} from './_shared';
+} from './_shared.controls';
+
 import type { FikenCustomer } from '~/_libs/fiken';
 import { getCustomers } from '~/_libs/fiken';
 
@@ -136,6 +139,16 @@ export default function NewSubscription() {
             ))}
           </Select>
         </FormControl>
+
+        <div>
+          <FormControl>
+            <FormControlLabel
+              sx={{ margin: 0.5 }}
+              control={<Checkbox name="isPrivateDeliveryAddress" />}
+              label="Is private address (Private product in Cargonizer/Bring will be used - OBS max 5kg)"
+            />
+          </FormControl>
+        </div>
 
         {renderTypes()}
 

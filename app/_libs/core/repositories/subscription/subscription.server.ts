@@ -1,13 +1,13 @@
 import { prisma } from '~/db.server';
 
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../../settings';
-import { nullIfEmptyOrWhitespace } from '../../utils/strings';
 import { areEqual } from '../../utils/are-equal';
 import type {
+  AtLeastOne,
+  CreateSubscriptionData,
   GiftSubscriptionCreateInput,
   Subscription,
   SubscriptionStatus,
-  SubscriptionUpsertData,
 } from './types';
 import { ShippingType, SubscriptionType } from './types';
 
@@ -32,7 +32,7 @@ export async function getSubscriptions(filter?: any) {
   return prisma.subscription.findMany(filter);
 }
 
-// CREATE FOR WOO IMPORT, NEVER DOES UPDATE
+// WOO IMPORT
 export async function createGiftSubscription(
   input: GiftSubscriptionCreateInput
 ) {
@@ -50,7 +50,7 @@ export async function createGiftSubscription(
   });
 }
 
-// SPECIAL UPSERT USED BY WOO IMPORT
+// WOO IMPORT
 export async function upsertSubscriptionFromWoo(data: any): Promise<{
   result: 'updated' | 'new' | 'notChanged';
   subscriptionId: number;
@@ -121,37 +121,16 @@ export async function upsertSubscriptionFromWoo(data: any): Promise<{
   };
 }
 
-export async function upsertSubscription(
-  id: number | null,
-  data: SubscriptionUpsertData
-) {
-  const createData = {
-    type: data.type,
-    status: data.status,
-    shippingType: data.shippingType,
-    frequency: data.frequency,
-    quantity250: data.quantity250,
-    quantity500: data.quantity500,
-    quantity1200: data.quantity1200,
-    wooCustomerName: data.wooCustomerName,
-    recipientName: data.recipientName,
-    recipientAddress1: data.recipientAddress1,
-    recipientAddress2: data.recipientAddress2,
-    recipientPostalCode: data.recipientPostalCode,
-    recipientPostalPlace: data.recipientPostalPlace,
-    recipientEmail: data.recipientEmail,
-    recipientMobile: data.recipientMobile,
-    recipientCountry: 'NO',
-    internalNote: data.internalNote,
-    fikenContactId: nullIfEmptyOrWhitespace(data.fikenContactId),
-  };
+export async function create(data: CreateSubscriptionData) {
+  return prisma.subscription.create({
+    data,
+  });
+}
 
-  return prisma.subscription.upsert({
-    where: {
-      id: id || 0,
-    },
-    update: data,
-    create: createData,
+export async function update(id: number, data: AtLeastOne<Subscription>) {
+  return prisma.subscription.update({
+    where: { id },
+    data,
   });
 }
 
@@ -169,7 +148,7 @@ export async function updateStatusOnSubscription(
   });
 }
 
-export async function updateFirstDeliveryDateOnSubscription(
+export async function updateFirstDeliveryDateOnGiftSubscription(
   id: number,
   gift_firstDeliveryDate: any
 ) {

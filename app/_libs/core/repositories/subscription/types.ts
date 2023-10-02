@@ -8,6 +8,10 @@ import {
 
 import type { Subscription } from '@prisma/client';
 
+// TODO: Move to shared lib
+export type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
+  U[keyof U];
+
 export {
   SubscriptionType,
   ShippingType,
@@ -17,7 +21,31 @@ export {
   SubscriptionSpecialRequest,
 };
 
-export type SubscriptionUpsertData = Pick<
+export type CreateSubscriptionData = Pick<
+  Subscription,
+  | 'type'
+  | 'status'
+  | 'frequency'
+  | 'shippingType'
+  | 'quantity250'
+  | 'quantity500'
+  | 'quantity1200'
+  | 'specialRequest'
+  | 'recipientName'
+  | 'recipientEmail'
+  | 'recipientMobile'
+  | 'recipientAddress1'
+  | 'recipientAddress2'
+  | 'recipientPostalCode'
+  | 'recipientPostalPlace'
+  | 'isPrivateDeliveryAddress'
+  | 'internalNote'
+  | 'fikenContactId'
+  | 'wooCustomerName'
+>;
+
+// HOW TO DEFINE SO ANY SUBSET OF THE FIELDS IS ALLOWED?
+export type UpdateSubscriptionData = Pick<
   Subscription,
   | 'type'
   | 'status'

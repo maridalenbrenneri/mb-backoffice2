@@ -22,3 +22,8 @@ export function areEqual(obj1: any, obj2: any): boolean {
 
   return true;
 }
+
+export function isEmpty(obj: any) {
+  if (!obj) return true;
+  return Object.keys(obj).length === 0;
+}
