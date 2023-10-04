@@ -59,7 +59,6 @@ export const updateFirstDeliveryDate = async (values: any) => {
 };
 
 export const updateSpecialRequest = async (values: any) => {
-  console.log('HELLO', values);
   await subscriptionRepository.update(+values.id, {
     specialRequest: values.specialRequest,
   });
@@ -147,8 +146,9 @@ export const updateAction = async (values: any) => {
     data.recipientEmail = values.recipientEmail;
   if (values.recipientMobile !== undefined)
     data.recipientMobile = values.recipientMobile;
-  if (values.isPrivateDeliveryAddress !== undefined)
-    data.isPrivateDeliveryAddress = !!values.isPrivateDeliveryAddress;
+
+  // TODO: undefined if note selected, cannot check if changed...
+  data.isPrivateDeliveryAddress = !!values.isPrivateDeliveryAddress;
 
   if (isEmpty(data)) {
     return json<SubscriptionActionData>({

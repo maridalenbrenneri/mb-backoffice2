@@ -64,6 +64,7 @@ import {
   renderShippingTypes,
   renderStatus,
 } from './_shared.controls';
+import { QuantityTextField } from '~/components/QuantityTextField';
 
 type LoaderData = {
   loadedSubscription: Subscription;
@@ -375,7 +376,7 @@ export default function UpdateSubscription() {
                 </Box>
                 <Box>
                   <FormControl>
-                    <TextField
+                    <QuantityTextField
                       disabled={editDisabled}
                       name="quantity250"
                       label="Quantity, 250g"
@@ -386,7 +387,7 @@ export default function UpdateSubscription() {
                     />
                   </FormControl>
                   <FormControl>
-                    <TextField
+                    <QuantityTextField
                       disabled={editDisabled}
                       name="quantity500"
                       label="Quantity, 500g"
@@ -397,7 +398,7 @@ export default function UpdateSubscription() {
                     />
                   </FormControl>
                   <FormControl>
-                    <TextField
+                    <QuantityTextField
                       disabled={editDisabled}
                       name="quantity1200"
                       label="Quantity, 1,2kg"
@@ -466,7 +467,7 @@ export default function UpdateSubscription() {
                         variant="outlined"
                         size="small"
                         defaultValue={subscription.recipientPostalPlace}
-                        error={data?.validationErrors?.recipientPlace}
+                        error={data?.validationErrors?.recipientPostalPlace}
                       />
                     </FormControl>
                   </div>
@@ -625,10 +626,7 @@ export default function UpdateSubscription() {
                     <Form method="post">
                       <input type="hidden" name="id" value={subscription.id} />
                       <FormControl>
-                        <TextField
-                          sx={{
-                            width: { sm: 100 },
-                          }}
+                        <QuantityTextField
                           name="quantity250"
                           label="250g"
                           variant="outlined"
@@ -638,10 +636,7 @@ export default function UpdateSubscription() {
                         />
                       </FormControl>
                       <FormControl>
-                        <TextField
-                          sx={{
-                            width: { sm: 100 },
-                          }}
+                        <QuantityTextField
                           name="quantity500"
                           label="500g"
                           variant="outlined"
@@ -651,10 +646,7 @@ export default function UpdateSubscription() {
                         />
                       </FormControl>
                       <FormControl>
-                        <TextField
-                          sx={{
-                            width: { sm: 100 },
-                          }}
+                        <QuantityTextField
                           name="quantity1200"
                           label="1,2kg"
                           variant="outlined"
