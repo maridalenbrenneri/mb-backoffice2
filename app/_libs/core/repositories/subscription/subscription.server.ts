@@ -5,9 +5,10 @@ import { areEqual } from '../../utils/are-equal';
 import type {
   AtLeastOne,
   CreateSubscriptionData,
-  GiftSubscriptionCreateInput,
+  WooGiftSubscriptionCreateInput,
   Subscription,
   SubscriptionStatus,
+  WooUpsertSubscriptionData,
 } from './types';
 import { ShippingType, SubscriptionType } from './types';
 
@@ -30,95 +31,6 @@ export async function getSubscriptions(filter?: any) {
   // TODO: Always exclude DELETED
 
   return prisma.subscription.findMany(filter);
-}
-
-// WOO IMPORT
-export async function createGiftSubscription(
-  input: GiftSubscriptionCreateInput
-) {
-  return prisma.subscription.upsert({
-    where: {
-      gift_wooOrderLineItemId: input.gift_wooOrderLineItemId || undefined,
-    },
-    update: {},
-    create: {
-      type: SubscriptionType.PRIVATE_GIFT,
-      shippingType: ShippingType.SHIP,
-      recipientCountry: 'NO',
-      ...input,
-    },
-  });
-}
-
-// WOO IMPORT
-export async function upsertSubscriptionFromWoo(data: any): Promise<{
-  result: 'updated' | 'new' | 'notChanged';
-  subscriptionId: number;
-}> {
-  let dbSubscription = await prisma.subscription.findFirst({
-    where: {
-      wooSubscriptionId: data.wooSubscriptionId,
-    },
-  });
-
-  // Check if any value has changed
-  if (dbSubscription) {
-    const keys = Object.keys(data) as (keyof Subscription)[];
-    let isChanged = false;
-    for (let key of keys) {
-      if (!areEqual(dbSubscription[key], data[key])) {
-        isChanged = true;
-        break;
-      }
-    }
-    if (isChanged) {
-      let res = await prisma.subscription.update({
-        where: {
-          wooSubscriptionId: data.wooSubscriptionId,
-        },
-        data,
-      });
-
-      return {
-        result: 'updated',
-        subscriptionId: res.id,
-      };
-    }
-
-    return {
-      result: 'notChanged',
-      subscriptionId: dbSubscription.id,
-    };
-  }
-
-  let res = await prisma.subscription.create({
-    data: {
-      type: data.type,
-      wooSubscriptionId: data.wooSubscriptionId,
-      wooCustomerId: data.wooCustomerId,
-      wooCustomerName: data.wooCustomerName,
-      wooNextPaymentDate: data.wooNextPaymentDate,
-      wooCreatedAt: data.wooCreatedAt,
-      wooUpdatedAt: data.wooUpdatedAt,
-      status: data.status,
-      shippingType: data.shippingType,
-      frequency: data.frequency,
-      quantity250: data.quantity250,
-      recipientName: data.recipientName,
-      recipientAddress1: data.recipientAddress1,
-      recipientAddress2: data.recipientAddress2,
-      recipientPostalCode: data.recipientPostalCode,
-      recipientPostalPlace: data.recipientPostalPlace,
-      recipientEmail: data.recipientEmail,
-      recipientMobile: data.recipientMobile,
-      recipientCountry: 'NO',
-    },
-  });
-
-  return {
-    result: 'new',
-    subscriptionId: res.id,
-  };
 }
 
 export async function create(data: CreateSubscriptionData) {
@@ -160,4 +72,83 @@ export async function updateFirstDeliveryDateOnGiftSubscription(
       gift_firstDeliveryDate,
     },
   });
+}
+
+// WOO IMPORT
+export async function createGiftSubscriptionFromWoo(
+  input: WooGiftSubscriptionCreateInput
+) {
+  return prisma.subscription.upsert({
+    where: {
+      gift_wooOrderLineItemId: input.gift_wooOrderLineItemId || undefined,
+    },
+    update: {},
+    create: {
+      type: SubscriptionType.PRIVATE_GIFT,
+      shippingType: ShippingType.SHIP,
+      recipientCountry: 'NO',
+      ...input,
+    },
+  });
+}
+
+// WOO IMPORT
+export async function upsertSubscriptionFromWoo(
+  data: WooUpsertSubscriptionData
+): Promise<{
+  result: 'updated' | 'new' | 'notChanged';
+  subscriptionId: number;
+}> {
+  let dbSubscription = await prisma.subscription.findFirst({
+    where: {
+      wooSubscriptionId: data.wooSubscriptionId,
+    },
+  });
+
+  // Check if any value has changed
+  if (dbSubscription) {
+    const keys = Object.keys(data) as (keyof Subscription)[];
+    let isChanged = false;
+    for (let key of keys) {
+      if (
+        !areEqual(
+          dbSubscription[key],
+          data[key as keyof WooUpsertSubscriptionData]
+        )
+      ) {
+        isChanged = true;
+        break;
+      }
+    }
+    if (isChanged) {
+      let res = await prisma.subscription.update({
+        where: {
+          wooSubscriptionId: data.wooSubscriptionId as number,
+        },
+        data,
+      });
+
+      return {
+        result: 'updated',
+        subscriptionId: res.id,
+      };
+    }
+
+    return {
+      result: 'notChanged',
+      subscriptionId: dbSubscription.id,
+    };
+  }
+
+  let res = await prisma.subscription.create({
+    data: {
+      ...data,
+      recipientCountry: 'NO',
+    },
+  });
+
+  return {
+    result: 'new',
+    subscriptionId: res.id,
+  };
 }

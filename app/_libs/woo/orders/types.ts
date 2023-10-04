@@ -22,6 +22,7 @@ export const WooOrderData = z.object({
   payment_method: z.string(),
   customer_id: z.number(),
 
+  created_via: z.string(),
   date_created: z.string(),
   date_modified: z.string(),
 

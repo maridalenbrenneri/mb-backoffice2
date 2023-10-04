@@ -11,6 +11,7 @@ export const WooSubscriptionData = z.object({
   id: z.number(),
   customer_id: z.number(),
   status: z.string(),
+  created_via: z.string(),
 
   next_payment_date: z.string(),
 

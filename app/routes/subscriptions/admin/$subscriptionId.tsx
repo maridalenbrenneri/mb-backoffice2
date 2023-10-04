@@ -471,23 +471,25 @@ export default function UpdateSubscription() {
                       />
                     </FormControl>
                   </div>
-                  <div>
-                    <FormControl>
-                      <FormControlLabel
-                        sx={{ margin: 0.5 }}
-                        control={
-                          <Checkbox
-                            disabled={editDisabled}
-                            name="isPrivateDeliveryAddress"
-                            defaultChecked={
-                              subscription.isPrivateDeliveryAddress
-                            }
-                          />
-                        }
-                        label="Is private address (Private product in Cargonizer/Bring will be used - OBS max 5kg)"
-                      />
-                    </FormControl>
-                  </div>
+                  {subscription.type === 'B2B' && (
+                    <div>
+                      <FormControl>
+                        <FormControlLabel
+                          sx={{ margin: 0.5 }}
+                          control={
+                            <Checkbox
+                              disabled={editDisabled}
+                              name="isPrivateDeliveryAddress"
+                              defaultChecked={
+                                subscription.isPrivateDeliveryAddress
+                              }
+                            />
+                          }
+                          label="Is private address (Private product in Cargonizer/Bring will be used - OBS max 5kg)"
+                        />
+                      </FormControl>
+                    </div>
+                  )}
                   <div>
                     <FormControl>
                       <TextField

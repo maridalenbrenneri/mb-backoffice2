@@ -1,8 +1,10 @@
 import * as constants from '../constants';
 import type { WooSubscription } from './types';
-import wooApiToSubscription from './woo-api-to-subscription';
 
-async function _fetchSubscriptions(page: number = 1): Promise<any> {
+async function _fetchSubscriptions(page: number = 1): Promise<{
+  nextPage: number | null;
+  subscriptions: WooSubscription[];
+}> {
   console.debug(`Fetching woo subscriptions from page ${page}`);
 
   // const after = DateTime.now()
@@ -28,19 +30,19 @@ async function _fetchSubscriptions(page: number = 1): Promise<any> {
 
   return {
     nextPage,
-    abos: data,
+    subscriptions: data,
   };
 }
 
 export default async function fetchSubscriptions(): Promise<WooSubscription[]> {
-  let subscriptions: Array<any> = [];
+  let wooSubscriptions: Array<any> = [];
   let page: number | null = 1;
 
   do {
     const result: any = await _fetchSubscriptions(page);
     page = result.nextPage;
-    subscriptions = subscriptions.concat(result.abos);
+    wooSubscriptions = wooSubscriptions.concat(result.subscriptions);
   } while (page);
 
-  return subscriptions.map(wooApiToSubscription);
+  return wooSubscriptions;
 }

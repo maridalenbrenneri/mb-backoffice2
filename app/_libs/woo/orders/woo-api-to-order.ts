@@ -14,6 +14,8 @@ export type OrderInfo = {
   order: Order;
   items: any[];
   gifts: any[];
+  wooCreatedVia: string;
+  wooCustomerId: number;
 };
 
 const resolveOrderStatus = (
@@ -94,6 +96,7 @@ export default async function wooApiToOrderInfo(
   const orderBaseData: any = {
     wooOrderId: wooOrder.id,
     wooOrderNumber: wooOrder.number,
+    wooCustomerId: wooOrder.customer_id,
     wooCreatedAt: new Date(wooOrder.date_created),
     status: resolveOrderStatus(wooOrder.status, wooOrder.payment_method),
     shippingType: resolveShippingType(wooOrder),
@@ -119,6 +122,8 @@ export default async function wooApiToOrderInfo(
         type: OrderType.RENEWAL,
         quantity250: resolveQuantity(items[0].wooVariationId),
       },
+      wooCreatedVia: wooOrder.created_via,
+      wooCustomerId: wooOrder.customer_id,
     };
   }
 
@@ -135,6 +140,8 @@ export default async function wooApiToOrderInfo(
       quantity250: 0,
     },
     items: normalItems,
+    wooCreatedVia: wooOrder.created_via,
+    wooCustomerId: wooOrder.customer_id,
   };
 
   /* FOR SUBSCRIPTION RENEWALS, TYPE WILL BE IN items[0]. From:

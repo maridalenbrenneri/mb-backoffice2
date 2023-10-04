@@ -68,8 +68,32 @@ export type UpdateSubscriptionData = Pick<
   | 'wooCustomerName'
 >;
 
-// Special for Woo imported gift subscriptions
-export type GiftSubscriptionCreateInput = Pick<
+// WOO IMPORT
+export type WooUpsertSubscriptionData = Pick<
+  Subscription,
+  | 'type'
+  | 'status'
+  | 'frequency'
+  | 'shippingType'
+  | 'quantity250'
+  | 'recipientName'
+  | 'recipientEmail'
+  | 'recipientMobile'
+  | 'recipientAddress1'
+  | 'recipientAddress2'
+  | 'recipientPostalCode'
+  | 'recipientPostalPlace'
+  | 'isPrivateDeliveryAddress'
+  | 'wooCustomerId'
+  | 'wooCustomerName'
+  | 'wooSubscriptionId'
+  | 'wooNextPaymentDate'
+  | 'wooCreatedAt'
+  | 'wooUpdatedAt'
+>;
+
+// WOO IMPORT
+export type WooGiftSubscriptionCreateInput = Pick<
   Subscription,
   | 'status'
   | 'frequency'
@@ -85,9 +109,9 @@ export type GiftSubscriptionCreateInput = Pick<
   | 'recipientPostalPlace'
   | 'customerNote'
   | 'internalNote'
+  | 'wooCustomerName'
   | 'gift_wooOrderId'
   | 'gift_wooOrderLineItemId'
-  | 'wooCustomerName'
   | 'gift_firstDeliveryDate'
   | 'gift_customerFirstDeliveryDate'
   | 'gift_durationMonths'

@@ -1,7 +1,6 @@
 import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
 import * as orderRepository from '~/_libs/core/repositories/order';
 
-import { SubscriptionStatus } from '~/_libs/core/repositories/subscription';
 import { OrderStatus, OrderType } from '~/_libs/core/repositories/order';
 
 import { getCoffees } from '../core/repositories/coffee.server';
@@ -20,23 +19,15 @@ import updateStatus from './update-status';
 import { WOO_STATUS_COMPLETED } from './constants';
 import { type WooOrder } from './orders/types';
 
-async function resolveSubscription(wooOrder: any) {
-  // console.debug('Resolving subscription for order', wooOrder.wooOrderId);
-  if (!wooOrder.wooCustomerId) {
+async function resolveSubscription(info: OrderInfo) {
+  if (!info.wooCustomerId) {
     // ORDER PLACED AS "GUEST" IN VIEW. CANNOT BE SUBSCRIPTION RENEWAL.
     return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
   }
 
   const subscription = await subscriptionRepository.getSubscription({
     where: {
-      AND: [
-        {
-          wooCustomerId: wooOrder.wooCustomerId,
-        },
-        {
-          status: SubscriptionStatus.ACTIVE,
-        },
-      ],
+      wooCustomerId: info.wooCustomerId,
     },
     select: {
       id: true,
@@ -44,9 +35,9 @@ async function resolveSubscription(wooOrder: any) {
   });
 
   if (!subscription) {
-    if (wooOrder.created_via === 'subscription') {
+    if (info.wooCreatedVia === 'subscription') {
       console.warn(
-        `No subscription was found for Woo renewal order. Woo order id: ${wooOrder.wooOrderId}. Order is added to default system renewal subscription.`
+        `No subscription was found for Woo renewal order. Woo order id: ${info.order.id} ${info.wooCustomerId}. Order is added to default system renewal subscription.`
       );
       return WOO_RENEWALS_SUBSCRIPTION_ID;
     }
@@ -128,7 +119,7 @@ export default async function importWooOrders() {
       }
 
       if (!exists) {
-        await subscriptionRepository.createGiftSubscription(gift);
+        await subscriptionRepository.createGiftSubscriptionFromWoo(gift);
         created++;
       }
 
@@ -147,7 +138,7 @@ export default async function importWooOrders() {
 
     // SUBSCRIPTION RENEWALS
     if (info.order.type === OrderType.RENEWAL) {
-      info.order.subscriptionId = await resolveSubscription(info.order);
+      info.order.subscriptionId = await resolveSubscription(info);
       info.order.deliveryId = nextDelivery.id;
 
       let res = await orderRepository.upsertOrderFromWoo(

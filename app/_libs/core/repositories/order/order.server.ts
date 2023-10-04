@@ -1,7 +1,7 @@
 import { prisma } from '~/db.server';
 
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../../settings';
-import type { OrderItemUpsertData } from './types';
+import type { Order, OrderItemUpsertData } from './types';
 import { OrderStatus } from './types';
 import { ShippingType } from '../subscription/types';
 
@@ -90,7 +90,7 @@ export async function upsertOrderItem(
 
 export async function upsertOrderFromWoo(
   wooOrderId: number,
-  data: any
+  data: Order
 ): Promise<
   | { result: 'updated' | 'new' | 'notChanged'; orderId: number }
   | { result: 'ignored' }
@@ -116,11 +116,12 @@ export async function upsertOrderFromWoo(
     }
   }
 
-  console.log(
-    'Creating order id status active',
+  console.debug(
+    'Creating order from woo',
+    data.subscriptionId,
     data.wooOrderId,
-    data.status,
-    data.wooOrderNumber
+    data.wooOrderNumber,
+    data.status
   );
 
   // NEVER INSERT NOT ACTIVE ORDERS

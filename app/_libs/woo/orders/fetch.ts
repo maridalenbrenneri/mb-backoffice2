@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { z } from 'zod';
 
-import type { GiftSubscriptionCreateInput } from '~/_libs/core/repositories/subscription';
+import type { WooGiftSubscriptionCreateInput } from '~/_libs/core/repositories/subscription';
 import {
   WOO_GABO_PRODUCT_ID,
   WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS,
@@ -87,7 +87,7 @@ export async function fetchOrders(): Promise<WooOrder[]> {
 
 // TO BE REMOVED - ONLY FOR INITAL IMPORT
 export async function fetchGiftSubscriptionOrders(): Promise<
-  GiftSubscriptionCreateInput[]
+  WooGiftSubscriptionCreateInput[]
 > {
   let giftSubscriptionOrders: Array<any> = [];
   let page: number | null = 1;

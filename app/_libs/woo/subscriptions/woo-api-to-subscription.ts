@@ -8,6 +8,7 @@ import {
 } from '../constants';
 
 import * as settings from '../../core/settings';
+import type { WooUpsertSubscriptionData } from '../../core/repositories/subscription/types';
 import {
   ShippingType,
   SubscriptionFrequency,
@@ -93,15 +94,18 @@ const resolveSubscriptionStatus = (wooStatus: string): SubscriptionStatus => {
 function resolveShippingType(subscription: WooSubscription) {
   if (
     subscription.coupon_lines?.some(
-      (d: any) => d.code === settings.WOO_NO_SHIPPING_COUPON
+      (d: { code: string }) => d.code === settings.WOO_NO_SHIPPING_COUPON
     )
-  )
+  ) {
     return ShippingType.LOCAL_PICK_UP;
+  }
 
   return ShippingType.SHIP;
 }
 
-const wooApiToSubscription = (subscription: WooSubscription): any => {
+export const wooApiToUpsertSubscriptionData = (
+  subscription: WooSubscription
+): WooUpsertSubscriptionData => {
   if (!subscription.line_items?.length)
     throw new Error(
       `ERROR when importing Woo subscription, no line items on subscription. Woo subscription id ${subscription.id}`
@@ -136,7 +140,6 @@ const wooApiToSubscription = (subscription: WooSubscription): any => {
     recipientPostalPlace: subscription.shipping.city,
     recipientEmail: subscription.billing.email,
     recipientMobile: subscription.billing.phone,
+    isPrivateDeliveryAddress: true,
   };
 };
-
-export default wooApiToSubscription;
