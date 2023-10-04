@@ -61,7 +61,7 @@ export const loader = async ({ request }) => {
       type: true,
     },
     orderBy: { date: 'desc' },
-    take: 5,
+    take: 10,
   });
 
   const selectedDelivery = deliveryId
@@ -196,6 +196,14 @@ export default function Packing() {
       },
       { replace: true }
     );
+  };
+
+  const completingText = () => {
+    if (currentOrders.length >= COMPLETE_ORDERS_BATCH_MAX) {
+      return `Completing ${COMPLETE_ORDERS_BATCH_MAX} of ${currentOrders.length} orders...`;
+    }
+
+    return `Completing ${currentOrders.length} order(s)...`;
   };
 
   const renderAccordian = (
@@ -400,9 +408,7 @@ export default function Packing() {
               <Grid container>
                 <Grid item xs={12} style={{ textAlign: 'center' }}>
                   <CircularProgress color="primary" />
-                  <Typography>
-                    Completing {currentOrders.length} order(s)...
-                  </Typography>
+                  <Typography>{completingText()}</Typography>
                   <p>
                     <small>This can take a while if many orders.</small>
                   </p>
