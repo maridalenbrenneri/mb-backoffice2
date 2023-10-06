@@ -78,12 +78,8 @@ export async function updateFirstDeliveryDateOnGiftSubscription(
 export async function createGiftSubscriptionFromWoo(
   input: WooGiftSubscriptionCreateInput
 ) {
-  return prisma.subscription.upsert({
-    where: {
-      gift_wooOrderLineItemId: input.gift_wooOrderLineItemId || undefined,
-    },
-    update: {},
-    create: {
+  return prisma.subscription.create({
+    data: {
       type: SubscriptionType.PRIVATE_GIFT,
       shippingType: ShippingType.SHIP,
       recipientCountry: 'NO',

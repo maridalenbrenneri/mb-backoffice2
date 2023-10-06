@@ -107,7 +107,9 @@ export default async function importWooOrders() {
     // GIFT SUBSCRIPTIONS
     for (const gift of info.gifts) {
       let exists = await subscriptionRepository.getSubscription({
-        gift_wooOrderLineItemId: gift.wooOrderLineItemId,
+        where: {
+          gift_wooOrderLineItemId: gift.gift_wooOrderLineItemId,
+        },
       });
 
       if (info.order.status === OrderStatus.CANCELLED && exists) {

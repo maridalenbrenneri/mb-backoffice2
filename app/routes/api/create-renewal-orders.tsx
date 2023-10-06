@@ -27,7 +27,7 @@ export const action: ActionFunction = async ({ request }) => {
     });
 
     return json(result);
-  } catch (err) {
+  } catch (err: any) {
     await createJobResult({
       jobStartedAt,
       name,

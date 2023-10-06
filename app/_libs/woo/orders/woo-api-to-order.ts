@@ -131,9 +131,12 @@ export default async function wooApiToOrderInfo(
   const normalItems = items.filter(
     (i) => i.wooProductId !== WOO_GABO_PRODUCT_ID
   );
+  const gifts = hasGifts ? wooApiToGiftSubscriptions([wooOrder]) : [];
+  if (gifts.length)
+    console.debug(`Found ${gifts.length} gift subscriptions in orders`);
 
   return {
-    gifts: hasGifts ? wooApiToGiftSubscriptions([wooOrder]) : [],
+    gifts,
     order: {
       ...orderBaseData,
       type: OrderType.CUSTOM,
