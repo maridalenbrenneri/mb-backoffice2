@@ -7,6 +7,10 @@ import { renderToPipeableStream } from 'react-dom/server';
 
 const ABORT_DELAY = 5000;
 
+process.env.TZ = 'Europe/Oslo';
+
+console.debug('TIMEZONE', process.env.TZ);
+
 export default function handleRequest(
   request: Request,
   responseStatusCode: number,

@@ -48,6 +48,12 @@ export const WooOrderData = z.object({
 
   customer_note: z.string().nullable(),
 
+  coupon_lines: z.array(
+    z.object({
+      code: z.string(),
+    })
+  ),
+
   line_items: z.array(WooOrderLineItemData),
 
   meta_data: z.array(WooOrderMetaDataData),

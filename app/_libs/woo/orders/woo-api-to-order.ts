@@ -42,11 +42,11 @@ const resolveQuantity = (variationId: number) => {
   return foo?.quantity || 0;
 };
 
-const resolveFullname = (wooApiOrder: any) => {
+const resolveFullname = (wooApiOrder: WooOrder) => {
   return `${wooApiOrder.shipping?.first_name} ${wooApiOrder.shipping?.last_name}`;
 };
 
-function resolveShippingType(wooApiOrder: any) {
+function resolveShippingType(wooApiOrder: WooOrder) {
   const couponLines = wooApiOrder.coupon_lines;
 
   if (couponLines?.some((d: any) => d.code === WOO_NO_SHIPPING_COUPON))
@@ -55,7 +55,7 @@ function resolveShippingType(wooApiOrder: any) {
   return ShippingType.SHIP;
 }
 
-export function hasSupportedStatus(wooApiOrder: any) {
+export function hasSupportedStatus(wooApiOrder: WooOrder) {
   switch (wooApiOrder.status) {
     case constants.WOO_STATUS_PROCESSING:
     case constants.WOO_STATUS_CANCELLED:
