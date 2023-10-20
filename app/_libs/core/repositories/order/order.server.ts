@@ -154,6 +154,7 @@ export async function upsertOrderFromWoo(
       quantity250: data.quantity250,
       quantity500: 0,
       quantity1200: 0,
+      customerNote: data.customerNote,
     },
   });
 
