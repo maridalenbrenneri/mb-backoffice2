@@ -42,9 +42,9 @@ const actionBase = async (request: any) => {
   invariant(typeof country === 'string', 'country must be a string');
 
   const data = {
-    name,
-    productCode,
-    country,
+    name: name.trim(),
+    productCode: productCode.trim(),
+    country: country.trim(),
     status,
   };
 
