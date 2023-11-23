@@ -44,6 +44,39 @@ model Coffee {
   updatedAt DateTime @updatedAt @db.Timestamptz
 }
 
+enum ProductStatus {
+  PUBLISHED    
+  PRIVATE
+  DELETED
+}
+
+enum ProductStockStatus {
+  IN_STOCK  
+  OUT_OF_STOCK
+  IN_ORDER
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+
+  status      ProductStatus
+  stockStatus ProductStockStatus
+
+  category    String @default("coffee")
+
+  productCode String?
+  name        String
+  country     String?
+
+  wooProductId    Int? @unique
+  wooProductUrl   String?
+  wooCreatedAt    DateTime? @db.Timestamptz
+  wooUpdatedAt    DateTime? @db.Timestamptz
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+}
+
 enum SubscriptionType {
   PRIVATE
   PRIVATE_GIFT
