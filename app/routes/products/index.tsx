@@ -1,11 +1,12 @@
-import { json } from '@remix-run/node';
+import type { ActionFunction } from '@remix-run/node';
 import {
   Form,
-  Link,
+  useActionData,
   useLoaderData,
   useSearchParams,
   useSubmit,
 } from '@remix-run/react';
+import { useEffect, useState } from 'react';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -15,57 +16,61 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import {
+  Alert,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Snackbar,
+} from '@mui/material';
+
+import { ProductStatus, ProductStockStatus } from '@prisma/client';
 
 import type { Product } from '~/_libs/core/repositories/product';
-import { getProducts } from '~/_libs/core/repositories/product';
-import { ProductStatus, ProductStockStatus } from '@prisma/client';
-import { useState } from 'react';
+import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { Edit } from '@mui/icons-material';
+import { productActionHandler } from './actions';
+import type { LoaderData } from './loader';
+import { productLoader } from './loader';
+import SetProductCodeDialog from './set-product-code-dialog';
+import SetProductStockStatusDialog from './set-product-stock-status-dialog';
 
 const defaultStatus = ProductStatus.PUBLISHED;
 const defaultStockStatus = ProductStockStatus.IN_STOCK;
 
-type LoaderData = {
-  products: Awaited<ReturnType<typeof getProducts>>;
+export const loader = async ({ request }) => {
+  return await productLoader(request);
 };
 
-function buildFilter(search: URLSearchParams) {
-  const filter: any = { where: {} };
-
-  const getStatusFilter = search.get('status') || defaultStatus;
-  const getStockStatusFilter = search.get('stockStatus') || defaultStockStatus;
-
-  // TODO: Filter fuckup when both are used
-
-  if (getStatusFilter !== '_all') filter.where.status = getStatusFilter;
-  if (getStockStatusFilter !== '_all')
-    filter.where.stockStatus = getStockStatusFilter;
-
-  return filter;
-}
-
-export const loader = async ({ request }) => {
-  const url = new URL(request.url);
-  const search = new URLSearchParams(url.search);
-
-  const filter = buildFilter(search);
-
-  console.log(filter);
-
-  const products = await getProducts(filter);
-  return json<LoaderData>({
-    products,
-  });
+export const action: ActionFunction = async ({ request }) => {
+  return await productActionHandler(request);
 };
 
 export default function Products() {
+  const data = useActionData();
+
   const { products } = useLoaderData() as unknown as LoaderData;
   const [params] = useSearchParams();
   const submit = useSubmit();
+  const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
   const [stockStatus, setStockStatus] = useState(
     params.get('stockStatus') || defaultStockStatus
   );
+
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isSetProductCodeDialogOpen, setIsSetProductCodeDialogOpen] =
+    useState(false);
+  const [
+    isSetProductStockStatusDialogOpen,
+    setIsSetProductStockStatusDialogOpen,
+  ] = useState(false);
+
+  useEffect(() => {
+    setOpenSnack(data?.didUpdate === true);
+  }, [data]);
 
   const doSubmit = (data: any) => {
     submit(data, { replace: true });
@@ -75,18 +80,49 @@ export default function Products() {
     setStatus(e.target.value);
     doSubmit({
       status: e.target.value,
+      stockStatus,
     });
   };
 
   const handleSelectStockStatus = (e: any) => {
     setStockStatus(e.target.value);
     doSubmit({
+      status,
       stockStatus: e.target.value,
     });
   };
 
+  const openSetProductCodeDialog = (product: Product) => {
+    setSelectedProduct(product);
+    setIsSetProductCodeDialogOpen(true);
+  };
+
+  const onCloseSetProductCodeDialog = () => {
+    setSelectedProduct(null);
+    setIsSetProductCodeDialogOpen(false);
+  };
+
+  const openSetProductStockStatusDialog = (product: Product) => {
+    setSelectedProduct(product);
+    setIsSetProductStockStatusDialogOpen(true);
+  };
+
+  const onCloseSetProductStockStatusDialog = () => {
+    setSelectedProduct(null);
+    setIsSetProductStockStatusDialogOpen(false);
+  };
+
   return (
     <main>
+      <Snackbar
+        open={openSnack}
+        autoHideDuration={4000}
+        onClose={() => setOpenSnack(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity="success">{data?.updateMessage || 'Updated'}</Alert>
+      </Snackbar>
+
       <Typography variant="h1">Products</Typography>
 
       <Form method="get">
@@ -134,8 +170,9 @@ export default function Products() {
               <TableCell>Stock status</TableCell>
               <TableCell>Code</TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Country</TableCell>
               <TableCell>Woo Product ID</TableCell>
+              <TableCell>Created</TableCell>
+              <TableCell>Updated</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -144,25 +181,76 @@ export default function Products() {
                 key={product.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                <TableCell>
-                  {/* <Link to={`admin/${product.id}`}>{product.id}</Link> */}
-                  {product.id}
-                </TableCell>
+                <TableCell>{product.id}</TableCell>
                 <TableCell>
                   <small>{product.status}</small>
                 </TableCell>
                 <TableCell>
                   <small>{product.stockStatus}</small>
+
+                  <Button
+                    sx={{
+                      color: '#999',
+                      fontSize: 11,
+                      marginLeft: 1,
+                    }}
+                    onClick={() => openSetProductStockStatusDialog(product)}
+                    variant="text"
+                  >
+                    <Edit />
+                  </Button>
                 </TableCell>
-                <TableCell>{product.productCode}</TableCell>
+                <TableCell>
+                  {product.productCode ? (
+                    <span>{product.productCode} </span>
+                  ) : (
+                    <small style={{ fontStyle: 'italic' }}>n/a</small>
+                  )}
+                  <Button
+                    sx={{
+                      color: '#999',
+                      fontSize: 11,
+                      marginLeft: 1,
+                    }}
+                    onClick={() => openSetProductCodeDialog(product)}
+                    variant="text"
+                  >
+                    <Edit />
+                  </Button>
+                </TableCell>
                 <TableCell>{product.name}</TableCell>
-                <TableCell>{product.country}</TableCell>
-                <TableCell>{product.wooProductId}</TableCell>
+                <TableCell>
+                  <a
+                    href={product.wooProductUrl || ''}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {product.wooProductId}
+                  </a>
+                </TableCell>
+                <TableCell>
+                  <small>{toPrettyDateTime(product.createdAt, false)}</small>
+                </TableCell>
+                <TableCell>
+                  <small>{toPrettyDateTime(product.updatedAt, false)}</small>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <SetProductStockStatusDialog
+        product={selectedProduct}
+        open={isSetProductStockStatusDialogOpen}
+        onClose={onCloseSetProductStockStatusDialog}
+      />
+
+      <SetProductCodeDialog
+        product={selectedProduct}
+        open={isSetProductCodeDialogOpen}
+        onClose={onCloseSetProductCodeDialog}
+      />
     </main>
   );
 }

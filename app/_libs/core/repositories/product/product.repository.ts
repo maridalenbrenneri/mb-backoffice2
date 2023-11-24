@@ -40,7 +40,7 @@ export async function updateOrderStockStatus(
 }
 
 export async function updateProduct(id: number, data: any) {
-  return prisma.order.update({
+  return prisma.product.update({
     where: { id },
     data,
   });
