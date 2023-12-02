@@ -128,7 +128,9 @@ export default function JobResultPage() {
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell>woo-import-products</TableCell>
-              <TableCell>Import products from Woo.</TableCell>
+              <TableCell>
+                Import products from Woo. Runs once a day at 17:00
+              </TableCell>
               <TableCell>
                 <small>
                   {toPrettyDateTime(importWooProducts?.createdAt, true)}
@@ -155,7 +157,7 @@ export default function JobResultPage() {
             >
               <TableCell>woo-import-subscriptions</TableCell>
               <TableCell>
-                Import of all subscriptions from Woo. Runs once a day.
+                Import of all subscriptions from Woo. Runs once a day at 03:00.
               </TableCell>
               <TableCell>
                 <small>
@@ -188,7 +190,7 @@ export default function JobResultPage() {
               <TableCell>update-status-on-gift-subscriptions</TableCell>
               <TableCell>
                 Resolves and updates status on any gift subscription that has
-                expired or should be started . Runs once a day.
+                expired or should be started . Runs once a day at 04:00
               </TableCell>
               <TableCell>
                 <small>
@@ -224,7 +226,7 @@ export default function JobResultPage() {
               <TableCell>create-renewal-orders</TableCell>
               <TableCell>
                 Creates renewal orders for active gift and B2B subscriptions.
-                Runs every Thursday.
+                Runs every Thursday at 05:00.
               </TableCell>
               <TableCell>
                 <small>

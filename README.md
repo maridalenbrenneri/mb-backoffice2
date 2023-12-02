@@ -114,6 +114,12 @@ npx prisma migrate dev --name init
 fly deploy
 ```
 
+#### Build locally on deploy (sometimes faster)
+
+```sh
+fly deploy --local-only
+```
+
 # Concepts
 
 Everything is based on subscriptions, either a private (PRIVATE) subscription imported from Woo, a gift subscription (PRIVATE_GIFT) or a business subscription (B2B). Non-subscription
