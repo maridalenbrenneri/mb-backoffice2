@@ -26,7 +26,7 @@ type OrderActionData = {
 type OrderItemActionData =
   | {
       orderId: null | string;
-      coffeeId: null | string;
+      productId: null | string;
       variation: null | string;
       quantity: null | string;
     }
@@ -89,7 +89,7 @@ export const upsertOrderAction = async (values: any) => {
 export const upsertOrderItemAction = async (values: any) => {
   const errors: OrderItemActionData = {
     orderId: values.orderId ? null : 'Order is required',
-    coffeeId: values.coffeeId ? null : 'Coffee is required',
+    productId: values.productId ? null : 'Product is required',
     variation: values.variation ? null : 'Variation is required',
     quantity: values.quantity ? null : 'Quantity is required',
   };
@@ -101,7 +101,7 @@ export const upsertOrderItemAction = async (values: any) => {
 
   const data = {
     orderId: +values.orderId,
-    coffeeId: +values.coffeeId,
+    productId: +values.productId,
     variation: values.variation,
     quantity: +values.quantity,
   } as any;

@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import type { Coffee, Delivery } from '@prisma/client';
+import type { Delivery, Product } from '@prisma/client';
 
 import { SubscriptionStatus } from '~/_libs/core/repositories/subscription';
 import type { Subscription } from '~/_libs/core/repositories/subscription';
@@ -21,7 +21,6 @@ import { OrderStatus } from '~/_libs/core/repositories/order';
 
 import { getLastJobResult } from '~/_libs/core/repositories/job-result.server';
 import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
-import { getCoffees } from '~/_libs/core/repositories/coffee.server';
 
 import { resolveAboStats } from '~/_libs/core/services/subscription-stats';
 import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
@@ -31,8 +30,10 @@ import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
 
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
+import { getProducts } from '~/_libs/core/repositories/product';
 
 type LoaderData = {
+  wooProductImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   wooOrderImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   updateGaboStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
@@ -41,11 +42,12 @@ type LoaderData = {
     ReturnType<typeof subscriptionRepo.getSubscriptions>
   >;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
-  currentCoffees: Awaited<ReturnType<typeof getCoffees>>;
+  currentCoffees: Awaited<ReturnType<typeof getProducts>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
 export const loader = async () => {
+  const wooProductImportResult = await getLastJobResult('woo-import-products');
   const wooSubscriptionImportResult = await getLastJobResult(
     'woo-import-subscriptions'
   );
@@ -77,10 +79,10 @@ export const loader = async () => {
   // TODO: ROAST OVERVIEW SHOULD DO IT'S OWN DATA LOADING
   const currentDeliveries = await getDeliveries({
     include: {
-      coffee1: { select: { id: true, productCode: true } },
-      coffee2: { select: { id: true, productCode: true } },
-      coffee3: { select: { id: true, productCode: true } },
-      coffee4: { select: { id: true, productCode: true } },
+      product1: { select: { id: true, productCode: true } },
+      product2: { select: { id: true, productCode: true } },
+      product3: { select: { id: true, productCode: true } },
+      product4: { select: { id: true, productCode: true } },
       orders: {
         where: {
           status: { in: [OrderStatus.ACTIVE, OrderStatus.COMPLETED] },
@@ -95,7 +97,7 @@ export const loader = async () => {
           quantity1200: true,
           orderItems: {
             select: {
-              coffeeId: true,
+              productId: true,
               quantity: true,
               variation: true,
             },
@@ -107,7 +109,8 @@ export const loader = async () => {
     take: 5,
   });
 
-  const currentCoffees = await getCoffees({
+  const currentCoffees = await getProducts({
+    where: { category: 'coffee' },
     select: {
       id: true,
       productCode: true,
@@ -118,6 +121,7 @@ export const loader = async () => {
   const cargonizerProfile = await getCargonizerProfile();
 
   return json<LoaderData>({
+    wooProductImportResult,
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
@@ -131,6 +135,7 @@ export const loader = async () => {
 
 export default function Index() {
   const {
+    wooProductImportResult,
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
@@ -143,7 +148,7 @@ export default function Index() {
 
   const [subscriptions, setSubscriptions] = useState<Subscription[]>();
   const [deliveries, setDeliveries] = useState<Delivery[]>();
-  const [coffees, setCoffees] = useState<Coffee[]>();
+  const [coffees, setCoffees] = useState<Product[]>();
   const [cargonizer, setCargonizer] = useState();
 
   const [orderImportResult, setOrderImportResult] = useState<any>(null);
@@ -295,6 +300,7 @@ export default function Index() {
         <Grid item md={7} xl={5}>
           <Paper sx={{ p: 1 }}>
             <JobsInfoBox
+              products={wooProductImportResult[0]}
               subscriptions={wooSubscriptionImportResult[0]}
               orders={wooOrderImportResult[0]}
               gaboStatus={updateGaboStatusResult[0]}

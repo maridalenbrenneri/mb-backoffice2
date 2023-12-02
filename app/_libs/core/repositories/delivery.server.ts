@@ -6,8 +6,15 @@ import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '../settings';
 export type { Delivery };
 export type DeliveryUpsertData = Pick<
   Delivery,
-  'date' | 'type' | 'coffee1Id' | 'coffee2Id' | 'coffee3Id' | 'coffee4Id'
+  'date' | 'type' | 'product1Id' | 'product2Id' | 'product3Id' | 'product4Id'
 >;
+
+export async function getDeliveryById(id: number, include?: any) {
+  return prisma.delivery.findUnique({
+    where: { id },
+    include,
+  });
+}
 
 export async function getDeliveries(filter?: any) {
   filter = filter || {};
@@ -41,10 +48,10 @@ export async function upsertDelivery(
     create: {
       date: data.date,
       type: data.type,
-      coffee1Id: data.coffee1Id || null,
-      coffee2Id: data.coffee2Id || null,
-      coffee3Id: data.coffee3Id || null,
-      coffee4Id: data.coffee4Id || null,
+      product1Id: data.product1Id || null,
+      product2Id: data.product2Id || null,
+      product3Id: data.product3Id || null,
+      product4Id: data.product4Id || null,
     },
   });
 }

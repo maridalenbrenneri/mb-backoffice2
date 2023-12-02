@@ -1,6 +1,6 @@
 import { WOO_API_BASE_URL } from './constants';
 
-export default async function updateStatus(
+export default async function orderUpdateStatus(
   wooOrderId: number,
   status: 'processing' | 'completed' | 'cancelled'
 ) {

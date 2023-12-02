@@ -3,8 +3,6 @@ import * as orderRepository from '~/_libs/core/repositories/order';
 
 import { OrderStatus, OrderType } from '~/_libs/core/repositories/order';
 
-import { getCoffees } from '../core/repositories/coffee.server';
-
 import { fetchOrders } from './orders/fetch';
 import { getNextOrCreateDelivery } from '../core/services/delivery-service';
 import type { OrderInfo } from './orders/woo-api-to-order';
@@ -15,9 +13,10 @@ import {
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
 } from '../core/settings';
-import updateStatus from './update-status';
+import orderUpdateStatus from './order-update-status';
 import { WOO_STATUS_COMPLETED } from './constants';
 import { type WooOrder } from './orders/types';
+import { getProducts } from '../core/repositories/product';
 
 async function resolveSubscription(info: OrderInfo) {
   if (!info.wooCustomerId) {
@@ -63,17 +62,17 @@ export default async function importWooOrders() {
   console.debug(`=> DONE (${wooOrders.length} fetched)`);
 
   const nextDelivery = await getNextOrCreateDelivery();
-  const coffees = await getCoffees();
+  const products = await getProducts();
 
-  const getCoffeeIdFromCode = (code: string) => {
-    const coffee = coffees.find((c) => c.productCode === code);
-    return coffee?.id;
+  const findProductByWooProductId = (wooProductId: number) => {
+    const product = products.find((c) => c.wooProductId === wooProductId);
+    return product?.id;
   };
 
   const verifyThatItemsAreValid = (items: any[], wooOrderId: number) => {
-    if (items.some((i) => !getCoffeeIdFromCode(i.productCode))) {
+    if (items.some((i) => !findProductByWooProductId(i.wooProductId))) {
       console.warn(
-        `[woo-import-orders] Order contained item with invalid product code, import will ignore order. Woo order id: ${wooOrderId}`
+        `[woo-import-orders] Order contained item with product not existing in Backoffice product code, import will ignore order. Woo order id: ${wooOrderId}`
       );
       ordersWithUnknownProduct.push(wooOrderId);
       return false;
@@ -131,7 +130,7 @@ export default async function importWooOrders() {
           'Imported order with nothing but gift subscription, completing order in Woo',
           info.order.wooOrderId
         );
-        await updateStatus(
+        await orderUpdateStatus(
           info.order.wooOrderId as number,
           WOO_STATUS_COMPLETED
         );
@@ -167,16 +166,20 @@ export default async function importWooOrders() {
 
       if (res.result === 'new') {
         for (const item of info.items) {
-          const coffeeId = getCoffeeIdFromCode(
-            item.productCode
-          ) as unknown as number;
-
+          const productId = findProductByWooProductId(item.wooProductId);
+          if (!productId) {
+            throw new Error(
+              'Product not found, should never happen, order has been verified'
+            );
+          }
           await orderRepository.upsertOrderItemFromWoo(item.wooOrderItemId, {
             orderId: res.orderId,
-            coffeeId,
+            productId: productId as number,
             variation: '_250',
             quantity: item.quantity,
           });
+
+          console.debug('ORDER ITEM', productId, item.wooProductId);
         }
 
         created++;

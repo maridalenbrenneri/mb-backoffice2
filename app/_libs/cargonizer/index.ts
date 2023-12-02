@@ -26,7 +26,7 @@ const shipping_type_standard_private = 1;
 const shipping_type_standard_business = 2;
 
 const headers = {
-  'X-Cargonizer-Key': api_key,
+  'X-Cargonizer-Key': api_key || '',
   'X-Cargonizer-Sender': sender_id,
 };
 
@@ -118,7 +118,7 @@ export async function printConsignmentLabels(consignmentIds: number[]) {
     throwIfAnyError(json.errors);
 
     return { result: 'Success', ids: consignmentIds };
-  } catch (err) {
+  } catch (err: any) {
     console.warn(
       '[Cargonizer] Error when printing Cargonizer label. Message: ',
       err.message

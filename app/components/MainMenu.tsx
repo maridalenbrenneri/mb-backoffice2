@@ -75,11 +75,11 @@ export default function MainMenu(props: { loggedIn: boolean }) {
 
               <ListItemButton
                 component={Link}
-                to={'/coffees'}
+                to={'/products'}
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <CoffeeIcon />
-                <ListItemText primary="Coffees" />
+                <ListItemText primary="Products" />
               </ListItemButton>
 
               <Divider />

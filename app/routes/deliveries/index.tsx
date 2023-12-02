@@ -15,6 +15,7 @@ import type { Delivery } from '~/_libs/core/repositories/delivery.server';
 import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
 import { toPrettyDate } from '~/_libs/core/utils/dates';
 import { useEffect, useState } from 'react';
+import { Coffee, Product } from '@prisma/client';
 
 type LoaderData = {
   loadedDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
@@ -24,7 +25,11 @@ function buildFilter(search: URLSearchParams) {
   const filter: any = {
     where: {},
     include: {
-      coffee1: true,
+      product1: true,
+      product2: true,
+      product3: true,
+      product4: true,
+      coffee1: true, // Load legacy coffee data (for Delivery Days created before Product was introduced)
       coffee2: true,
       coffee3: true,
       coffee4: true,
@@ -50,6 +55,16 @@ export const loader = async ({ request }) => {
     loadedDeliveries,
   });
 };
+
+function resolveCoffeeLabel(product: Product, coffee: Coffee) {
+  console.log('resolveCoffeeLabel', product?.productCode, coffee?.productCode);
+  if (product) return product.productCode || `${product.id} (no code set)`;
+
+  // Handles legacy Delivery Days created before Product was introduced (can eventually be removed)
+  if (coffee) return coffee.productCode || 'not set';
+
+  return 'not set';
+}
 
 export default function Deliveries() {
   const { loadedDeliveries } = useLoaderData() as unknown as LoaderData;
@@ -105,10 +120,18 @@ export default function Deliveries() {
                 <TableCell>
                   <small>{delivery.type}</small>
                 </TableCell>
-                <TableCell>{delivery.coffee1?.productCode}</TableCell>
-                <TableCell>{delivery.coffee2?.productCode}</TableCell>
-                <TableCell>{delivery.coffee3?.productCode}</TableCell>
-                <TableCell>{delivery.coffee4?.productCode}</TableCell>
+                <TableCell>
+                  {resolveCoffeeLabel(delivery.product1, delivery.coffee1)}
+                </TableCell>
+                <TableCell>
+                  {resolveCoffeeLabel(delivery.product2, delivery.coffee2)}
+                </TableCell>
+                <TableCell>
+                  {resolveCoffeeLabel(delivery.product3, delivery.coffee3)}
+                </TableCell>
+                <TableCell>
+                  {resolveCoffeeLabel(delivery.product4, delivery.coffee4)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

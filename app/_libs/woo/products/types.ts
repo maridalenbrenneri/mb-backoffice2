@@ -10,4 +10,10 @@ export const WooProductData = z.object({
   permalink: z.string(),
 });
 
+export const WooProductUpdateData = z.object({
+  status: z.string().optional(),
+  stock_status: z.string().optional(),
+});
+
 export type WooProduct = z.infer<typeof WooProductData>;
+export type WooProductUpdate = z.infer<typeof WooProductUpdateData>;

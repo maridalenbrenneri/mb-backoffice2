@@ -9,7 +9,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-import type { Coffee, Delivery, Subscription } from '@prisma/client';
+import type { Delivery, Product, Subscription } from '@prisma/client';
 
 import { toPrettyDateText } from '~/_libs/core/utils/dates';
 import { getRoastOverview } from '~/_libs/core/services/roast-service';
@@ -30,7 +30,7 @@ import { deliveryDayTypeToLabel } from '~/_libs/core/utils/labels';
 export default function RoastOverviewBox(props: {
   subscriptions: Subscription[];
   deliveries: Delivery[];
-  coffees: Coffee[];
+  coffees: Product[];
 }) {
   const { subscriptions, deliveries, coffees } = props;
   const [delivery, setDelivery] = useState<Delivery>();
@@ -116,7 +116,7 @@ export default function RoastOverviewBox(props: {
           <TableBody>
             <TableRow>
               <TableCell>
-                Coffee 1 - {delivery.coffee1?.productCode || notSetLabel}
+                Coffee 1 - {delivery.product1?.productCode || notSetLabel}
               </TableCell>
               <TableCell>{overview.coffee1kg}</TableCell>
               <TableCell>{overview._250.coffee1}</TableCell>
@@ -125,7 +125,7 @@ export default function RoastOverviewBox(props: {
             </TableRow>
             <TableRow>
               <TableCell>
-                Coffee 2 - {delivery.coffee2?.productCode || notSetLabel}
+                Coffee 2 - {delivery.product2?.productCode || notSetLabel}
               </TableCell>
               <TableCell>{overview.coffee2kg}</TableCell>
               <TableCell>{overview._250.coffee2}</TableCell>
@@ -134,7 +134,7 @@ export default function RoastOverviewBox(props: {
             </TableRow>
             <TableRow>
               <TableCell>
-                Coffee 3 - {delivery.coffee3?.productCode || notSetLabel}
+                Coffee 3 - {delivery.product3?.productCode || notSetLabel}
               </TableCell>
               <TableCell>{overview.coffee3kg}</TableCell>
               <TableCell>{overview._250.coffee3}</TableCell>
@@ -143,7 +143,7 @@ export default function RoastOverviewBox(props: {
             </TableRow>
             <TableRow>
               <TableCell>
-                Coffee 4 - {delivery.coffee4?.productCode || notSetLabel}
+                Coffee 4 - {delivery.product4?.productCode || notSetLabel}
               </TableCell>
               <TableCell>{overview.coffee4kg}</TableCell>
               <TableCell>{overview._250.coffee4}</TableCell>

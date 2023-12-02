@@ -26,19 +26,19 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontSize: 13,
+    fontSize: 12,
     allVariants: {
       fontFamily: 'dtl-nobel',
     },
     body1: {
       fontFamily: 'dtl-nobel',
       color: colors.COLOR_BLACK,
-      fontSize: 13,
-      lineHeight: 1.5,
+      fontSize: 12,
+      lineHeight: 1.4,
     },
     body2: {
       fontFamily: 'dtl-nobel',
-      fontSize: 13,
+      fontSize: 12,
       color: colors.COLOR_BLACK,
     },
     h1: {
@@ -89,7 +89,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           '&.MuiTableCell-head': {
-            fontSize: 12,
+            fontSize: 11,
             color: colors.COLOR_GREY2,
           },
         },
@@ -103,6 +103,7 @@ export const theme = createTheme({
       },
     },
     MuiSnackbar: {
+      // DOES NOT APPLY, HOW TO CUSTOMIZE SNACKBAR?
       styleOverrides: {
         root: {
           '& .MuiSnackbarContent-root': {

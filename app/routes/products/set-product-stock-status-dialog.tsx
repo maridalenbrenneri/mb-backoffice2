@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Dialog,
@@ -38,7 +39,7 @@ export default function SetProductStockStatusDialog(props: {
                   name={`stockStatus`}
                   defaultValue={product?.stockStatus}
                   // onChange={handleSelectStockStatus}
-                  sx={{ minWidth: 200 }}
+                  sx={{ minWidth: 200, marginBottom: 2 }}
                   size="small"
                 >
                   <MenuItem value={ProductStockStatus.IN_STOCK}>
@@ -50,6 +51,11 @@ export default function SetProductStockStatusDialog(props: {
                   </MenuItem>
                 </Select>
               </FormControl>
+            </Grid>
+            <Grid item xs={12} style={{ textAlign: 'center' }}>
+              <Alert severity="info">
+                This will update the stock status in Woo webshop
+              </Alert>
             </Grid>
             <Grid item xs={6} style={{ textAlign: 'left' }}>
               <Button

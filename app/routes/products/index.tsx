@@ -191,8 +191,9 @@ export default function Products() {
                   <Button
                     sx={{
                       color: '#999',
-                      fontSize: 11,
-                      marginLeft: 1,
+                      fontSize: 10,
+                      minWidth: 0,
+                      paddingLeft: 0.5,
                     }}
                     onClick={() => openSetProductStockStatusDialog(product)}
                     variant="text"
@@ -209,8 +210,9 @@ export default function Products() {
                   <Button
                     sx={{
                       color: '#999',
-                      fontSize: 11,
-                      marginLeft: 1,
+                      fontSize: 10,
+                      minWidth: 0,
+                      paddingLeft: 0.5,
                     }}
                     onClick={() => openSetProductCodeDialog(product)}
                     variant="text"

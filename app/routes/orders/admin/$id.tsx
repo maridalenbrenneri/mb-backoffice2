@@ -39,7 +39,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import CancelIcon from '@mui/icons-material/Cancel';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
-import type { Coffee, Order, OrderItem } from '@prisma/client';
+import type { Order, OrderItem, Product } from '@prisma/client';
 import { ShippingType } from '@prisma/client';
 import { OrderStatus, OrderType } from '@prisma/client';
 
@@ -49,7 +49,6 @@ import {
 } from '~/_libs/core/repositories/order/order.server';
 import { upsertOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
-import { getActiveCoffees } from '~/_libs/core/repositories/coffee.server';
 import type { DeliveryDate } from '~/_libs/core/utils/dates';
 import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
 import {
@@ -69,9 +68,10 @@ import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
 import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
 import { DateTime } from 'luxon';
 import CompleteAndShipResultBox from '~/components/CompleteAndShipResultBox';
+import { getProducts } from '~/_libs/core/repositories/product';
 
 type LoaderData = {
-  coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
+  products: Awaited<ReturnType<typeof getProducts>>;
   loadedOrder: Awaited<ReturnType<typeof getOrder>>;
   deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
 };
@@ -89,11 +89,11 @@ export const loader: LoaderFunction = async ({ params }) => {
   });
   invariant(loadedOrder, `Order not found: ${params.id}`);
 
-  const coffees = await getActiveCoffees();
+  const products = await getProducts();
 
   const deliveryDates = getNextDeliveryDates(5);
 
-  return json({ loadedOrder, coffees, deliveryDates });
+  return json({ loadedOrder, products, deliveryDates });
 };
 
 async function completeAndShipOrderAction(id: number) {
@@ -143,14 +143,14 @@ export const action: ActionFunction = async ({ request }) => {
   return await updateStatusAction(+values.id, _action as string);
 };
 
-function resolveCoffeeCode(coffeeId: number, coffees: Coffee[]) {
-  const coffee = coffees.find((c) => c.id === coffeeId);
-
-  return coffee?.productCode || `${coffeeId}`;
+function resolveCoffeeCode(productId: number | null, products: Product[]) {
+  if (!productId) return 'n/a';
+  const product = products.find((c) => c.id === productId);
+  return product?.productCode || `${productId}`;
 }
 
 export default function UpdateOrder() {
-  const { loadedOrder, coffees, deliveryDates } =
+  const { loadedOrder, products, deliveryDates } =
     useLoaderData() as unknown as LoaderData;
   const data = useActionData();
   const transition = useTransition();
@@ -571,7 +571,7 @@ export default function UpdateOrder() {
                       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       <TableCell>
-                        {resolveCoffeeCode(item.coffeeId, coffees)}
+                        {resolveCoffeeCode(item.productId, products)}
                       </TableCell>
                       <TableCell>
                         {coffeeVariationToLabel(item.variation)}

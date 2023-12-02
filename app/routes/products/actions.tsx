@@ -1,7 +1,10 @@
 import { json } from '@remix-run/node';
 
+import type { ProductStockStatus } from '@prisma/client';
+
 import * as productRepository from '~/_libs/core/repositories/product';
 import { nullIfEmptyOrWhitespace } from '~/_libs/core/utils/strings';
+import * as productService from '~/_libs/core/services/product-service';
 
 const updateProductCode = async (values: any) => {
   await productRepository.updateProduct(+values.id, {
@@ -15,15 +18,27 @@ const updateProductCode = async (values: any) => {
 };
 
 const updateStockStatus = async (values: any) => {
-  // TODO: Triggger update of stoack status in Woo
+  let stockStatus = nullIfEmptyOrWhitespace(values.stockStatus);
+
+  if (!stockStatus) {
+    return json({
+      didUpdate: false,
+      updateMessage: 'Invalid product stock status cannot update',
+    });
+  }
+
+  await productService.productSetStockStatus(
+    +values.id,
+    stockStatus as ProductStockStatus
+  );
 
   await productRepository.updateProduct(+values.id, {
-    stockStatus: nullIfEmptyOrWhitespace(values.stockStatus),
+    stockStatus,
   });
 
   return json({
     didUpdate: true,
-    updateMessage: 'Product code was updated',
+    updateMessage: 'Product stock status was updated',
   });
 };
 

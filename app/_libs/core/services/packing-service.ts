@@ -79,7 +79,7 @@ export async function generatePreview(deliveryIds: number[]) {
           id: true,
           variation: true,
           quantity: true,
-          coffee: true,
+          product: true,
         },
       },
       subscription: {

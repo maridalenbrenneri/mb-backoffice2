@@ -1,4 +1,4 @@
-import type { Coffee, Delivery, Order, Subscription } from '@prisma/client';
+import type { Delivery, Order, Product, Subscription } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 import { OrderType } from '@prisma/client';
@@ -54,13 +54,13 @@ function fromItems(orders: Order[]) {
 
       if (item.variation === '_250') {
         row._250 += item.quantity;
-        data.set(item.coffeeId, row);
+        data.set(item.productId, row);
       } else if (item.variation === '_500') {
         row._500 += item.quantity;
-        data.set(item.coffeeId, row);
+        data.set(item.productId, row);
       } else if (item.variation === '_1200') {
         row._1200 += item.quantity;
-        data.set(item.coffeeId, row);
+        data.set(item.productId, row);
       }
     }
   }
@@ -124,14 +124,15 @@ function aggregateCoffeesFromSubscriptions(
   return { _250, _500, _1200 };
 }
 
-function resolveCoffee(coffees: Coffee[], coffeeId: number) {
-  return coffees.find((c) => c.id === coffeeId);
+function resolveCoffee(coffees: Product[], productId: number) {
+  console.debug('resolveCoffee', productId);
+  return coffees.find((c) => c.id === productId);
 }
 
 export function getRoastOverview(
   subscriptions: Subscription[],
   delivery: Delivery | undefined = undefined,
-  coffees: Coffee[] = []
+  coffees: Product[] = []
 ) {
   if (!delivery)
     throw new Error('No delivery set, cannot resolve roast overview');
@@ -306,25 +307,27 @@ export function getRoastOverview(
     const list: number[] = [];
     let c1, c2, c3, c4;
 
+    console.debug('delivery', delivery);
+
     // ADD QUANTITIES TO COFFEES SET ON DELIVERY - LIST USED TO HANDLE WHEN SAME COFFEE IS SET MULTIPLE TIMES ON DELIVERY
-    if (delivery.coffee1Id) {
-      c1 = map.get(delivery.coffee1Id);
-      list.push(delivery.coffee1Id);
+    if (delivery.product1Id) {
+      c1 = map.get(delivery.product1Id);
+      list.push(delivery.product1Id);
     }
 
-    if (delivery.coffee2Id && !list.some((l) => l === delivery.coffee2Id)) {
-      c2 = map.get(delivery.coffee2Id);
-      list.push(delivery.coffee2Id);
+    if (delivery.product2Id && !list.some((l) => l === delivery.product2Id)) {
+      c2 = map.get(delivery.product2Id);
+      list.push(delivery.product2Id);
     }
 
-    if (delivery.coffee3Id && !list.some((l) => l === delivery.coffee3Id)) {
-      c3 = map.get(delivery.coffee3Id);
-      list.push(delivery.coffee3Id);
+    if (delivery.product3Id && !list.some((l) => l === delivery.product3Id)) {
+      c3 = map.get(delivery.product3Id);
+      list.push(delivery.product3Id);
     }
 
-    if (delivery.coffee4Id && !list.some((l) => l === delivery.coffee4Id)) {
-      c4 = map.get(delivery.coffee4Id);
-      list.push(delivery.coffee4Id);
+    if (delivery.product4Id && !list.some((l) => l === delivery.product4Id)) {
+      c4 = map.get(delivery.product4Id);
+      list.push(delivery.product4Id);
     }
 
     _250.coffee1 += c1?._250 || 0;
@@ -345,14 +348,15 @@ export function getRoastOverview(
     // ADD QUANTITIES TO COFFEES NOT SET ON DELIVERY
     for (const [key, value] of map.entries()) {
       if (
-        key !== delivery.coffee1Id &&
-        key !== delivery.coffee2Id &&
-        key !== delivery.coffee3Id &&
-        key !== delivery.coffee4Id
+        key !== delivery.product1Id &&
+        key !== delivery.product2Id &&
+        key !== delivery.product3Id &&
+        key !== delivery.product4Id
       ) {
         const coffee = resolveCoffee(coffees, key);
+        console.debug('coffee', coffee);
         coffeesFromCustomOrdersNotSetOnDelivery.push({
-          coffeeId: key,
+          productId: key,
           productCode: coffee?.productCode || `${key}`,
           totalKg:
             (value._250 * 250 + value._500 * 500 + value._1200 * 1200) / 1000,
@@ -376,6 +380,11 @@ export function getRoastOverview(
   }
 
   const weight = calculateWeightByCoffee(_250, _500, _1200);
+
+  console.debug(
+    'coffeesFromCustomOrdersNotSetOnDelivery',
+    coffeesFromCustomOrdersNotSetOnDelivery
+  );
 
   return {
     _250,

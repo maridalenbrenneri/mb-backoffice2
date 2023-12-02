@@ -18,26 +18,26 @@ import { createAction } from './_shared';
 import type { DeliveryDate } from '~/_libs/core/utils/dates';
 import { toPrettyDateTextLong } from '~/_libs/core/utils/dates';
 import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
-import type { Coffee } from '~/_libs/core/repositories/coffee.server';
-import { getCoffees } from '~/_libs/core/repositories/coffee.server';
-import { CoffeeStatus } from '@prisma/client';
+import type { Product } from '@prisma/client';
+import { ProductStatus } from '@prisma/client';
+import { getProducts } from '~/_libs/core/repositories/product';
 
 type LoaderData = {
   deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
-  coffees: Awaited<ReturnType<typeof getCoffees>>;
+  products: Awaited<ReturnType<typeof getProducts>>;
 };
 
 export const loader = async () => {
   const deliveryDates = getNextDeliveryDates();
-  const coffees = await getCoffees({
+  const products = await getProducts({
     where: {
-      status: CoffeeStatus.ACTIVE,
+      status: ProductStatus.PUBLISHED,
     },
   });
 
   return json<LoaderData>({
     deliveryDates,
-    coffees,
+    products,
   });
 };
 
@@ -46,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function NewDelivery() {
-  const { deliveryDates, coffees } = useLoaderData() as unknown as LoaderData;
+  const { deliveryDates, products } = useLoaderData() as unknown as LoaderData;
   const transition = useTransition();
   const isCreating = Boolean(transition.submission);
 
@@ -97,9 +97,9 @@ export default function NewDelivery() {
               displayEmpty
               sx={{ minWidth: 200 }}
             >
-              {coffees.map((coffee: Coffee) => (
-                <MenuItem value={coffee.id} key={coffee.id}>
-                  {coffee.productCode} - {coffee.name}
+              {products.map((product: Product) => (
+                <MenuItem value={product.id} key={product.id}>
+                  {product.productCode} - {product.name}
                 </MenuItem>
               ))}
             </Select>

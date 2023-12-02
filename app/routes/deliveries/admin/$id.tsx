@@ -21,74 +21,69 @@ import {
   Alert,
 } from '@mui/material';
 
-import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
+import { getDeliveryById } from '~/_libs/core/repositories/delivery.server';
 import type { Delivery } from '~/_libs/core/repositories/delivery.server';
 import { upsertAction } from './_shared';
-import type { Coffee } from '~/_libs/core/repositories/coffee.server';
-import { getCoffees } from '~/_libs/core/repositories/coffee.server';
 import {
   toPrettyDateTextLong,
   toPrettyDateTime,
 } from '~/_libs/core/utils/dates';
 import Orders from '~/components/Orders';
 import { useEffect, useState } from 'react';
-import { CoffeeStatus, OrderStatus } from '@prisma/client';
+import type { Product } from '@prisma/client';
+import { OrderStatus, ProductStatus } from '@prisma/client';
 import DataLabel from '~/components/DataLabel';
+import { getProducts } from '~/_libs/core/repositories/product';
 
-type LoaderData = { loadedDelivery: Delivery; coffees: Coffee[] };
+type LoaderData = {
+  loadedDelivery: Delivery;
+  products: Product[];
+};
 
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
 
-  const deliveries = await getDeliveries({
-    where: { id: +params.id },
-    include: {
-      coffee1: true,
-      coffee2: true,
-      coffee3: true,
-      coffee4: true,
-      orders: {
-        where: { status: { in: [OrderStatus.ACTIVE, OrderStatus.COMPLETED] } },
-        include: {
-          orderItems: {
-            select: {
-              id: true,
-              variation: true,
-              quantity: true,
-              coffee: true,
-            },
+  const loadedDelivery = await getDeliveryById(+params.id, {
+    product1: true,
+    product2: true,
+    product3: true,
+    product4: true,
+    orders: {
+      where: { status: { in: [OrderStatus.ACTIVE, OrderStatus.COMPLETED] } },
+      include: {
+        orderItems: {
+          select: {
+            id: true,
+            variation: true,
+            quantity: true,
+            product: true,
           },
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     },
   });
-  const loadedDelivery = deliveries?.length ? deliveries[0] : null;
+
   invariant(loadedDelivery, `Delivery not found: ${params.id}`);
 
-  const coffees = await getCoffees({
+  const products = await getProducts({
     where: {
-      status: CoffeeStatus.ACTIVE,
+      status: ProductStatus.PUBLISHED,
     },
   });
-  invariant(coffees, `Coffees not found`);
+  invariant(products, `Products not found`);
 
-  return json({ loadedDelivery, coffees });
+  return json({ loadedDelivery, products });
 };
 
 export const action: ActionFunction = async ({ request }) => {
   return await upsertAction(request);
 };
 
-function resolveCoffeeLabel(coffee: Coffee | undefined | null) {
-  if (!coffee) return '';
-  return `${coffee.productCode} - ${coffee.name}`;
-}
-
 export default function UpdateDelivery() {
-  const { loadedDelivery, coffees } = useLoaderData() as unknown as LoaderData;
+  const { loadedDelivery, products } = useLoaderData() as unknown as LoaderData;
 
   const data = useActionData();
   const transition = useTransition();
@@ -117,22 +112,6 @@ export default function UpdateDelivery() {
       data: delivery.type,
     },
     {
-      label: 'Coffee 1',
-      data: resolveCoffeeLabel(delivery.coffee1),
-    },
-    {
-      label: 'Coffee 2',
-      data: resolveCoffeeLabel(delivery.coffee2),
-    },
-    {
-      label: 'Coffee 3',
-      data: resolveCoffeeLabel(delivery.coffee3),
-    },
-    {
-      label: 'Coffee 4',
-      data: resolveCoffeeLabel(delivery.coffee4),
-    },
-    {
       label: 'Created at',
       data: toPrettyDateTime(delivery.createdAt, true),
     },
@@ -142,22 +121,22 @@ export default function UpdateDelivery() {
     },
   ];
 
-  const renderCoffee = (defaultValue: number | '', coffeeNr: number) => {
+  const renderProduct = (defaultValue: number | '', coffeeNr: number) => {
     return (
       <FormControl sx={{ m: 1 }}>
-        <InputLabel id={`coffee-${coffeeNr}-label`}>
+        <InputLabel id={`product-${coffeeNr}-label`}>
           Coffee {coffeeNr}
         </InputLabel>
         <Select
-          labelId={`coffee-${coffeeNr}-label`}
-          name={`coffee${coffeeNr}`}
+          labelId={`product-${coffeeNr}-label`}
+          name={`product${coffeeNr}`}
           defaultValue={defaultValue}
           sx={{ minWidth: 250 }}
           size="small"
         >
-          {coffees.map((coffee: Coffee) => (
-            <MenuItem value={coffee.id} key={coffee.id}>
-              {coffee.productCode} - {coffee.name}
+          {products.map((product: Product) => (
+            <MenuItem value={product.id} key={product.id}>
+              {product.productCode || 'code not set'} - {product.name}
             </MenuItem>
           ))}
         </Select>
@@ -206,10 +185,10 @@ export default function UpdateDelivery() {
                   value={delivery.type}
                 />
 
-                <div>{renderCoffee(delivery.coffee1Id || '', 1)} </div>
-                <div>{renderCoffee(delivery.coffee2Id || '', 2)}</div>
-                <div>{renderCoffee(delivery.coffee3Id || '', 3)}</div>
-                <div>{renderCoffee(delivery.coffee4Id || '', 4)}</div>
+                <div>{renderProduct(delivery.product1Id || '', 1)}</div>
+                <div>{renderProduct(delivery.product2Id || '', 2)}</div>
+                <div>{renderProduct(delivery.product3Id || '', 3)}</div>
+                <div>{renderProduct(delivery.product4Id || '', 4)}</div>
 
                 <div>
                   <FormControl sx={{ m: 1 }}>
@@ -218,7 +197,7 @@ export default function UpdateDelivery() {
                       disabled={isUpdating}
                       variant="contained"
                     >
-                      {isUpdating ? 'Updating...' : 'Update Coffees'}
+                      {isUpdating ? 'Updating...' : 'Update Products'}
                     </Button>
                   </FormControl>
                 </div>

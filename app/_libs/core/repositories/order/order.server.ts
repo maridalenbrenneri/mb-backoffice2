@@ -81,7 +81,7 @@ export async function upsertOrderItem(
     update: data,
     create: {
       orderId: data.orderId,
-      coffeeId: data.coffeeId,
+      productId: data.productId,
       quantity: data.quantity,
       variation: data.variation,
     },
@@ -174,7 +174,7 @@ export async function upsertOrderItemFromWoo(
     create: {
       wooOrderItemId,
       orderId: data.orderId,
-      coffeeId: data.coffeeId,
+      productId: data.productId,
       quantity: data.quantity,
       variation: data.variation,
     },

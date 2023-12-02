@@ -20,13 +20,13 @@ import {
   TextField,
 } from '@mui/material';
 
-import type { Coffee } from '~/_libs/core/repositories/coffee.server';
-import { getActiveCoffees } from '~/_libs/core/repositories/coffee.server';
 import { upsertOrderItemAction } from '../_shared';
 import { getOrderById } from '~/_libs/core/repositories/order/order.server';
+import type { Product } from '~/_libs/core/repositories/product';
+import { getProducts } from '~/_libs/core/repositories/product';
 
 type LoaderData = {
-  coffees: Awaited<ReturnType<typeof getActiveCoffees>>;
+  coffees: Awaited<ReturnType<typeof getProducts>>;
   order: Awaited<ReturnType<typeof getOrderById>>;
 };
 
@@ -38,7 +38,9 @@ export const loader: LoaderFunction = async ({ params }) => {
   const order = await getOrderById(+params.id);
   invariant(order, `Order not found: ${params.id}`);
 
-  const coffees = await getActiveCoffees();
+  const coffees = await getProducts({
+    where: { status: 'PUBLISHED' },
+  });
 
   return json({ coffees, order });
 };
@@ -69,14 +71,14 @@ export default function NewOrderItem() {
         <Form method="post">
           <input type="hidden" name="orderId" value={order.id} />
           <FormControl sx={{ m: 1 }}>
-            <InputLabel id="coffee-label">Coffee</InputLabel>
+            <InputLabel id="product-label">Coffee</InputLabel>
             <Select
-              labelId="coffee-label"
-              name="coffeeId"
+              labelId="product-label"
+              name="productId"
               defaultValue={coffees[0].id}
               sx={{ minWidth: 250 }}
             >
-              {coffees.map((coffee: Coffee) => (
+              {coffees.map((coffee: Product) => (
                 <MenuItem value={coffee.id} key={coffee.id}>
                   {coffee.productCode} - {coffee.name}
                 </MenuItem>

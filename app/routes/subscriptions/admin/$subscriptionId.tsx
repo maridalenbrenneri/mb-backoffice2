@@ -124,7 +124,7 @@ export const loader: LoaderFunction = async ({ params }) => {
               id: true,
               variation: true,
               quantity: true,
-              coffee: true,
+              product: true,
             },
           },
         },

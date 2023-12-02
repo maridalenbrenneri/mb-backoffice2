@@ -4,12 +4,14 @@ import { toPrettyDateTime } from '~/_libs/core/utils/dates';
 import DataLabel from './DataLabel';
 
 export default function JobsInfoBox(props: {
+  products: any;
   subscriptions: any;
   orders: any;
   gaboStatus: any;
   createRenewalOrders: any;
 }) {
-  const { subscriptions, orders, gaboStatus, createRenewalOrders } = props;
+  const { products, subscriptions, orders, gaboStatus, createRenewalOrders } =
+    props;
 
   return (
     <Box sx={{ m: 2 }}>
@@ -27,6 +29,11 @@ export default function JobsInfoBox(props: {
               data:
                 toPrettyDateTime(subscriptions?.createdAt, true) ||
                 'Not available',
+            },
+            {
+              label: 'Woo import, products',
+              data:
+                toPrettyDateTime(products?.createdAt, true) || 'Not available',
             },
             {
               label: 'Create renewal orders',

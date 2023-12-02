@@ -41,6 +41,10 @@ export default function JobResultPage() {
 
   if (!jobResult) return null;
 
+  const isRunningImportWooProducts =
+    fetcher.state === 'submitting' &&
+    fetcher.submission.formData.get('_action') === 'woo-import-products';
+
   const isRunningImportWooOrders =
     fetcher.state === 'submitting' &&
     fetcher.submission.formData.get('_action') === 'woo-import-orders';
@@ -57,6 +61,10 @@ export default function JobResultPage() {
   const isRunningCreateRenewalOrders =
     fetcher.state === 'submitting' &&
     fetcher.submission.formData.get('_action') === 'create-renewal-orders';
+
+  const importWooProducts = jobResult.find(
+    (r) => r.name === 'woo-import-products'
+  );
 
   const importWooOrders = jobResult.find((r) => r.name === 'woo-import-orders');
   const importWooSubscriptions = results.find(
@@ -115,6 +123,33 @@ export default function JobResultPage() {
                 </fetcher.Form>
               </TableCell>
             </TableRow>
+
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell>woo-import-products</TableCell>
+              <TableCell>Import products from Woo.</TableCell>
+              <TableCell>
+                <small>
+                  {toPrettyDateTime(importWooProducts?.createdAt, true)}
+                </small>
+              </TableCell>
+              <TableCell>
+                <fetcher.Form method="post" action="/api/woo-import-products">
+                  <FormControl sx={{ m: 1 }}>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="woo-import-products"
+                      disabled={isRunningImportWooProducts}
+                    >
+                      {isRunningImportWooProducts ? 'Running...' : 'Run now'}
+                    </Button>
+                  </FormControl>
+                </fetcher.Form>
+              </TableCell>
+            </TableRow>
+
             <TableRow
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >

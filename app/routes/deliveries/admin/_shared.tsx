@@ -20,10 +20,10 @@ const actionBase = async (request: any) => {
   const id = +formData.get('id');
   const date = formData.get('delivery_date');
   const type = formData.get('delivery_type');
-  const coffee1Id = +formData.get('coffee1');
-  const coffee2Id = +formData.get('coffee2');
-  const coffee3Id = +formData.get('coffee3');
-  const coffee4Id = +formData.get('coffee4');
+  const product1Id = +formData.get('product1');
+  const product2Id = +formData.get('product2');
+  const product3Id = +formData.get('product3');
+  const product4Id = +formData.get('product4');
 
   const validationErrors = {
     date: date ? null : 'Date is required',
@@ -38,10 +38,10 @@ const actionBase = async (request: any) => {
   const data: DeliveryUpsertData = {
     date,
     type,
-    coffee1Id: coffee1Id || null,
-    coffee2Id: coffee2Id || null,
-    coffee3Id: coffee3Id || null,
-    coffee4Id: coffee4Id || null,
+    product1Id: product1Id || null,
+    product2Id: product2Id || null,
+    product3Id: product3Id || null,
+    product4Id: product4Id || null,
   };
 
   await upsertDelivery(id, data);

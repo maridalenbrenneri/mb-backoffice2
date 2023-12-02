@@ -137,12 +137,14 @@ export function generateReference(order: Order) {
 
   if (order.orderItems) {
     for (const item of order.orderItems) {
+      let productCode = item.product?.productCode || 'n/a';
+
       if (item.variation === '_250')
-        reference = `${reference} ${item.quantity}${item.coffee.productCode}`;
+        reference = `${reference} ${item.quantity}${productCode}`;
       if (item.variation === '_500')
-        reference = `${reference} ${item.quantity}${item.coffee.productCode}x500g`;
+        reference = `${reference} ${item.quantity}${productCode}x500g`;
       if (item.variation === '_1200')
-        reference = `${reference} ${item.quantity}${item.coffee.productCode}x1.2kg`;
+        reference = `${reference} ${item.quantity}${productCode}x1.2kg`;
     }
   }
 
@@ -174,7 +176,7 @@ async function getOrderFromDb(orderId: number) {
       subscription: true,
       orderItems: {
         include: {
-          coffee: true,
+          product: true,
         },
       },
     },
@@ -201,7 +203,7 @@ async function completeAndShipOrder(orderId: number, results: any[]) {
     }
 
     if (order.wooOrderId) {
-      wooResult = await woo.updateStatus(
+      wooResult = await woo.orderUpdateStatus(
         order.wooOrderId,
         WOO_STATUS_COMPLETED
       );
@@ -313,7 +315,7 @@ export async function completeOrder(orderId: number) {
   if (!order) return;
 
   if (order.wooOrderId) {
-    await woo.updateStatus(order.wooOrderId, WOO_STATUS_COMPLETED);
+    await woo.orderUpdateStatus(order.wooOrderId, WOO_STATUS_COMPLETED);
   }
   await updateOrderStatus(order.id, OrderStatus.COMPLETED);
 }
@@ -323,7 +325,7 @@ export async function cancelOrder(orderId: number) {
   if (!order) return;
 
   if (order.wooOrderId) {
-    await woo.updateStatus(order.wooOrderId, WOO_STATUS_CANCELLED);
+    await woo.orderUpdateStatus(order.wooOrderId, WOO_STATUS_CANCELLED);
   }
   await updateOrderStatus(order.id, OrderStatus.CANCELLED);
 }
@@ -333,7 +335,7 @@ export async function activateOrder(orderId: number) {
   if (!order) return;
 
   if (order.wooOrderId) {
-    await woo.updateStatus(order.wooOrderId, WOO_STATUS_PROCESSING);
+    await woo.orderUpdateStatus(order.wooOrderId, WOO_STATUS_PROCESSING);
   }
   await updateOrderStatus(order.id, OrderStatus.ACTIVE);
 }

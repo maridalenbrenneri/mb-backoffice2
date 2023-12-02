@@ -73,6 +73,13 @@ model Product {
   wooCreatedAt    DateTime? @db.Timestamptz
   wooUpdatedAt    DateTime? @db.Timestamptz
 
+  DeliveryProduct1 Delivery[] @relation(name: "delivery_to_product_1")
+  DeliveryProduct2 Delivery[] @relation(name: "delivery_to_product_2")
+  DeliveryProduct3 Delivery[] @relation(name: "delivery_to_product_3")
+  DeliveryProduct4 Delivery[] @relation(name: "delivery_to_product_4")
+
+  OrderItems OrderItem[]
+
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
 }
@@ -184,6 +191,18 @@ model Delivery {
   coffee4     Coffee? @relation(name: "delivery_to_coffee_4", fields: [coffee4Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   coffee4Id   Int?
 
+  product1     Product? @relation(name: "delivery_to_product_1", fields: [product1Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product1Id   Int?
+
+  product2     Product? @relation(name: "delivery_to_product_2", fields: [product2Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product2Id   Int?
+
+  product3     Product? @relation(name: "delivery_to_product_3", fields: [product3Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product3Id   Int?
+
+  product4     Product? @relation(name: "delivery_to_product_4", fields: [product4Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product4Id   Int?
+
   orders      Order[]
   
   createdAt DateTime @default(now()) @db.Timestamptz
@@ -217,8 +236,11 @@ model OrderItem {
   variation String
   quantity Int
 
-  coffee Coffee @relation(fields: [coffeeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  coffeeId Int
+  coffee Coffee? @relation(fields: [coffeeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  coffeeId Int?
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  productId Int?
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   orderId Int

@@ -67,7 +67,7 @@ function buildFilter(search: URLSearchParams) {
       select: {
         variation: true,
         quantity: true,
-        coffee: true,
+        product: true,
       },
     },
     subscription: {

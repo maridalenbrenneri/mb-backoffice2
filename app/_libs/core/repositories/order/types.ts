@@ -7,5 +7,5 @@ export { OrderStatus, OrderType };
 
 export type OrderItemUpsertData = Pick<
   OrderItem,
-  'orderId' | 'coffeeId' | 'variation' | 'quantity'
+  'orderId' | 'productId' | 'variation' | 'quantity'
 >;
