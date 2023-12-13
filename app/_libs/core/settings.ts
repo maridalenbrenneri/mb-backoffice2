@@ -48,3 +48,12 @@ export const COMPLETE_ORDERS_BATCH_MAX = 50;
 
 export const WOO_RENEWALS_SUBSCRIPTION_ID = 1;
 export const WOO_NON_RECURRENT_SUBSCRIPTION_ID = 2;
+
+// STAFF
+export const STAFF_SUBSCRIPTIONS = [
+  194507, // Reiar
+  194506, // Jørgen
+  194508, // Petter
+  194466, // Audun
+  7473, // Björn
+];

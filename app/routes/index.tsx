@@ -31,6 +31,7 @@ import JobsInfoBox from '~/components/JobsInfoBox';
 
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 import { getProducts } from '~/_libs/core/repositories/product';
+import StaffSubscriptions from '~/components/StaffSubscriptions';
 
 type LoaderData = {
   wooProductImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
@@ -311,6 +312,11 @@ export default function Index() {
         <Grid item md={5} xl={3}>
           <Paper sx={{ p: 1 }}>
             <CargonizerProfileBox profile={cargonizer} />
+          </Paper>
+        </Grid>
+        <Grid item md={5} xl={3}>
+          <Paper sx={{ p: 1 }}>
+            <StaffSubscriptions />
           </Paper>
         </Grid>
       </Grid>

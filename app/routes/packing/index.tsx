@@ -135,6 +135,8 @@ export default function Packing() {
   const [b2bCustomOrders, setB2bCustomOrders] = useState<Order[]>([]);
   const [b2bRenewalOrders, setB2bRenewalOrders] = useState<Order[]>([]);
 
+  const [staffOrders, setStaffOrders] = useState<Order[]>([]);
+
   useEffect(() => {
     setAllOrders(preview.orders.all);
     setSpecialRequestOrders(preview.orders.allSpecialRequets);
@@ -154,6 +156,8 @@ export default function Packing() {
     setB2bPickUpRenewalOrders(preview.orders.b2bs.renewal.pickUp);
     setB2bCustomOrders(preview.orders.b2bs.custom.ship);
     setB2bRenewalOrders(preview.orders.b2bs.renewal.ship);
+
+    setStaffOrders(preview.orders.staff.all);
   }, [preview]);
 
   useEffect(() => {
@@ -221,11 +225,7 @@ export default function Packing() {
     extraFields.push('specialRequest');
     return (
       <>
-        <Accordion
-          expanded={expanded === title}
-          onChange={handleChange(title)}
-          sx={{ marginBottom: isAll || isAllSpecialRequest ? 2 : 0 }}
-        >
+        <Accordion expanded={expanded === title} onChange={handleChange(title)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography sx={{ width: '25%', flexShrink: 0 }}>
               {title}
@@ -360,6 +360,7 @@ export default function Packing() {
         </Grid>
         <Grid item xs={12}>
           {renderAccordian(`ALL active orders`, allOrders, true, false, true)}
+          <div style={{ marginTop: 20 }}></div>
           {renderAccordian(
             `Orders with special request`,
             specialRequestOrders,
@@ -368,6 +369,7 @@ export default function Packing() {
             false,
             true
           )}
+          <div style={{ marginTop: 20 }}></div>
           {renderAccordian(`Custom - local pick-up`, customPickUpOrders, false)}
           {renderAccordian(`ABO's - local pick-up`, renewalPickUpOrders, false)}
           {renderAccordian(`Custom`, customOrders)}
@@ -393,6 +395,9 @@ export default function Packing() {
           )}
           {renderAccordian(`B2B Custom`, b2bCustomOrders)}
           {renderAccordian(`B2B ABO`, b2bRenewalOrders)}
+
+          <div style={{ marginTop: 20 }}></div>
+          {renderAccordian(`Personalen!`, staffOrders)}
         </Grid>
         <Grid item md={12}></Grid>
       </Grid>

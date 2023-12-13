@@ -4,6 +4,7 @@ import { OrderType, ShippingType, SubscriptionType } from '@prisma/client';
 import { OrderStatus } from '@prisma/client';
 import { getOrders } from '../repositories/order/order.server';
 import {
+  STAFF_SUBSCRIPTIONS,
   TAKE_MAX_ROWS,
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
@@ -46,6 +47,9 @@ export type WizardPreviewGroup = {
         pickUp: Order[];
         ship: Order[];
       };
+    };
+    staff: {
+      all: Order[];
     };
   };
 };
@@ -132,6 +136,9 @@ export async function generatePreview(deliveryIds: number[]) {
           ship: [],
         },
       },
+      staff: {
+        all: [],
+      },
     },
   };
 
@@ -191,6 +198,7 @@ export async function generatePreview(deliveryIds: number[]) {
   const b2bs = orders.filter(
     (o) =>
       o.subscription.type === SubscriptionType.B2B &&
+      !STAFF_SUBSCRIPTIONS.includes(o.subscriptionId) &&
       !isSystemSubscription(o.subscriptionId)
   );
 
@@ -218,6 +226,11 @@ export async function generatePreview(deliveryIds: number[]) {
 
   preview.orders.allSpecialRequets = orders.filter(
     (o) => o.subscription.specialRequest !== SubscriptionSpecialRequest.NONE
+  );
+
+  // STAFF
+  preview.orders.staff.all = orders.filter((o) =>
+    STAFF_SUBSCRIPTIONS.includes(o.subscriptionId)
   );
 
   preview.orders.all = orders;
