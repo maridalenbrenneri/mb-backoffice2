@@ -112,9 +112,9 @@ export default async function importWooOrders() {
       });
 
       if (info.order.status === OrderStatus.CANCELLED && exists) {
-        await orderRepository.updateOrderStatus(
+        await subscriptionRepository.updateStatusOnSubscription(
           exists.id,
-          OrderStatus.CANCELLED
+          subscriptionRepository.SubscriptionStatus.DELETED
         );
         updated++;
       }
