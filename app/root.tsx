@@ -1,4 +1,5 @@
-import type { MetaFunction } from '@remix-run/node';
+
+import type { V2_MetaFunction} from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
   Links,
@@ -22,17 +23,25 @@ import MainMenu from './components/MainMenu';
 import { theme } from './style/theme';
 import { requireUserId } from './utils/session.server';
 
-export const meta: MetaFunction = () => ({
-  charset: 'utf-8',
-  title: 'MB Backoffice',
-  viewport: 'width=device-width,initial-scale=1',
-});
+export const meta: V2_MetaFunction = () => {
+  return [
+    { title: "MB Backoffice" },
+    {
+      property: "og:title",
+      content: "MB Backoffice",
+    },
+    {
+      name: "description",
+      content: "This app is the best",
+    },
+  ];
+};
 
 type LoaderData = {
   userId: string | null;
 };
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: {request: any}) => {
   const url = new URL(request.url);
 
   if (url.pathname === '/login')

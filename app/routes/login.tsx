@@ -2,16 +2,9 @@ import { login, createUserSession } from '~/utils/session.server';
 import type {
   ActionFunction,
   HeadersFunction,
-  MetaFunction,
 } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
 import { Button, FormControl, Grid, Paper, TextField } from '@mui/material';
-
-export let meta: MetaFunction = () => {
-  return {
-    title: 'MB Backoffice | Login',
-  };
-};
 
 export let headers: HeadersFunction = () => {
   return {

@@ -217,7 +217,7 @@ export default function Index() {
 
   return (
     <main>
-      {orderImportResult.ordersWithUnknownProduct && (
+      {/* {orderImportResult.ordersWithUnknownProduct && (
         <Grid item xs={12} style={{ textAlign: 'center' }}>
           <Alert
             severity="error"
@@ -319,7 +319,7 @@ export default function Index() {
             <StaffSubscriptions />
           </Paper>
         </Grid>
-      </Grid>
+      </Grid> */}
     </main>
   );
 }
