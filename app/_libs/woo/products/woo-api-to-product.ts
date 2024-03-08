@@ -22,6 +22,19 @@ const resolveProductStockStatus = (wooStatus: string): ProductStockStatus => {
   return ProductStockStatus.OUT_OF_STOCK;
 };
 
+const resolveProductCategory = (wooProductId: number): string => {
+  if ([
+    456, // Abo
+    968, // Gabo
+    45168, // Testprodukt
+    46248, // Test abo vipps 
+  ].includes(wooProductId)) {
+      return 'other';
+    }
+
+  return 'coffee';
+}
+
 export default async function wooApiToProductUpsertData(
   wooProduct: WooProduct
 ): Promise<WooUpsertProductData> {
@@ -36,7 +49,7 @@ export default async function wooApiToProductUpsertData(
     wooProductUrl: wooProduct.permalink,
 
     name: wooProduct.name,
-    category: 'coffee',
+    category: resolveProductCategory(wooProduct.id),
   };
 
   return product;

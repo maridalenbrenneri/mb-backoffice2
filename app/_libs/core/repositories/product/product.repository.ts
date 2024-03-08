@@ -14,6 +14,9 @@ export async function getProducts(filter?: any) {
     filter.take = TAKE_DEFAULT_ROWS;
   // TODO: Always exclude DELETED
 
+  filter.where = filter.where || {};
+  filter.where.category = 'coffee';
+
   return prisma.product.findMany(filter);
 }
 
