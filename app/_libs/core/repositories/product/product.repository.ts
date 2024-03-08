@@ -5,7 +5,7 @@ import type { Product, ProductStockStatus } from '@prisma/client';
 import type { WooUpsertProductData } from './types';
 import { areEqual } from '../../utils/are-equal';
 
-export async function getProducts(filter?: any) {
+export async function getAllProducts(filter?: any) {
   filter = filter || {};
 
   // ADD DEFAULT FILTER VALUES IF NOT OVERIDDEN IN FILTER INPUT
@@ -14,10 +14,16 @@ export async function getProducts(filter?: any) {
     filter.take = TAKE_DEFAULT_ROWS;
   // TODO: Always exclude DELETED
 
+  return prisma.product.findMany(filter);
+}
+
+export async function getProducts(filter?: any) {
+  filter = filter || {};
+
   filter.where = filter.where || {};
   filter.where.category = 'coffee';
 
-  return prisma.product.findMany(filter);
+  return await getAllProducts(filter);
 }
 
 export async function getProduct(filter: any) {
