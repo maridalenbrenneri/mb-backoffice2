@@ -19,11 +19,13 @@ import type { WooSubscription, WooSubscriptionLineItem } from './types';
 
 const resolveSubscriptionVariation = (
   item: WooSubscriptionLineItem
-): { frequency: SubscriptionFrequency; bagCount250: number } => {
-  if (+item.product_id !== settings.WOO_ABO_PRODUCT_ID)
-    throw new Error(
+): { frequency: SubscriptionFrequency; bagCount250: number } | null => {
+  if (+item.product_id !== settings.WOO_ABO_PRODUCT_ID) {
+    console.warn(
       `Unknown Woo product, don't know what to do with this. Woo Product id: ${item.product_id}`
     );
+    return null;
+  }
 
   const resolve = (frequency: SubscriptionFrequency, bagCount250: number) => {
     return {
@@ -105,11 +107,13 @@ function resolveShippingType(subscription: WooSubscription) {
 
 export const wooApiToUpsertSubscriptionData = (
   subscription: WooSubscription
-): WooUpsertSubscriptionData => {
-  if (!subscription.line_items?.length)
-    throw new Error(
-      `ERROR when importing Woo subscription, no line items on subscription. Woo subscription id ${subscription.id}`
+): WooUpsertSubscriptionData | null => {
+  if (!subscription.line_items?.length) {
+    console.warn(
+      `Woo subscription contains no line items, dont know what to do with that. Woo subscription id ${subscription.id}`
     );
+    return null;
+  }
 
   if (subscription.line_items.length !== 1)
     console.warn(
@@ -117,6 +121,9 @@ export const wooApiToUpsertSubscriptionData = (
     );
 
   let variation = resolveSubscriptionVariation(subscription.line_items[0]);
+
+  if(!variation) return null;
+
   let status = resolveSubscriptionStatus(subscription.status);
 
   return {
