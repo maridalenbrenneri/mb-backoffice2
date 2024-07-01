@@ -136,7 +136,7 @@ export default function UpdateDelivery() {
         >
           {products.map((product: Product) => (
             <MenuItem value={product.id} key={product.id}>
-              {product.productCode || 'code not set'} - {product.name}
+              {product.productCode || 'code not set'} - {product.name} <small>({product.stockStatus})</small>
             </MenuItem>
           ))}
         </Select>
