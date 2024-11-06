@@ -7,13 +7,14 @@ import type {
 import { Form, useActionData } from '@remix-run/react';
 import { Button, FormControl, Grid, Paper, TextField } from '@mui/material';
 
-export let meta: MetaFunction = () => {
-  return {
-    title: 'MB Backoffice | Login',
-  };
+export const meta: MetaFunction = () => {
+  return [
+    { title: "MB Backoffice | Login" },
+    { viewport: 'width=device-width,initial-scale=1' },
+  ];
 };
 
-export let headers: HeadersFunction = () => {
+export const headers: HeadersFunction = () => {
   return {
     'Cache-Control': `public, max-age=${60 * 10}, s-maxage=${
       60 * 60 * 24 * 30
@@ -39,16 +40,16 @@ type ActionData = {
   fields?: { email: string; password: string };
 };
 
-export let action: ActionFunction = async ({
+export const action: ActionFunction = async ({
   request,
 }): Promise<Response | ActionData> => {
-  let { email, password } = Object.fromEntries(await request.formData());
+  const { email, password } = Object.fromEntries(await request.formData());
   if (typeof email !== 'string' || typeof password !== 'string') {
     return { formError: `Form not submitted correctly.` };
   }
 
-  let fields = { email, password };
-  let fieldErrors = {
+  const fields = { email, password };
+  const fieldErrors = {
     email: validateUsername(email),
     password: validatePassword(password),
   };

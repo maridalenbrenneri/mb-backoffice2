@@ -4,8 +4,8 @@ import {
   Form,
   useActionData,
   useLoaderData,
+  useNavigation,
   useSubmit,
-  useTransition,
 } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 
@@ -104,9 +104,9 @@ export default function Packing() {
     useLoaderData() as unknown as LoaderData;
   const data = useActionData();
   const submit = useSubmit();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
-  const isWorking = Boolean(transition.submission);
+  const isWorking = Boolean(navigation.state === 'submitting');
   const [delivery, setDelivery] = useState<Delivery>();
   const [deliveries, setDeliveries] = useState<Delivery[]>();
   const [resultData, setResultData] = useState<any>(null);

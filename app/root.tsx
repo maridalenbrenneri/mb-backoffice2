@@ -1,14 +1,15 @@
 import type { MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
+  isRouteErrorResponse,
   Links,
   LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch,
   useLoaderData,
+  useRouteError,
 } from '@remix-run/react';
 
 import { Box, ThemeProvider, CssBaseline, Typography } from '@mui/material';
@@ -22,11 +23,16 @@ import MainMenu from './components/MainMenu';
 import { theme } from './style/theme';
 import { requireUserId } from './utils/session.server';
 
-export const meta: MetaFunction = () => ({
-  charset: 'utf-8',
-  title: 'MB Backoffice',
-  viewport: 'width=device-width,initial-scale=1',
-});
+export const meta: MetaFunction = () => {
+  return [
+    { title: "MB Backoffice" },
+    { viewport: 'width=device-width,initial-scale=1' },
+    {
+      property: "og:title",
+      content: "MB Backoffice",
+    },
+  ];
+};
 
 type LoaderData = {
   userId: string | null;
@@ -80,39 +86,27 @@ export default function App() {
   );
 }
 
-export function CatchBoundary() {
-  let caught = useCatch();
+export function ErrorBoundary() {
+  const error = useRouteError();
 
-  switch (caught.status) {
-    case 401:
-    case 404:
-      return (
-        <Document title={`${caught.status} ${caught.statusText}`}>
-          <div style={{ margin: '50px auto', textAlign: 'center' }}>
-            <h1>
-              {caught.status} {caught.statusText}
-            </h1>
-            <p>
-              The page you are looking for was not found. Go to
-              <a href="/"> frontpage</a>.
-            </p>
-          </div>
-        </Document>
-      );
-
-    default:
-      throw new Error(
-        `Unexpected caught response with status: ${caught.status}`
-      );
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>Oops</h1>
+        <p>Status: {error.status}</p>
+        <p>{error.data.message}</p>
+      </div>
+    );
   }
-}
 
-export function ErrorBoundary({ error }: { error: Error }) {
+  const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+
+
   return (
     <Document title="Uh-oh!">
       <div className="error-container">
         <Typography variant="h4">App Error</Typography>
-        <pre>{error.message}</pre>
+        <pre>{errorMessage}</pre>
       </div>
     </Document>
   );

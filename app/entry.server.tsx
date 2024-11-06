@@ -1,6 +1,5 @@
 import { PassThrough } from 'stream';
-import type { EntryContext } from '@remix-run/node';
-import { Response } from '@remix-run/node';
+import { createReadableStreamFromReadable, type EntryContext } from '@remix-run/node';
 import { RemixServer } from '@remix-run/react';
 import isbot from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
@@ -39,21 +38,26 @@ function handleBotRequest(
   remixContext: EntryContext
 ) {
   return new Promise((resolve, reject) => {
-    let didError = false;
-
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} />,
+      <RemixServer
+        context={remixContext}
+        url={request.url}
+        abortDelay={ABORT_DELAY}
+      />,
       {
         onAllReady() {
           const body = new PassThrough();
 
-          responseHeaders.set('Content-Type', 'text/html');
+          responseHeaders.set("Content-Type", "text/html");
 
           resolve(
-            new Response(body, {
-              headers: responseHeaders,
-              status: didError ? 500 : responseStatusCode,
-            })
+            new Response(
+              createReadableStreamFromReadable(body),
+              {
+                headers: responseHeaders,
+                status: responseStatusCode,
+              }
+            )
           );
 
           pipe(body);
@@ -62,8 +66,7 @@ function handleBotRequest(
           reject(error);
         },
         onError(error: unknown) {
-          didError = true;
-
+          responseStatusCode = 500;
           console.error(error);
         },
       }
@@ -80,32 +83,36 @@ function handleBrowserRequest(
   remixContext: EntryContext
 ) {
   return new Promise((resolve, reject) => {
-    let didError = false;
-
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} />,
+      <RemixServer
+        context={remixContext}
+        url={request.url}
+        abortDelay={ABORT_DELAY}
+      />,
       {
         onShellReady() {
           const body = new PassThrough();
 
-          responseHeaders.set('Content-Type', 'text/html');
+          responseHeaders.set("Content-Type", "text/html");
 
           resolve(
-            new Response(body, {
-              headers: responseHeaders,
-              status: didError ? 500 : responseStatusCode,
-            })
+            new Response(
+              createReadableStreamFromReadable(body),
+              {
+                headers: responseHeaders,
+                status: responseStatusCode,
+              }
+            )
           );
 
           pipe(body);
         },
-        onShellError(err: unknown) {
-          reject(err);
+        onShellError(error: unknown) {
+          reject(error);
         },
         onError(error: unknown) {
-          didError = true;
-
           console.error(error);
+          responseStatusCode = 500;
         },
       }
     );
@@ -113,3 +120,4 @@ function handleBrowserRequest(
     setTimeout(abort, ABORT_DELAY);
   });
 }
+

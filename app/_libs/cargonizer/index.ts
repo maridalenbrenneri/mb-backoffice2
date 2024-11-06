@@ -38,7 +38,7 @@ export async function getCargonizerProfile() {
     if (!response.body) throw new Error('[Cargonizer] Profile returned null');
 
     return new XMLParser().parse(xml);
-  } catch (err) {
+  } catch (err: any) {
     const error = `[Cargonizer] Error when fetching profile: ${err.message}`;
     console.warn(error);
     return {
@@ -62,7 +62,7 @@ export const sendConsignment = async (
 
   if (!order) throw new Error('Order was null');
 
-  console.debug('[Cargonizer] Creating consignment for order', order.id);
+  console.debug('[Cargonizer] Creating consignment for order QWERTY', order.id);
 
   const consignmentCreate = mapToCargonizerConsignment(order);
 
@@ -70,11 +70,16 @@ export const sendConsignment = async (
     consignmentCreate.customer.country,
     consignmentCreate.customer.postcode
   );
+
   if (servicePartner.error) {
     throw new Error(
       `Error when requesting Cargonizer service partners. Is postcode correct? Order ${input.order.id} Postcode: "${consignmentCreate.customer.postcode}" Error msg: "${servicePartner.error}"`
     );
   }
+
+  console.debug('[Cargonizer] Service partner data', servicePartner);
+
+  console.debug('[Cargonizer] Creating consignment data', consignmentCreate, servicePartner);
 
   const xml = await createConsignmentXml(consignmentCreate, servicePartner);
 
@@ -131,9 +136,14 @@ export async function printConsignmentLabels(consignmentIds: number[]) {
 }
 
 function mapToCargonizerConsignment(order: Order) {
+  console.debug('Mapping order to cargonizer consigment', order.subscription);
+
   const reference = generateReference(order);
+  console.debug('Reference', reference);
+
   const weight = calculateWeight(order);
-  console.dir(order.subscription);
+  console.debug('Weight', weight);
+  
   const shippingType = !order.subscription.isPrivateDeliveryAddress
     ? shipping_type_standard_business
     : shipping_type_standard_private;
@@ -187,7 +197,7 @@ async function requestConsignment(consignmentXml: string) {
     throwIfAnyError(data.consignments.consignment.errors);
 
     return data.consignments.consignment;
-  } catch (err) {
+  } catch (err: any) {
     console.warn(`[Cargonizer] Error creating consignment: ${err.message}`);
     return {
       error: err.message,
@@ -202,6 +212,8 @@ async function requestServicePartners(country: string, postcode: string) {
     const response = await fetch(url, { headers: headers });
     const xml = await response.text();
     const json = new XMLParser().parse(xml);
+
+    console.debug('[Cargonizer] Service partners response: ', json, json.results.errors?.error);
 
     throwIfAnyError(json.errors);
 
@@ -218,10 +230,12 @@ async function requestServicePartners(country: string, postcode: string) {
       city: partner.city,
       country: partner.country,
     };
-  } catch (err) {
+  } catch (err: any) {
     console.warn(
       `[Cargonizer] Error when fetching service parthers: ${err.message}`
     );
+    console.debug('[Cargonizer] Full error', err);
+
     return {
       error: err.message,
     };

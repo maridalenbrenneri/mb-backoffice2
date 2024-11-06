@@ -3,10 +3,10 @@ import { json } from '@remix-run/node';
 import {
   Form,
   useActionData,
-  useTransition,
   useLoaderData,
   Outlet,
   useSubmit,
+  useNavigation,
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
@@ -153,7 +153,7 @@ export default function UpdateOrder() {
   const { loadedOrder, products, deliveryDates } =
     useLoaderData() as unknown as LoaderData;
   const data = useActionData();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const submit = useSubmit();
 
   const [openSnack, setOpenSnack] = useState<boolean>(false);
@@ -173,7 +173,7 @@ export default function UpdateOrder() {
 
   if (!order) return null;
 
-  const isUpdating = Boolean(transition.submission);
+  const isUpdating = Boolean(navigation.state === 'submitting');
   const isReadOnly = !!order.wooOrderId;
 
   const canComplete =

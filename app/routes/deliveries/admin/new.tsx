@@ -1,5 +1,5 @@
 import type { ActionFunction } from '@remix-run/node';
-import { Form, useLoaderData, useTransition } from '@remix-run/react';
+import { Form, useLoaderData, useNavigation } from '@remix-run/react';
 import * as React from 'react';
 import { json } from '@remix-run/node';
 
@@ -47,8 +47,8 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function NewDelivery() {
   const { deliveryDates, products } = useLoaderData() as unknown as LoaderData;
-  const transition = useTransition();
-  const isCreating = Boolean(transition.submission);
+  const navigation = useNavigation();
+  const isCreating = Boolean(navigation.state === 'submitting');
 
   const [deliveryDate, setDeliveryDate] = React.useState(deliveryDates[0]);
 

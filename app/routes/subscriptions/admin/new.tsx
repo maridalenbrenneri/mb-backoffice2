@@ -4,7 +4,7 @@ import {
   Form,
   useActionData,
   useLoaderData,
-  useTransition,
+  useNavigation,
 } from '@remix-run/react';
 import { useState } from 'react';
 
@@ -55,11 +55,11 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function NewSubscription() {
   const errors = useActionData();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const { customers } = useLoaderData() as unknown as LoaderData;
   const [customer, setCustomer] = useState(customers[0]);
 
-  const isCreating = Boolean(transition.submission);
+  const isCreating = Boolean(navigation.state === 'submitting');
 
   if (!customers?.length)
     return <Box>Couldn't find any customers, cannot create subscription.</Box>;
