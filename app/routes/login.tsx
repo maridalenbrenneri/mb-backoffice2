@@ -10,7 +10,10 @@ import { Button, FormControl, Grid, Paper, TextField } from '@mui/material';
 export const meta: MetaFunction = () => {
   return [
     { title: "MB Backoffice | Login" },
-    { viewport: 'width=device-width,initial-scale=1' },
+    {
+      name: "viewport",
+      content: "width=device-width,initial-scale=1",
+    },
   ];
 };
 

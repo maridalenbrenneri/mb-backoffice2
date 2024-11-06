@@ -26,7 +26,10 @@ import { requireUserId } from './utils/session.server';
 export const meta: MetaFunction = () => {
   return [
     { title: "MB Backoffice" },
-    { viewport: 'width=device-width,initial-scale=1' },
+    {
+      name: "viewport",
+      content: "width=device-width,initial-scale=1",
+    },
     {
       property: "og:title",
       content: "MB Backoffice",
