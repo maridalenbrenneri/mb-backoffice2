@@ -1,11 +1,11 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const WooProductData = z.object({
   id: z.number(),
   name: z.string(),
   status: z.string(),
   stock_status: z.string(),
-  date_created: z.string(),
+  date_created: z.string().nullable(),
   date_modified: z.string(),
   permalink: z.string(),
 });

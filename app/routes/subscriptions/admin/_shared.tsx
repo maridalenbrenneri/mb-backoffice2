@@ -195,7 +195,7 @@ export const createAction = async (values: any) => {
     isPrivateDeliveryAddress: !!values.isPrivateDeliveryAddress,
   };
 
-  let res = await subscriptionRepository.create(data);
+  const res = await subscriptionRepository.create(data);
 
   return redirect(`/subscriptions/admin/${res.id}`);
 };
