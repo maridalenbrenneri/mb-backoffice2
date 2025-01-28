@@ -5,7 +5,8 @@
     "build": "remix build",
     "dev": "remix dev",
     "start": "remix-serve build",
-    "test": "jest"
+    "test": "jest",
+    "deps:update": "npx npm-check-updates --interactive --format group"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
