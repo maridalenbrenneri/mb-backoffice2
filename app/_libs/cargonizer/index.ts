@@ -79,7 +79,11 @@ export const sendConsignment = async (
 
   console.debug('[Cargonizer] Service partner data', servicePartner);
 
-  console.debug('[Cargonizer] Creating consignment data', consignmentCreate, servicePartner);
+  console.debug(
+    '[Cargonizer] Creating consignment data',
+    consignmentCreate,
+    servicePartner
+  );
 
   const xml = await createConsignmentXml(consignmentCreate, servicePartner);
 
@@ -143,7 +147,7 @@ function mapToCargonizerConsignment(order: Order) {
 
   const weight = calculateWeight(order);
   console.debug('Weight', weight);
-  
+
   const shippingType = !order.subscription.isPrivateDeliveryAddress
     ? shipping_type_standard_business
     : shipping_type_standard_private;
@@ -213,7 +217,11 @@ async function requestServicePartners(country: string, postcode: string) {
     const xml = await response.text();
     const json = new XMLParser().parse(xml);
 
-    console.debug('[Cargonizer] Service partners response: ', json, json.results.errors?.error);
+    console.debug(
+      '[Cargonizer] Service partners response: ',
+      json,
+      json.results.errors?.error
+    );
 
     throwIfAnyError(json.errors);
 
@@ -221,12 +229,14 @@ async function requestServicePartners(country: string, postcode: string) {
 
     // console.debug('[Cargonizer] service partner: ', partner.number);
 
+    let postcode = partner.postcode?.toString().padStart(4, '0') || '';
+
     return {
       number: partner.number,
       name: partner.name,
       address1: partner.address1,
       address2: partner.address2,
-      postcode: partner.postcode,
+      postcode,
       city: partner.city,
       country: partner.country,
     };
