@@ -225,7 +225,8 @@ export async function generatePreview(deliveryIds: number[]) {
   );
 
   preview.orders.allSpecialRequets = orders.filter(
-    (o) => o.subscription.specialRequest !== SubscriptionSpecialRequest.NONE
+    (o) => o.subscription.specialRequest !== SubscriptionSpecialRequest.NONE &&
+    !STAFF_SUBSCRIPTIONS.includes(o.subscriptionId)
   );
 
   // STAFF

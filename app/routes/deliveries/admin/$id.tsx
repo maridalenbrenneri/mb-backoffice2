@@ -3,8 +3,8 @@ import { json } from '@remix-run/node';
 import {
   Form,
   useActionData,
-  useTransition,
   useLoaderData,
+  useNavigation,
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
@@ -86,8 +86,9 @@ export default function UpdateDelivery() {
   const { loadedDelivery, products } = useLoaderData() as unknown as LoaderData;
 
   const data = useActionData();
-  const transition = useTransition();
-  const isUpdating = Boolean(transition.submission);
+  // const transition = useTransition();
+  const navigation = useNavigation();
+  const isUpdating = Boolean(navigation);
 
   const [delivery, setDelivery] = useState<Delivery>();
   const [openSnack, setOpenSnack] = useState<boolean>(false);
@@ -136,7 +137,7 @@ export default function UpdateDelivery() {
         >
           {products.map((product: Product) => (
             <MenuItem value={product.id} key={product.id}>
-              {product.productCode || 'code not set'} - {product.name}
+              {product.productCode || 'code not set'} - {product.name}{` - `}<small>{product.stockStatus}</small>
             </MenuItem>
           ))}
         </Select>

@@ -12,10 +12,15 @@ export default async function importWooSubscriptionStats() {
   let created = 0;
   let updated = 0;
   let notChanged = 0;
+  let invalidItems: number[] = [];
 
-  let upsertData = wooSubscriptions.map((s) =>
-    wooApiToUpsertSubscriptionData(s)
-  );
+  let upsertData: any[] = [];
+  
+  wooSubscriptions.forEach((s) => {
+    let data = wooApiToUpsertSubscriptionData(s);
+    if (data) upsertData.push(data);
+    else invalidItems.push(s.id);
+  });
 
   for (const data of upsertData) {
     let res = await subscriptionRepository.upsertSubscriptionFromWoo(data);
@@ -30,6 +35,9 @@ export default async function importWooSubscriptionStats() {
     created,
     updated,
     notChanged,
+    errors: invalidItems.length
+      ? `Invalid items, most likely unknown subscription product id. Subscription ids: ${invalidItems.join(', ')}`
+      : null
   };
 
   console.debug(`=> DONE`, res);

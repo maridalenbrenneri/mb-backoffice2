@@ -1,15 +1,15 @@
-
-import type { V2_MetaFunction} from '@remix-run/node';
+import type { V2_MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
+  isRouteErrorResponse,
   Links,
   LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch,
   useLoaderData,
+  useRouteError,
 } from '@remix-run/react';
 
 import { Box, ThemeProvider, CssBaseline, Typography } from '@mui/material';
@@ -25,14 +25,14 @@ import { requireUserId } from './utils/session.server';
 
 export const meta: V2_MetaFunction = () => {
   return [
-    { title: "MB Backoffice" },
+    { title: 'MB Backoffice' },
     {
-      property: "og:title",
-      content: "MB Backoffice",
+      property: 'og:title',
+      content: 'MB Backoffice',
     },
     {
-      name: "description",
-      content: "This app is the best",
+      name: 'description',
+      content: 'This app is the best',
     },
   ];
 };
@@ -41,7 +41,7 @@ type LoaderData = {
   userId: string | null;
 };
 
-export const loader = async ({ request }: {request: any}) => {
+export const loader = async ({ request }: { request: any }) => {
   const url = new URL(request.url);
 
   if (url.pathname === '/login')
@@ -89,39 +89,27 @@ export default function App() {
   );
 }
 
-export function CatchBoundary() {
-  let caught = useCatch();
+export function ErrorBoundary() {
+  const error = useRouteError();
 
-  switch (caught.status) {
-    case 401:
-    case 404:
-      return (
-        <Document title={`${caught.status} ${caught.statusText}`}>
-          <div style={{ margin: '50px auto', textAlign: 'center' }}>
-            <h1>
-              {caught.status} {caught.statusText}
-            </h1>
-            <p>
-              The page you are looking for was not found. Go to
-              <a href="/"> frontpage</a>.
-            </p>
-          </div>
-        </Document>
-      );
-
-    default:
-      throw new Error(
-        `Unexpected caught response with status: ${caught.status}`
-      );
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>Oops</h1>
+        <p>Status: {error.status}</p>
+        <p>{error.data.message}</p>
+      </div>
+    );
   }
-}
 
-export function ErrorBoundary({ error }: { error: Error }) {
+  const errorMessage =
+    error instanceof Error ? error.message : 'An error occurred';
+
   return (
     <Document title="Uh-oh!">
       <div className="error-container">
         <Typography variant="h4">App Error</Typography>
-        <pre>{error.message}</pre>
+        <pre>{errorMessage}</pre>
       </div>
     </Document>
   );

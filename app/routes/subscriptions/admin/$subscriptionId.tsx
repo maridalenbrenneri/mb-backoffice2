@@ -5,9 +5,9 @@ import {
   Form,
   useActionData,
   useLoaderData,
+  useNavigation,
   useParams,
   useSubmit,
-  useTransition,
 } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
@@ -149,7 +149,7 @@ export const loader: LoaderFunction = async ({ params }) => {
 
 export default function UpdateSubscription() {
   const data = useActionData();
-  const transition = useTransition();
+  const navigation = useNavigation();
   const submit = useSubmit();
   const { loadedSubscription, deliveryDates } =
     useLoaderData() as unknown as LoaderData;
@@ -172,16 +172,16 @@ export default function UpdateSubscription() {
   if (!subscription) return null;
 
   const isUpdating =
-    transition.state === 'submitting' &&
-    transition.submission.formData.get('_action') === '';
+    navigation.state === 'submitting' &&
+    navigation.formData?.get('_action') === '';
 
   const isCreatingOrder =
-    transition.state === 'submitting' &&
-    transition.submission.formData.get('_action') === 'create-order';
+    navigation.state === 'submitting' &&
+    navigation.formData?.get('_action') === 'create-order';
 
   const isCreatingCustomOrder =
-    transition.state === 'submitting' &&
-    transition.submission.formData.get('_action') === 'create-custom-order';
+    navigation.state === 'submitting' &&
+    navigation.formData?.get('_action') === 'create-custom-order';
 
   const isSystemSubscription =
     subscription.id === WOO_RENEWALS_SUBSCRIPTION_ID ||

@@ -1,8 +1,5 @@
 import { login, createUserSession } from '~/utils/session.server';
-import type {
-  ActionFunction,
-  HeadersFunction,
-} from '@remix-run/node';
+import type { ActionFunction, HeadersFunction } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
 import { Button, FormControl, Grid, Paper, TextField } from '@mui/material';
 
@@ -32,16 +29,16 @@ type ActionData = {
   fields?: { email: string; password: string };
 };
 
-export let action: ActionFunction = async ({
+export const action: ActionFunction = async ({
   request,
 }): Promise<Response | ActionData> => {
-  let { email, password } = Object.fromEntries(await request.formData());
+  const { email, password } = Object.fromEntries(await request.formData());
   if (typeof email !== 'string' || typeof password !== 'string') {
     return { formError: `Form not submitted correctly.` };
   }
 
-  let fields = { email, password };
-  let fieldErrors = {
+  const fields = { email, password };
+  const fieldErrors = {
     email: validateUsername(email),
     password: validatePassword(password),
   };

@@ -16,7 +16,8 @@ import {
 import orderUpdateStatus from './order-update-status';
 import { WOO_STATUS_COMPLETED } from './constants';
 import { type WooOrder } from './orders/types';
-import { getProducts } from '../core/repositories/product';
+import { getAllProducts } from '../core/repositories/product';
+import { SubscriptionType } from '~/_libs/core/repositories/subscription';
 
 async function resolveSubscription(info: OrderInfo) {
   if (!info.wooCustomerId) {
@@ -26,6 +27,7 @@ async function resolveSubscription(info: OrderInfo) {
 
   const subscription = await subscriptionRepository.getSubscription({
     where: {
+      type: SubscriptionType.PRIVATE, // This is needed because orders with gift subscriptions ordered by an owner of a subscription will have same customer id
       wooCustomerId: info.wooCustomerId,
     },
     select: {
@@ -62,7 +64,7 @@ export default async function importWooOrders() {
   console.debug(`=> DONE (${wooOrders.length} fetched)`);
 
   const nextDelivery = await getNextOrCreateDelivery();
-  const products = await getProducts();
+  const products = await getAllProducts();
 
   const findProductByWooProductId = (wooProductId: number) => {
     const product = products.find((c) => c.wooProductId === wooProductId);

@@ -1,9 +1,8 @@
-import { DateTime } from 'luxon';
-import { z } from 'zod';
+import { DateTime } from "luxon";
 
-import { WOO_IMPORT_PRODUCTS_UPDATED_TODAY_MINUS_DAYS } from '~/_libs/core/settings';
-import { WOO_API_DEFAULT_PER_PAGE, WOO_API_BASE_URL } from '../constants';
-import { WooProductData, type WooProduct } from './types';
+import { WOO_IMPORT_PRODUCTS_UPDATED_TODAY_MINUS_DAYS } from "~/_libs/core/settings";
+import { WOO_API_DEFAULT_PER_PAGE, WOO_API_BASE_URL } from "../constants";
+import { WooProductData, type WooProduct } from "./types";
 
 async function fetchPage(
   page: number = 1,
@@ -20,18 +19,29 @@ async function fetchPage(
   }
 
   const data = await response.json();
+  const validated = data.map((item: any) => {
+    const result = WooProductData.safeParse(item);
+    if (!result.success) {
+      console.warn(
+        "Invalid Woo product data",
+        item.id,
+        item.name,
+        result.error
+      );
+    }
+    return result;
+  });
 
-  const validated = z.array(WooProductData).safeParse(data);
-  if (validated.success === false) {
-    throw new Error(`Unable to parse Woo product data ${validated.error}`);
-  }
+  const validData = validated
+    .filter((result: any) => result.success)
+    .map((result: any) => result.data);
 
-  const totalPages = Number(response.headers.get('x-wp-totalpages'));
+  const totalPages = Number(response.headers.get("x-wp-totalpages"));
   const nextPage = !totalPages || totalPages === page ? null : page + 1;
 
   return {
     nextPage,
-    products: validated.data,
+    products: validData,
   };
 }
 
@@ -39,7 +49,7 @@ export async function fetchProducts(): Promise<WooProduct[]> {
   let orders: Array<WooProduct> = [];
 
   const updatedAfter = DateTime.now()
-    .startOf('day')
+    .startOf("day")
     .minus({ days: WOO_IMPORT_PRODUCTS_UPDATED_TODAY_MINUS_DAYS })
     .toISO({ suppressMilliseconds: true, includeOffset: false });
 

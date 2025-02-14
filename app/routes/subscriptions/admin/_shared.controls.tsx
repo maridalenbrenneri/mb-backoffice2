@@ -29,7 +29,7 @@ export const renderTypes = (type: SubscriptionType = SubscriptionType.B2B) => {
 
 export const renderStatus = (
   status: SubscriptionStatus = SubscriptionStatus.ACTIVE,
-  disabled: boolean = false
+  disabled = false
 ) => {
   return (
     <FormControl sx={{ m: 1 }}>
@@ -54,7 +54,7 @@ export const renderStatus = (
 
 export const renderFrequency = (
   frequency: SubscriptionFrequency = SubscriptionFrequency.MONTHLY,
-  disabled: boolean = false
+  disabled = false
 ) => {
   return (
     <FormControl sx={{ m: 1 }}>
@@ -79,7 +79,7 @@ export const renderFrequency = (
 
 export const renderShippingTypes = (
   shippingType: ShippingType = ShippingType.SHIP,
-  disabled: boolean = false
+  disabled = false
 ) => {
   return (
     <FormControl sx={{ m: 1 }}>

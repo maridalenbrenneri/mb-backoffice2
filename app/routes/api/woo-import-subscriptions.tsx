@@ -15,17 +15,17 @@ export const action: ActionFunction = async ({ request }) => {
   console.time('woo-import-subscriptions');
 
   try {
-    const result = await woo.importWooSubscriptions();
+    let result = await woo.importWooSubscriptions();
 
     await createJobResult({
       jobStartedAt,
       name,
       result: JSON.stringify(result),
-      errors: null,
+      errors: result.errors,
     });
 
     return json(result);
-  } catch (err) {
+  } catch (err: any) {
     await createJobResult({
       jobStartedAt,
       name,
