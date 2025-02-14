@@ -1,23 +1,9 @@
 import { login, createUserSession } from '~/utils/session.server';
-import type {
-  ActionFunction,
-  HeadersFunction,
-  MetaFunction,
-} from '@remix-run/node';
+import type { ActionFunction, HeadersFunction } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
 import { Button, FormControl, Grid, Paper, TextField } from '@mui/material';
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: "MB Backoffice | Login" },
-    {
-      name: "viewport",
-      content: "width=device-width,initial-scale=1",
-    },
-  ];
-};
-
-export const headers: HeadersFunction = () => {
+export let headers: HeadersFunction = () => {
   return {
     'Cache-Control': `public, max-age=${60 * 10}, s-maxage=${
       60 * 60 * 24 * 30

@@ -1,7 +1,10 @@
 import { PassThrough } from 'stream';
-import { createReadableStreamFromReadable, type EntryContext } from '@remix-run/node';
+import {
+  createReadableStreamFromReadable,
+  type EntryContext,
+} from '@remix-run/node';
 import { RemixServer } from '@remix-run/react';
-import isbot from 'isbot';
+import * as isbot from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 
 const ABORT_DELAY = 5000;
@@ -16,7 +19,7 @@ export default function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
-  return isbot(request.headers.get('user-agent'))
+  return isbot.isbot(request.headers.get('user-agent'))
     ? handleBotRequest(
         request,
         responseStatusCode,
@@ -48,16 +51,13 @@ function handleBotRequest(
         onAllReady() {
           const body = new PassThrough();
 
-          responseHeaders.set("Content-Type", "text/html");
+          responseHeaders.set('Content-Type', 'text/html');
 
           resolve(
-            new Response(
-              createReadableStreamFromReadable(body),
-              {
-                headers: responseHeaders,
-                status: responseStatusCode,
-              }
-            )
+            new Response(createReadableStreamFromReadable(body), {
+              headers: responseHeaders,
+              status: responseStatusCode,
+            })
           );
 
           pipe(body);
@@ -93,16 +93,13 @@ function handleBrowserRequest(
         onShellReady() {
           const body = new PassThrough();
 
-          responseHeaders.set("Content-Type", "text/html");
+          responseHeaders.set('Content-Type', 'text/html');
 
           resolve(
-            new Response(
-              createReadableStreamFromReadable(body),
-              {
-                headers: responseHeaders,
-                status: responseStatusCode,
-              }
-            )
+            new Response(createReadableStreamFromReadable(body), {
+              headers: responseHeaders,
+              status: responseStatusCode,
+            })
           );
 
           pipe(body);
@@ -120,4 +117,3 @@ function handleBrowserRequest(
     setTimeout(abort, ABORT_DELAY);
   });
 }
-

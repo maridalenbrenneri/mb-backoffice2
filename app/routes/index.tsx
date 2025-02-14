@@ -1,4 +1,3 @@
-import { json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 
@@ -121,7 +120,7 @@ export const loader = async () => {
 
   const cargonizerProfile = await getCargonizerProfile();
 
-  return json<LoaderData>({
+  return Response.json({
     wooProductImportResult,
     wooSubscriptionImportResult,
     wooOrderImportResult,
@@ -199,7 +198,7 @@ export default function Index() {
     orderImportResult,
   ]);
 
-  if (loading)
+  if (loading) {
     return (
       <main>
         <Grid container>
@@ -212,6 +211,7 @@ export default function Index() {
         </Grid>
       </main>
     );
+  }
 
   const aboStats = resolveAboStats(subscriptions || []);
 

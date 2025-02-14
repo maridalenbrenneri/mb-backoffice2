@@ -25,14 +25,14 @@ import { requireUserId } from './utils/session.server';
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "MB Backoffice" },
+    { title: 'MB Backoffice' },
     {
-      name: "viewport",
-      content: "width=device-width,initial-scale=1",
+      property: 'og:title',
+      content: 'MB Backoffice',
     },
     {
-      property: "og:title",
-      content: "MB Backoffice",
+      name: 'description',
+      content: 'This app is the best',
     },
   ];
 };
@@ -41,7 +41,7 @@ type LoaderData = {
   userId: string | null;
 };
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: { request: any }) => {
   const url = new URL(request.url);
 
   if (url.pathname === '/login')
@@ -102,8 +102,8 @@ export function ErrorBoundary() {
     );
   }
 
-  const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-
+  const errorMessage =
+    error instanceof Error ? error.message : 'An error occurred';
 
   return (
     <Document title="Uh-oh!">
