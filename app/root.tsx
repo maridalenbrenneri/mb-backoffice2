@@ -1,4 +1,4 @@
-import type { V2_MetaFunction } from '@remix-run/node';
+import type { MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
   isRouteErrorResponse,
@@ -23,7 +23,7 @@ import MainMenu from './components/MainMenu';
 import { theme } from './style/theme';
 import { requireUserId } from './utils/session.server';
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [
     { title: 'MB Backoffice' },
     {
