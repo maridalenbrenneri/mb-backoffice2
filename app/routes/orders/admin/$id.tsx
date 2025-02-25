@@ -65,7 +65,7 @@ import {
   completeOrder,
 } from '~/_libs/core/services/order-service';
 import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
-import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
+import { getNextOrCreateDelivery } from '~/_libs/core/services/deprecetad__delivery-service';
 import { DateTime } from 'luxon';
 import CompleteAndShipResultBox from '~/components/CompleteAndShipResultBox';
 import { getProducts } from '~/_libs/core/repositories/product';

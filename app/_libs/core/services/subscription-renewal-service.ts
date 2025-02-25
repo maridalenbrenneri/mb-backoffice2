@@ -11,7 +11,7 @@ import {
 } from '../repositories/subscription/';
 
 import { SUBSCRIPTION_RENEWAL_WEEKDAY, TAKE_MAX_ROWS } from '../settings';
-import { getNextOrCreateDelivery } from './delivery-service';
+import { getNextOrCreateDelivery } from './deprecetad__delivery-service';
 
 function isTimeToCreateRenewalOrders() {
   return DateTime.now().weekday === SUBSCRIPTION_RENEWAL_WEEKDAY;

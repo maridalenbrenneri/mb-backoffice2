@@ -4,6 +4,8 @@ import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
 import { OrderType } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { getNextTuesday } from '../utils/dates';
+import { DeliveryEntity } from '~/_services/delivery/delivery.entity';
+import { OrderEntity } from '~/_services/order.entity';
 
 function calculateWeightByCoffee(_250: any, _500: any, _1200: any) {
   const coffee1kg =
@@ -45,22 +47,22 @@ function _agg(quantity: number) {
   return { coffee1, coffee2, coffee3, coffee4 };
 }
 
-function fromItems(orders: Order[]) {
+function fromItems(orders: OrderEntity[]) {
   const data = new Map();
 
   for (const order of orders) {
     for (const item of order.orderItems) {
-      const row = data.get(item.coffeeId) || { _250: 0, _500: 0, _1200: 0 };
+      const row = data.get(item.coffee.id) || { _250: 0, _500: 0, _1200: 0 };
 
       if (item.variation === '_250') {
         row._250 += item.quantity;
-        data.set(item.productId, row);
+        data.set(item.product.id, row);
       } else if (item.variation === '_500') {
         row._500 += item.quantity;
-        data.set(item.productId, row);
+        data.set(item.product.id, row);
       } else if (item.variation === '_1200') {
         row._1200 += item.quantity;
-        data.set(item.productId, row);
+        data.set(item.product.id, row);
       }
     }
   }
@@ -69,7 +71,7 @@ function fromItems(orders: Order[]) {
 }
 
 function aggregateCoffeesOrders(
-  orders: Order[],
+  orders: OrderEntity[],
   _250: any,
   _500: any,
   _1200: any
@@ -131,7 +133,7 @@ function resolveCoffee(coffees: Product[], productId: number) {
 
 export function getRoastOverview(
   subscriptions: Subscription[],
-  delivery: Delivery | undefined = undefined,
+  delivery: DeliveryEntity | undefined = undefined,
   coffees: Product[] = []
 ) {
   if (!delivery)
@@ -140,7 +142,7 @@ export function getRoastOverview(
   let includedSubscriptionCount = 0;
   let includedOrderCount = 0;
   const coffeesFromCustomOrdersNotSetOnDelivery: any[] = [];
-  const fortnigthlyPrivateOrdersOnDelivery: Order[] = [];
+  const fortnigthlyPrivateOrdersOnDelivery: OrderEntity[] = [];
 
   let _250 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
   let _500 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
@@ -148,7 +150,7 @@ export function getRoastOverview(
 
   // MAKE SURE WE ONLY USE ACTIVE AND COMPLETED ORDERS IN ESTIMATION
   const orders = delivery.orders.filter(
-    (o: Order) =>
+    (o: OrderEntity) =>
       o.status === OrderStatus.ACTIVE || o.status === OrderStatus.COMPLETED
   );
 
@@ -222,7 +224,7 @@ export function getRoastOverview(
   );
   fortnightlyPrivate.forEach((s) => {
     // Exclude if renewal order exist on Delivery (renewal orders will be added below)
-    const order = orders.find((o: Order) => o.subscriptionId === s.id);
+    const order = orders.find((o: OrderEntity) => o.subscription.id === s.id);
     if (order) {
       console.debug(
         'Subscription already has a renewal order on delivery',
@@ -282,7 +284,7 @@ export function getRoastOverview(
 
   // ADD NON-RENEWAL ORDERS TO OVERVIEW (FROM PASSIVE SUBSCRIPTIONS OR MANUALLY CREATED ORDERS ON ACTIVE SUBSCRIPTIONS)
   const nonRecurringOrders = orders.filter(
-    (o: Order) => o.type === OrderType.NON_RENEWAL
+    (o: OrderEntity) => o.type === OrderType.NON_RENEWAL
   );
   if (nonRecurringOrders.length) {
     aggregateCoffeesOrders(nonRecurringOrders, _250, _500, _1200);
@@ -300,7 +302,9 @@ export function getRoastOverview(
   }
 
   // ADD CUSTOM ORDERS
-  const customOrders = orders.filter((o: Order) => o.type === OrderType.CUSTOM);
+  const customOrders = orders.filter(
+    (o: OrderEntity) => o.type === OrderType.CUSTOM
+  );
   if (customOrders.length) {
     const map = fromItems(customOrders);
 
@@ -310,24 +314,30 @@ export function getRoastOverview(
     console.debug('delivery', delivery);
 
     // ADD QUANTITIES TO COFFEES SET ON DELIVERY - LIST USED TO HANDLE WHEN SAME COFFEE IS SET MULTIPLE TIMES ON DELIVERY
-    if (delivery.product1Id) {
-      c1 = map.get(delivery.product1Id);
-      list.push(delivery.product1Id);
+    if (delivery.product1?.id) {
+      c1 = map.get(delivery.product1.id);
+      list.push(delivery.product1.id);
     }
 
-    if (delivery.product2Id && !list.some((l) => l === delivery.product2Id)) {
-      c2 = map.get(delivery.product2Id);
-      list.push(delivery.product2Id);
+    if (delivery.product2.id && !list.some((l) => l === delivery.product2.id)) {
+      c2 = map.get(delivery.product2.id);
+      list.push(delivery.product2.id);
     }
 
-    if (delivery.product3Id && !list.some((l) => l === delivery.product3Id)) {
-      c3 = map.get(delivery.product3Id);
-      list.push(delivery.product3Id);
+    if (
+      delivery.product3?.id &&
+      !list.some((l) => l === delivery.product3.id)
+    ) {
+      c3 = map.get(delivery.product3.id);
+      list.push(delivery.product3.id);
     }
 
-    if (delivery.product4Id && !list.some((l) => l === delivery.product4Id)) {
-      c4 = map.get(delivery.product4Id);
-      list.push(delivery.product4Id);
+    if (
+      delivery.product4?.id &&
+      !list.some((l) => l === delivery.product4.id)
+    ) {
+      c4 = map.get(delivery.product4.id);
+      list.push(delivery.product4.id);
     }
 
     _250.coffee1 += c1?._250 || 0;
@@ -348,10 +358,10 @@ export function getRoastOverview(
     // ADD QUANTITIES TO COFFEES NOT SET ON DELIVERY
     for (const [key, value] of map.entries()) {
       if (
-        key !== delivery.product1Id &&
-        key !== delivery.product2Id &&
-        key !== delivery.product3Id &&
-        key !== delivery.product4Id
+        key !== delivery.product1?.id &&
+        key !== delivery.product2?.id &&
+        key !== delivery.product3?.id &&
+        key !== delivery.product4?.id
       ) {
         const coffee = resolveCoffee(coffees, key);
         console.debug('coffee', coffee);

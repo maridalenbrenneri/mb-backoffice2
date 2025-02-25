@@ -38,7 +38,7 @@ import Orders from '../../components/Orders';
 import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
 import { modalStyle } from '~/style/theme';
 import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
-import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
+import { getNextOrCreateDelivery } from '~/_libs/core/services/deprecetad__delivery-service';
 import { toPrettyDateText } from '~/_libs/core/utils/dates';
 import { deliveryDayTypeToLabel } from '~/_libs/core/utils/labels';
 import CompleteAndShipResultBox from '~/components/CompleteAndShipResultBox';

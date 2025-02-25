@@ -4,7 +4,7 @@ import * as orderRepository from '~/_libs/core/repositories/order';
 import { OrderStatus, OrderType } from '~/_libs/core/repositories/order';
 
 import { fetchOrders } from './orders/fetch';
-import { getNextOrCreateDelivery } from '../core/services/delivery-service';
+import { getNextOrCreateDelivery } from '../core/services/deprecetad__delivery-service';
 import type { OrderInfo } from './orders/woo-api-to-order';
 import wooApiToOrderInfo, {
   hasSupportedStatus,

@@ -11,14 +11,14 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Box, Button, TableFooter } from '@mui/material';
 
-import type { Delivery } from '~/_libs/core/repositories/delivery.server';
-import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
 import { toPrettyDate } from '~/_libs/core/utils/dates';
 import { useEffect, useState } from 'react';
 import { Coffee, Product } from '@prisma/client';
+import { DeliveryService } from '~/_services/delivery/delivery.service';
+import { DeliveryEntity } from '~/_services/delivery/delivery.entity';
 
 type LoaderData = {
-  loadedDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
+  loadedDeliveries: DeliveryEntity[];
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -43,13 +43,15 @@ function buildFilter(search: URLSearchParams) {
   return filter;
 }
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
   const search = new URLSearchParams(url.search);
 
   const filter = buildFilter(search);
 
-  const loadedDeliveries = await getDeliveries(filter);
+  const deliveryService = new DeliveryService();
+
+  const loadedDeliveries = await deliveryService.getDeliveries(filter);
 
   return json<LoaderData>({
     loadedDeliveries,
@@ -69,7 +71,7 @@ function resolveCoffeeLabel(product: Product, coffee: Coffee) {
 export default function Deliveries() {
   const { loadedDeliveries } = useLoaderData() as unknown as LoaderData;
 
-  const [deliveries, setDeliveries] = useState<Delivery[]>();
+  const [deliveries, setDeliveries] = useState<DeliveryEntity[]>();
 
   useEffect(() => {
     setDeliveries(loadedDeliveries);
@@ -106,7 +108,7 @@ export default function Deliveries() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {deliveries.map((delivery: Delivery) => (
+            {deliveries.map((delivery: DeliveryEntity) => (
               <TableRow
                 key={delivery.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

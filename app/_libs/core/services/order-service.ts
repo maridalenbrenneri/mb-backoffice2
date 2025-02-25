@@ -13,7 +13,7 @@ import { updateOrder } from '../repositories/order/order.server';
 import { updateOrderStatus } from '../repositories/order/order.server';
 import { getOrder, upsertOrder } from '../repositories/order/order.server';
 import { COMPLETE_ORDERS_DELAY, WEIGHT_STANDARD_PACKAGING } from '../settings';
-import { getNextOrCreateDelivery } from './delivery-service';
+import { getNextOrCreateDelivery } from './deprecetad__delivery-service';
 
 import * as woo from '~/_libs/woo';
 import {
