@@ -88,7 +88,7 @@ export default function UpdateDelivery() {
   const data = useActionData();
   // const transition = useTransition();
   const navigation = useNavigation();
-  const isUpdating = Boolean(navigation);
+  const isUpdating = Boolean(navigation.state === 'submitting');
 
   const [delivery, setDelivery] = useState<Delivery>();
   const [openSnack, setOpenSnack] = useState<boolean>(false);
@@ -137,7 +137,9 @@ export default function UpdateDelivery() {
         >
           {products.map((product: Product) => (
             <MenuItem value={product.id} key={product.id}>
-              {product.productCode || 'code not set'} - {product.name}{` - `}<small>{product.stockStatus}</small>
+              {product.productCode || 'code not set'} - {product.name}
+              {` - `}
+              <small>{product.stockStatus}</small>
             </MenuItem>
           ))}
         </Select>
