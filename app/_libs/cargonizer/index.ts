@@ -1,6 +1,6 @@
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
-import type { Order } from '@prisma/client';
+import { SubscriptionType, type Order } from '@prisma/client';
 
 import type {
   CargonizerConsignment,
@@ -17,7 +17,7 @@ const api_key = process.env.CARGONIZER_API_KEY;
 const sender_id = settings.CARGONIZER_SENDER_ID;
 const transport_agreement = settings.CARGONIZER_TRANSPORT_AGREEMENT;
 
-const consignment_url = `${settings.CARGONIZER_API_URL}//consignments.xml`;
+const consignment_url = `${settings.CARGONIZER_API_URL}/consignments.xml`;
 const service_partners_url = `${settings.CARGONIZER_API_URL}/service_partners.xml`;
 const profile_url = `${settings.CARGONIZER_API_URL}/profile.xml`;
 const print_url = `${settings.CARGONIZER_API_URL}/consignments/label_direct`;
@@ -140,19 +140,25 @@ export async function printConsignmentLabels(consignmentIds: number[]) {
 }
 
 function mapToCargonizerConsignment(order: Order) {
-  console.debug('Mapping order to cargonizer consigment', order.subscription);
+  console.debug(
+    '[Cargonizer] Mapping to cargonizer consigment, subscription',
+    order.subscription
+  );
 
   const reference = generateReference(order);
-  console.debug('Reference', reference);
+  // console.debug('Reference', reference);
 
   const weight = calculateWeight(order);
-  console.debug('Weight', weight);
+  // console.debug('Weight', weight);
 
-  const shippingType = !order.subscription.isPrivateDeliveryAddress
-    ? shipping_type_standard_business
-    : shipping_type_standard_private;
+  const shippingType =
+    order.subscription?.type !== SubscriptionType.B2B
+      ? shipping_type_standard_private
+      : order.subscription.isPrivateDeliveryAddress
+      ? shipping_type_standard_private
+      : shipping_type_standard_business;
 
-  return {
+  let data = {
     shippingType,
     reference,
     weight,
@@ -167,6 +173,10 @@ function mapToCargonizerConsignment(order: Order) {
       country: 'NO',
     },
   };
+
+  console.debug('[Cargonizer] Consignment data', data);
+
+  return data;
 }
 
 function throwIfAnyError(errors: any) {
@@ -190,7 +200,6 @@ async function requestConsignment(consignmentXml: string) {
       method: 'post',
       headers: {
         ...headers,
-        'Content-length': `${consignmentXml.length}`,
       },
       body: consignmentXml,
     });
@@ -198,11 +207,12 @@ async function requestConsignment(consignmentXml: string) {
     const xml = await response.text();
     const data = new XMLParser().parse(xml);
 
-    throwIfAnyError(data.consignments.consignment.errors);
+    throwIfAnyError(data.consignments?.consignment?.errors);
 
     return data.consignments.consignment;
   } catch (err: any) {
     console.warn(`[Cargonizer] Error creating consignment: ${err.message}`);
+    console.debug('[Cargonizer] Error creating consignment, full error: ', err);
     return {
       error: err.message,
     };
