@@ -13,7 +13,6 @@ import { updateOrder } from '../repositories/order/order.server';
 import { updateOrderStatus } from '../repositories/order/order.server';
 import { getOrder, upsertOrder } from '../repositories/order/order.server';
 import { COMPLETE_ORDERS_DELAY, WEIGHT_STANDARD_PACKAGING } from '../settings';
-import { getNextOrCreateDelivery } from './deprecetad__delivery-service';
 
 import * as woo from '~/_libs/woo';
 import {
@@ -22,6 +21,8 @@ import {
   WOO_STATUS_PROCESSING,
 } from '~/_libs/woo/constants';
 import { resolveSpecialRequestCode } from './subscription-service';
+import { OrderEntity } from '~/_services/order.entity';
+import { DeliveryService } from '~/_services/delivery/delivery.service';
 
 export interface Quantites {
   _250: number;
@@ -66,7 +67,7 @@ async function _createOrder(
     };
   }
 
-  const delivery = await getNextOrCreateDelivery();
+  const delivery = await new DeliveryService().getNextOrCreateDelivery();
 
   const order = await upsertOrder(null, {
     subscriptionId,
@@ -103,7 +104,7 @@ export async function createCustomOrder(subscriptionId: number) {
 }
 
 export function calculateWeight(
-  order: Order,
+  order: OrderEntity,
   includePackaging: boolean = true
 ) {
   let weight = 0;
@@ -123,7 +124,7 @@ export function calculateWeight(
   return weight;
 }
 
-export function resolveSource(order: Order) {
+export function resolveSource(order: OrderEntity) {
   if (order.wooOrderId) return `woo`;
 
   if (order.subscription?.type === SubscriptionType.B2B) return 'b2b';
@@ -132,7 +133,7 @@ export function resolveSource(order: Order) {
   return 'n/a';
 }
 
-export function generateReference(order: Order) {
+export function generateReference(order: OrderEntity) {
   let reference = '';
 
   if (order.orderItems) {

@@ -21,8 +21,6 @@ import {
   Alert,
 } from '@mui/material';
 
-import { getDeliveryById } from '~/_libs/core/repositories/delivery.server';
-import type { Delivery } from '~/_libs/core/repositories/delivery.server';
 import { upsertAction } from './_shared';
 import {
   toPrettyDateTextLong,
@@ -31,40 +29,30 @@ import {
 import Orders from '~/components/Orders';
 import { useEffect, useState } from 'react';
 import type { Product } from '@prisma/client';
-import { OrderStatus, ProductStatus } from '@prisma/client';
+import { ProductStatus } from '@prisma/client';
 import DataLabel from '~/components/DataLabel';
 import { getProducts } from '~/_libs/core/repositories/product';
+import { DeliveryService } from '~/_services/delivery/delivery.service';
+import { DeliveryEntity } from '~/_services/delivery/delivery.entity';
+import { ProductEntity } from '~/_services/product.entity';
 
 type LoaderData = {
-  loadedDelivery: Delivery;
-  products: Product[];
+  loadedDelivery: DeliveryEntity;
+  products: ProductEntity[];
 };
 
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
 
-  const loadedDelivery = await getDeliveryById(+params.id, {
-    product1: true,
-    product2: true,
-    product3: true,
-    product4: true,
-    orders: {
-      where: { status: { in: [OrderStatus.ACTIVE, OrderStatus.COMPLETED] } },
-      include: {
-        orderItems: {
-          select: {
-            id: true,
-            variation: true,
-            quantity: true,
-            product: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    },
-  });
+  let deliveryService = new DeliveryService();
+
+  const loadedDelivery = await deliveryService.getDeliveryById(+params.id, [
+    'product1',
+    'product2',
+    'product3',
+    'product4',
+    'orders',
+  ]);
 
   invariant(loadedDelivery, `Delivery not found: ${params.id}`);
 
@@ -86,11 +74,11 @@ export default function UpdateDelivery() {
   const { loadedDelivery, products } = useLoaderData() as unknown as LoaderData;
 
   const data = useActionData();
-  // const transition = useTransition();
+
   const navigation = useNavigation();
   const isUpdating = Boolean(navigation.state === 'submitting');
 
-  const [delivery, setDelivery] = useState<Delivery>();
+  const [delivery, setDelivery] = useState<DeliveryEntity>();
   const [openSnack, setOpenSnack] = useState<boolean>(false);
 
   useEffect(() => {
@@ -188,10 +176,10 @@ export default function UpdateDelivery() {
                   value={delivery.type}
                 />
 
-                <div>{renderProduct(delivery.product1Id || '', 1)}</div>
-                <div>{renderProduct(delivery.product2Id || '', 2)}</div>
-                <div>{renderProduct(delivery.product3Id || '', 3)}</div>
-                <div>{renderProduct(delivery.product4Id || '', 4)}</div>
+                <div>{renderProduct(delivery.product1?.id || '', 1)}</div>
+                <div>{renderProduct(delivery.product2?.id || '', 2)}</div>
+                <div>{renderProduct(delivery.product3?.id || '', 3)}</div>
+                <div>{renderProduct(delivery.product4?.id || '', 4)}</div>
 
                 <div>
                   <FormControl sx={{ m: 1 }}>

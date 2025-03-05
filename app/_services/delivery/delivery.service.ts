@@ -1,5 +1,6 @@
 import { DeliveryEntity } from './delivery.entity';
 import { DateTime } from 'luxon';
+import { Between } from 'typeorm';
 import { getNextDeliveryDateFrom } from '~/_libs/core/utils/dates';
 import { dataSource } from '~/db.server';
 
@@ -23,13 +24,14 @@ export class DeliveryService {
   }
 
   async getDelivery(filter: any) {
-    return this.manager.findOne(DeliveryEntity, { where: filter });
+    return await this.manager.findOne(DeliveryEntity, { ...filter });
   }
 
   async upsertDelivery(id: number | null, data: Partial<DeliveryEntity>) {
     return this.manager.save(DeliveryEntity, {
       id: id || undefined,
       ...data,
+      updatedAt: new Date(),
     });
   }
 
@@ -51,19 +53,13 @@ export class DeliveryService {
       ? await this.getDelivery({
           // RETURN ONLY DELIVERY DAY IF EXISTS ON THE SPECIFIC DATE
           where: {
-            date: {
-              gte: currentDate.toJSDate(),
-              lte: currentDate.toJSDate(),
-            },
+            date: Between(currentDate.toJSDate(), currentDate.toJSDate()),
           },
         })
       : await this.getDelivery({
           // RETURN DELIVERY DAY IF ANY EXISTS IN THE COMING WEEK
           where: {
-            date: {
-              gte: currentDate.toJSDate(),
-              lt: nextweek.toJSDate(),
-            },
+            date: Between(currentDate.toJSDate(), nextweek.toJSDate()),
           },
         });
 
@@ -90,16 +86,7 @@ export class DeliveryService {
     return await this.manager.save(DeliveryEntity, {
       date: nextDate.date.toJSDate(),
       type: nextDate.type,
-    });
-  }
-
-  getNextDeliveryFromList(deliveries: DeliveryEntity[]) {
-    const today = DateTime.now().startOf('day');
-    const nextweek = today.plus({ days: 7 });
-
-    return deliveries.find((d) => {
-      const date = DateTime.fromISO(d.date.toString());
-      return date >= today && date < nextweek;
+      updatedAt: new Date(),
     });
   }
 }

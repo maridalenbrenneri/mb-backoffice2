@@ -2,7 +2,6 @@ import { DateTime } from 'luxon';
 
 import { TAKE_MAX_ROWS } from '../settings';
 import { getNextFirstTuesday } from '../utils/dates';
-import type { Subscription } from '../repositories/subscription';
 import {
   SubscriptionFrequency,
   SubscriptionSpecialRequest,
@@ -10,8 +9,9 @@ import {
   SubscriptionType,
 } from '../repositories/subscription/';
 import * as subscriptionRepository from '../repositories/subscription';
+import { SubscriptionEntity } from '~/_services/subscription-entity';
 
-function calculateSubscriptionWeight(subscription: Subscription) {
+function calculateSubscriptionWeight(subscription: SubscriptionEntity) {
   let weight = 0;
 
   if (subscription.quantity250) weight += subscription.quantity250 * 250;
@@ -36,7 +36,7 @@ export function resolveSpecialRequestCode(
   }
 }
 
-export function resolveSubscriptionCode(subscription: Subscription) {
+export function resolveSubscriptionCode(subscription: SubscriptionEntity) {
   const translateType = (type: SubscriptionType) => {
     switch (type) {
       case SubscriptionType.PRIVATE_GIFT:

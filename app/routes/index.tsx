@@ -10,10 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import type { Delivery, Product } from '@prisma/client';
-
 import { SubscriptionStatus } from '~/_libs/core/repositories/subscription';
-import type { Subscription } from '~/_libs/core/repositories/subscription';
 import * as subscriptionRepo from '~/_libs/core/repositories/subscription';
 
 import { OrderStatus } from '~/_libs/core/repositories/order';
@@ -31,6 +28,9 @@ import JobsInfoBox from '~/components/JobsInfoBox';
 import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 import { getProducts } from '~/_libs/core/repositories/product';
 import StaffSubscriptions from '~/components/StaffSubscriptions';
+import { DeliveryEntity } from '~/_services/delivery/delivery.entity';
+import { SubscriptionEntity } from '~/_services/subscription-entity';
+import { ProductEntity } from '~/_services/product.entity';
 
 type LoaderData = {
   wooProductImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
@@ -146,9 +146,9 @@ export default function Index() {
     cargonizerProfile,
   } = useLoaderData() as unknown as LoaderData;
 
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>();
-  const [deliveries, setDeliveries] = useState<Delivery[]>();
-  const [coffees, setCoffees] = useState<Product[]>();
+  const [subscriptions, setSubscriptions] = useState<SubscriptionEntity[]>();
+  const [deliveries, setDeliveries] = useState<DeliveryEntity[]>();
+  const [coffees, setCoffees] = useState<ProductEntity[]>();
   const [cargonizer, setCargonizer] = useState();
 
   const [orderImportResult, setOrderImportResult] = useState<any>(null);

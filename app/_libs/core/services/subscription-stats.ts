@@ -1,5 +1,5 @@
-import type { Subscription } from '@prisma/client';
 import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
+import { SubscriptionEntity } from '~/_services/subscription-entity';
 
 export interface BagCounterItem {
   one: number;
@@ -34,7 +34,7 @@ export interface SubscriptionStats {
 
 function resolveBagCount(
   bagSize: number,
-  subscriptions: Subscription[],
+  subscriptions: SubscriptionEntity[],
   quantity: number
 ) {
   if (bagSize === 250)
@@ -72,7 +72,7 @@ export function emptyBagCounter(): BagCounter {
 }
 
 export function countBags(
-  subscriptions: Subscription[],
+  subscriptions: SubscriptionEntity[],
   bagCounter?: BagCounter | undefined | null
 ) {
   bagCounter = bagCounter || initBagCounter();
@@ -105,7 +105,7 @@ export function countBags(
 }
 
 export function resolveAboStats(
-  allActiveSubscriptions: Subscription[]
+  allActiveSubscriptions: SubscriptionEntity[]
 ): SubscriptionStats {
   const privateActiveMonthly = allActiveSubscriptions.filter(
     (s) =>
