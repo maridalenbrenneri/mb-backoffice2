@@ -17,7 +17,7 @@ import {
   resolveSource,
 } from '~/_libs/core/services/order-service';
 import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
-import { OrderEntity } from '~/_services/order.entity';
+import { OrderEntity } from '~/_services/order/order.entity';
 
 export default function Orders(props: {
   orders: OrderEntity[];

@@ -1,11 +1,18 @@
-import type { Delivery, Order, Product, Subscription } from '@prisma/client';
-import { OrderStatus } from '@prisma/client';
-import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
-import { OrderType } from '@prisma/client';
 import { DateTime } from 'luxon';
+
 import { getNextTuesday } from '../utils/dates';
 import { DeliveryEntity } from '~/_services/delivery/delivery.entity';
-import { OrderEntity } from '~/_services/order.entity';
+import {
+  OrderEntity,
+  OrderStatus,
+  OrderType,
+} from '~/_services/order/order.entity';
+import {
+  SubscriptionEntity,
+  SubscriptionFrequency,
+  SubscriptionType,
+} from '~/_services/subscription/subscription-entity';
+import { ProductEntity } from '~/_services/product/product.entity';
 
 function calculateWeightByCoffee(_250: any, _500: any, _1200: any) {
   const coffee1kg =
@@ -52,7 +59,7 @@ function fromItems(orders: OrderEntity[]) {
 
   for (const order of orders) {
     for (const item of order.orderItems) {
-      const row = data.get(item.coffee.id) || { _250: 0, _500: 0, _1200: 0 };
+      const row = data.get(item.product.id) || { _250: 0, _500: 0, _1200: 0 };
 
       if (item.variation === '_250') {
         row._250 += item.quantity;
@@ -98,7 +105,7 @@ function aggregateCoffeesOrders(
 }
 
 function aggregateCoffeesFromSubscriptions(
-  subscriptions: Subscription[],
+  subscriptions: SubscriptionEntity[],
   _250: any,
   _500: any,
   _1200: any
@@ -126,15 +133,15 @@ function aggregateCoffeesFromSubscriptions(
   return { _250, _500, _1200 };
 }
 
-function resolveCoffee(coffees: Product[], productId: number) {
+function resolveCoffee(coffees: ProductEntity[], productId: number) {
   console.debug('resolveCoffee', productId);
   return coffees.find((c) => c.id === productId);
 }
 
 export function getRoastOverview(
-  subscriptions: Subscription[],
+  subscriptions: SubscriptionEntity[],
   delivery: DeliveryEntity | undefined = undefined,
-  coffees: Product[] = []
+  coffees: ProductEntity[] = []
 ) {
   if (!delivery)
     throw new Error('No delivery set, cannot resolve roast overview');

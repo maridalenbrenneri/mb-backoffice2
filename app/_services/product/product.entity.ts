@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { DeliveryEntity } from './delivery/delivery.entity';
-import { OrderItemEntity } from './order-item.entity';
+import { DeliveryEntity } from '../delivery/delivery.entity';
+import { OrderItemEntity } from '../order/order-item.entity';
 
 export enum ProductStatus {
   PUBLISHED = 'PUBLISHED',

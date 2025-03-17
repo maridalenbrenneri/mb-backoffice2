@@ -1,11 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import { DataSource } from 'typeorm';
 import { DeliveryEntity } from './_services/delivery/delivery.entity';
-import { CoffeeEntity } from './_services/coffee.entity';
-import { OrderItemEntity } from './_services/order-item.entity';
-import { OrderEntity } from './_services/order.entity';
-import { SubscriptionEntity } from './_services/subscription-entity';
-import { ProductEntity } from './_services/product.entity';
+import { OrderItemEntity } from './_services/order/order-item.entity';
+import { OrderEntity } from './_services/order/order.entity';
+import { SubscriptionEntity } from './_services/subscription/subscription-entity';
+import { ProductEntity } from './_services/product/product.entity';
 import { UserEntity } from './_services/user.entity';
 
 let prisma: PrismaClient;
@@ -22,6 +21,7 @@ declare global {
 // in production we'll have a single connection to the DB.
 if (process.env.NODE_ENV === 'production') {
   prisma = new PrismaClient();
+
   initializeDataSource()
     .then((ds) => {
       dataSource = ds;
@@ -55,7 +55,6 @@ async function initializeDataSource() {
     url: process.env.DATABASE_URL,
     entities: [
       DeliveryEntity,
-      CoffeeEntity,
       OrderItemEntity,
       OrderEntity,
       SubscriptionEntity,

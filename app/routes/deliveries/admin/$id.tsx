@@ -34,7 +34,7 @@ import DataLabel from '~/components/DataLabel';
 import { getProducts } from '~/_libs/core/repositories/product';
 import { DeliveryService } from '~/_services/delivery/delivery.service';
 import { DeliveryEntity } from '~/_services/delivery/delivery.entity';
-import { ProductEntity } from '~/_services/product.entity';
+import { ProductEntity } from '~/_services/product/product.entity';
 
 type LoaderData = {
   loadedDelivery: DeliveryEntity;
@@ -86,7 +86,7 @@ export default function UpdateDelivery() {
   }, [loadedDelivery]);
 
   useEffect(() => {
-    setOpenSnack(!!data?.didUpdate);
+    setOpenSnack(!!(data as any)?.didUpdate);
   }, [data]);
 
   if (!delivery) return null;
@@ -144,7 +144,9 @@ export default function UpdateDelivery() {
           onClose={() => setOpenSnack(false)}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          <Alert severity="success">{data?.updateMessage || 'Updated'}</Alert>
+          <Alert severity="success">
+            {(data as any)?.updateMessage || 'Updated'}
+          </Alert>
         </Snackbar>
 
         <Typography variant="h1">Delivery Day Details</Typography>
@@ -152,7 +154,7 @@ export default function UpdateDelivery() {
         <Grid container>
           <Grid item>
             <Box sx={{ m: 1 }}>
-              <DataLabel dataFields={dataFields} />
+              <DataLabel dataFields={dataFields as any} />
             </Box>
           </Grid>
           <Grid item>

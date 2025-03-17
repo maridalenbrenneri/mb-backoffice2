@@ -21,7 +21,7 @@ import {
   WOO_STATUS_PROCESSING,
 } from '~/_libs/woo/constants';
 import { resolveSpecialRequestCode } from './subscription-service';
-import { OrderEntity } from '~/_services/order.entity';
+import { OrderEntity } from '~/_services/order/order.entity';
 import { DeliveryService } from '~/_services/delivery/delivery.service';
 
 export interface Quantites {

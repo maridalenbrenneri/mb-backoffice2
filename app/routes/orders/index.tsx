@@ -16,10 +16,6 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
-import type { Order } from '@prisma/client';
-import { OrderStatus } from '@prisma/client';
-
-import { getOrders } from '~/_libs/core/repositories/order/order.server';
 import { useEffect, useState } from 'react';
 import {
   Box,
@@ -35,11 +31,13 @@ import {
   generateReference,
   resolveSource,
 } from '~/_libs/core/services/order-service';
+import { OrderEntity, OrderStatus } from '~/_services/order/order.entity';
+import { OrderService } from '~/_services/order/order.service';
 
 const defaultStatus = OrderStatus.ACTIVE;
 
 type LoaderData = {
-  loadedOrders: Awaited<ReturnType<typeof getOrders>>;
+  loadedOrders: OrderEntity[];
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -82,13 +80,15 @@ function buildFilter(search: URLSearchParams) {
   return filter;
 }
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
   const search = new URLSearchParams(url.search);
 
   const filter = buildFilter(search);
 
-  const loadedOrders = await getOrders(filter);
+  let orderService = new OrderService();
+
+  const loadedOrders = await orderService.getOrders(filter);
 
   return json<LoaderData>({
     loadedOrders,
@@ -100,7 +100,7 @@ export default function Orders() {
   const [params] = useSearchParams();
   const submit = useSubmit();
 
-  const [orders, setOrders] = useState<Order[]>();
+  const [orders, setOrders] = useState<OrderEntity[]>();
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
 
   useEffect(() => {
@@ -170,7 +170,7 @@ export default function Orders() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {orders.map((order: Order) => (
+              {orders.map((order: OrderEntity) => (
                 <TableRow
                   key={order.id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -192,7 +192,7 @@ export default function Orders() {
                   </TableCell>
                   <TableCell>{order.name}</TableCell>
                   <TableCell>
-                    <Link to={`/deliveries/admin/${order.deliveryId}`}>
+                    <Link to={`/deliveries/admin/${order.delivery.id}`}>
                       {toPrettyDateText(order.delivery?.date)}
                     </Link>
                   </TableCell>

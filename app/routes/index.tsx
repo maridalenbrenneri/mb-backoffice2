@@ -29,20 +29,18 @@ import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
 import { getProducts } from '~/_libs/core/repositories/product';
 import StaffSubscriptions from '~/components/StaffSubscriptions';
 import { DeliveryEntity } from '~/_services/delivery/delivery.entity';
-import { SubscriptionEntity } from '~/_services/subscription-entity';
-import { ProductEntity } from '~/_services/product.entity';
+import { SubscriptionEntity } from '~/_services/subscription/subscription-entity';
+import { ProductEntity } from '~/_services/product/product.entity';
 
 type LoaderData = {
   wooProductImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
-  wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
+  wooSubscriptionImportResult: SubscriptionEntity[];
   wooOrderImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   updateGaboStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
   createRenewalOrdersResult: Awaited<ReturnType<typeof getLastJobResult>>;
-  allActiveSubscriptions: Awaited<
-    ReturnType<typeof subscriptionRepo.getSubscriptions>
-  >;
-  currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
-  currentCoffees: Awaited<ReturnType<typeof getProducts>>;
+  allActiveSubscriptions: SubscriptionEntity[];
+  currentDeliveries: DeliveryEntity[];
+  currentCoffees: ProductEntity[];
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 

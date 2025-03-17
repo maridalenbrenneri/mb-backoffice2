@@ -1,9 +1,8 @@
 import { OrderType } from '@prisma/client';
 import { json, redirect } from '@remix-run/node';
 
-import { upsertOrderItem } from '~/_libs/core/repositories/order/order.server';
-import { upsertOrder } from '~/_libs/core/repositories/order/order.server';
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
+import { OrderService } from '~/_services/order/order.service';
 
 type OrderActionData = {
   validationErrors?:
@@ -78,7 +77,9 @@ export const upsertOrderAction = async (values: any) => {
     internalNote: values.internalNote,
   };
 
-  await upsertOrder(+values.id, data);
+  let orderService = new OrderService();
+
+  await orderService.upsertOrder(+values.id, data);
 
   return json<OrderActionData>({
     didUpdate: true,
@@ -108,7 +109,9 @@ export const upsertOrderItemAction = async (values: any) => {
 
   console.log('INPUT', data);
 
-  await upsertOrderItem(+values.id, data);
+  let orderService = new OrderService();
+
+  await orderService.upsertOrderItem(+values.id, data);
 
   return redirect(`/orders/admin/${values.orderId}`);
 };

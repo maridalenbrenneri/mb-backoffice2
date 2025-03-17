@@ -1,15 +1,15 @@
 import { DateTime } from 'luxon';
 
-import { TAKE_MAX_ROWS } from '../settings';
-import { getNextFirstTuesday } from '../utils/dates';
 import {
   SubscriptionFrequency,
-  SubscriptionSpecialRequest,
   SubscriptionStatus,
   SubscriptionType,
-} from '../repositories/subscription/';
-import * as subscriptionRepository from '../repositories/subscription';
-import { SubscriptionEntity } from '~/_services/subscription/subscription-entity';
+} from '~/_libs/core/repositories/subscription';
+import {
+  SubscriptionEntity,
+  SubscriptionSpecialRequest,
+} from './subscription-entity';
+import { getNextFirstTuesday } from '~/_libs/core/utils/dates';
 
 function calculateSubscriptionWeight(subscription: SubscriptionEntity) {
   let weight = 0;
@@ -81,49 +81,4 @@ export function resolveStatusForGiftSubscription(
   if (first > nextMonthly) return SubscriptionStatus.NOT_STARTED;
 
   return SubscriptionStatus.ACTIVE;
-}
-
-export async function updateStatusOnGiftSubscriptions() {
-  const gifts = await subscriptionRepository.getSubscriptions({
-    where: {
-      status: {
-        in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.NOT_STARTED],
-      },
-      type: SubscriptionType.PRIVATE_GIFT,
-    },
-    select: {
-      id: true,
-      status: true,
-      gift_durationMonths: true,
-      gift_firstDeliveryDate: true,
-    },
-    take: TAKE_MAX_ROWS,
-  });
-
-  let updatedCount = 0;
-
-  console.debug(`Checking status on ${gifts.length} gift subscriptions`);
-
-  for (const gift of gifts) {
-    const duration = gift.gift_durationMonths as number;
-    const date = DateTime.fromISO(
-      (gift.gift_firstDeliveryDate as Date).toISOString()
-    );
-
-    const status = resolveStatusForGiftSubscription(duration, date);
-
-    if (gift.status !== status) {
-      console.debug(
-        `Detected new status for gift subscription ${gift.id}. Updating from ${gift.status} to ${status}`
-      );
-
-      // console.debug('GIFT', duration, date.toISO());
-
-      await subscriptionRepository.updateStatusOnSubscription(gift.id, status);
-
-      updatedCount++;
-    }
-  }
-
-  return { updatedCount };
 }

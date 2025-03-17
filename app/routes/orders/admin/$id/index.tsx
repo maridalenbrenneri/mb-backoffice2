@@ -21,24 +21,29 @@ import {
 } from '@mui/material';
 
 import { upsertOrderItemAction } from '../_shared';
-import { getOrderById } from '~/_libs/core/repositories/order/order.server';
-import type { Product } from '~/_libs/core/repositories/product';
-import { getProducts } from '~/_libs/core/repositories/product';
+
+import { OrderService } from '~/_services/order/order.service';
+import { OrderEntity } from '~/_services/order/order.entity';
+import { ProductService } from '~/_services/product/product.service';
+import { ProductEntity } from '~/_services/product/product.entity';
 
 type LoaderData = {
-  coffees: Awaited<ReturnType<typeof getProducts>>;
-  order: Awaited<ReturnType<typeof getOrderById>>;
+  coffees: ProductEntity[];
+  order: OrderEntity;
 };
 
 // TODO: USE outletContext instead of reloading order form db
 
 export const loader: LoaderFunction = async ({ params }) => {
+  let orderService = new OrderService();
+  let productService = new ProductService();
+
   invariant(params.id, `params.id is required`);
 
-  const order = await getOrderById(+params.id);
+  const order = await orderService.getOrderById(+params.id);
   invariant(order, `Order not found: ${params.id}`);
 
-  const coffees = await getProducts({
+  const coffees = await productService.getProducts({
     where: { status: 'PUBLISHED' },
   });
 
@@ -56,7 +61,7 @@ export default function NewOrderItem() {
   const { coffees, order } = useLoaderData() as unknown as LoaderData;
   const errors = useActionData();
   const navigation = useNavigation();
-  const isCreating = Boolean(navigation.state === 'submitting');  
+  const isCreating = Boolean(navigation.state === 'submitting');
 
   if (!order || order.wooOrderId) return null;
 
@@ -78,7 +83,7 @@ export default function NewOrderItem() {
               defaultValue={coffees[0].id}
               sx={{ minWidth: 250 }}
             >
-              {coffees.map((coffee: Product) => (
+              {coffees.map((coffee: ProductEntity) => (
                 <MenuItem value={coffee.id} key={coffee.id}>
                   {coffee.productCode} - {coffee.name}
                 </MenuItem>
@@ -104,7 +109,7 @@ export default function NewOrderItem() {
               name="quantity"
               label="Quantity"
               variant="outlined"
-              error={errors?.quantity}
+              error={(errors as any)?.quantity}
             />
           </FormControl>
 

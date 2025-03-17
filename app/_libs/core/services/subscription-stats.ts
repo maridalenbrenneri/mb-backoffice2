@@ -1,5 +1,5 @@
 import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
-import { SubscriptionEntity } from '~/_services/subscription-entity';
+import { SubscriptionEntity } from '~/_services/subscription/subscription-entity';
 
 export interface BagCounterItem {
   one: number;

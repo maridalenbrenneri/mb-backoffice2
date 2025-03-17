@@ -9,10 +9,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-import type { Product, Subscription } from '@prisma/client';
-
 import { toPrettyDateText } from '~/_libs/core/utils/dates';
-import { getRoastOverview } from '~/_libs/core/services/roast-service';
+
 import {
   FormControl,
   FormGroup,
@@ -27,11 +25,14 @@ import { roundTotalKg } from '~/_libs/core/utils/numbers';
 import { deliveryDayTypeToLabel } from '~/_libs/core/utils/labels';
 import { getNextDeliveryFromList } from '~/_services/delivery/delivery.utils';
 import { DeliveryEntity } from '~/_services/delivery/delivery.entity';
+import { SubscriptionEntity } from '~/_services/subscription/subscription-entity';
+import { ProductEntity } from '~/_services/product/product.entity';
+import { RoastService } from '~/_services/roast-service';
 
 export default function RoastOverviewBox(props: {
-  subscriptions: Subscription[];
+  subscriptions: SubscriptionEntity[];
   deliveries: DeliveryEntity[];
-  coffees: Product[];
+  coffees: ProductEntity[];
 }) {
   const { subscriptions, deliveries, coffees } = props;
   const [delivery, setDelivery] = useState<DeliveryEntity>();
@@ -47,7 +48,11 @@ export default function RoastOverviewBox(props: {
   useEffect(() => {
     if (!delivery) return;
 
-    const overview = getRoastOverview(subscriptions, delivery, coffees);
+    const overview = RoastService.getRoastOverview(
+      subscriptions,
+      delivery,
+      coffees
+    );
 
     setOverview(overview);
   }, [delivery, coffees, subscriptions]);

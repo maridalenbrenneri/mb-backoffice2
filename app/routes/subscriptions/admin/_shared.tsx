@@ -5,6 +5,8 @@ import type { CreateSubscriptionData } from '~/_libs/core/repositories/subscript
 import { isEmpty } from '~/_libs/core/utils/are-equal';
 
 import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
+import { SubscriptionEntity } from '~/_services/subscription/subscription-entity';
+import { SubscriptionService } from '~/_services/subscription/subscription.service';
 
 type CreateActionData = {
   validationErrors?:
@@ -59,7 +61,9 @@ export const updateFirstDeliveryDate = async (values: any) => {
 };
 
 export const updateSpecialRequest = async (values: any) => {
-  await subscriptionRepository.update(+values.id, {
+  let subscriptionService = new SubscriptionService();
+
+  await subscriptionService.upsertSubscription(+values.id, {
     specialRequest: values.specialRequest,
   });
 
@@ -70,7 +74,9 @@ export const updateSpecialRequest = async (values: any) => {
 };
 
 export const updateInternalNote = async (values: any) => {
-  await subscriptionRepository.update(+values.id, {
+  let subscriptionService = new SubscriptionService();
+
+  await subscriptionService.upsertSubscription(+values.id, {
     internalNote: values.internalNote,
   });
 
@@ -157,7 +163,9 @@ export const updateAction = async (values: any) => {
     });
   }
 
-  await subscriptionRepository.update(id, data);
+  let subscriptionService = new SubscriptionService();
+
+  await subscriptionService.upsertSubscription(+values.id, data);
 
   return json<SubscriptionActionData>({
     didUpdate: true,
@@ -173,7 +181,7 @@ export const createAction = async (values: any) => {
     return json<CreateActionData>({ validationErrors });
   }
 
-  const data: CreateSubscriptionData = {
+  const data: Partial<SubscriptionEntity> = {
     fikenContactId: values.fikenContactId,
     type: values.type,
     status: values.status,
@@ -195,7 +203,9 @@ export const createAction = async (values: any) => {
     isPrivateDeliveryAddress: !!values.isPrivateDeliveryAddress,
   };
 
-  const res = await subscriptionRepository.create(data);
+  let subscriptionService = new SubscriptionService();
+
+  let res = await subscriptionService.upsertSubscription(+values.id, data);
 
   return redirect(`/subscriptions/admin/${res.id}`);
 };

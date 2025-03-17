@@ -7,9 +7,8 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { CoffeeEntity } from '../coffee.entity';
-import { ProductEntity } from '../product.entity';
-import { OrderEntity } from '../order.entity';
+import { ProductEntity } from '../product/product.entity';
+import { OrderEntity } from '../order/order.entity';
 
 export enum DeliveryStatus {
   ACTIVE = 'ACTIVE',
@@ -33,34 +32,6 @@ export class DeliveryEntity {
 
   @Column({ type: 'text' })
   type!: string;
-
-  @ManyToOne(() => CoffeeEntity, (coffee) => coffee.DeliveryCoffee1, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
-  coffee1!: CoffeeEntity;
-
-  @ManyToOne(() => CoffeeEntity, (coffee) => coffee.DeliveryCoffee2, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
-  coffee2!: CoffeeEntity;
-
-  @ManyToOne(() => CoffeeEntity, (coffee) => coffee.DeliveryCoffee3, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
-  coffee3!: CoffeeEntity;
-
-  @ManyToOne(() => CoffeeEntity, (coffee) => coffee.DeliveryCoffee4, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
-  coffee4!: CoffeeEntity;
 
   @ManyToOne(() => ProductEntity, (product) => product.DeliveryProduct1, {
     cascade: true,

@@ -4,7 +4,6 @@ import * as orderRepository from '~/_libs/core/repositories/order';
 import { OrderStatus, OrderType } from '~/_libs/core/repositories/order';
 
 import { fetchOrders } from './orders/fetch';
-import { getNextOrCreateDelivery } from '../core/services/deprecetad__delivery-service';
 import type { OrderInfo } from './orders/woo-api-to-order';
 import wooApiToOrderInfo, {
   hasSupportedStatus,
@@ -18,6 +17,7 @@ import { WOO_STATUS_COMPLETED } from './constants';
 import { type WooOrder } from './orders/types';
 import { getAllProducts } from '../core/repositories/product';
 import { SubscriptionType } from '~/_libs/core/repositories/subscription';
+import { DeliveryService } from '~/_services/delivery/delivery.service';
 
 async function resolveSubscription(info: OrderInfo) {
   if (!info.wooCustomerId) {
@@ -63,7 +63,8 @@ export default async function importWooOrders() {
 
   console.debug(`=> DONE (${wooOrders.length} fetched)`);
 
-  const nextDelivery = await getNextOrCreateDelivery();
+  let deliveryService = new DeliveryService();
+  const nextDelivery = await deliveryService.getNextOrCreateDelivery();
   const products = await getAllProducts();
 
   const findProductByWooProductId = (wooProductId: number) => {

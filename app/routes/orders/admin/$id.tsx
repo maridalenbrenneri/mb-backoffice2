@@ -39,10 +39,6 @@ import DoneIcon from '@mui/icons-material/Done';
 import CancelIcon from '@mui/icons-material/Cancel';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
-import type { Order, OrderItem, Product } from '@prisma/client';
-import { ShippingType } from '@prisma/client';
-import { OrderStatus, OrderType } from '@prisma/client';
-
 import {
   getOrder,
   updateOrder,
@@ -65,14 +61,22 @@ import {
   completeOrder,
 } from '~/_libs/core/services/order-service';
 import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
-import { getNextOrCreateDelivery } from '~/_libs/core/services/deprecetad__delivery-service';
 import { DateTime } from 'luxon';
 import CompleteAndShipResultBox from '~/components/CompleteAndShipResultBox';
 import { getProducts } from '~/_libs/core/repositories/product';
+import {
+  OrderEntity,
+  OrderStatus,
+  OrderType,
+  ShippingType,
+} from '~/_services/order/order.entity';
+import { ProductEntity } from '~/_services/product/product.entity';
+import { OrderItemEntity } from '~/_services/order/order-item.entity';
+import { DeliveryService } from '~/_services/delivery/delivery.service';
 
 type LoaderData = {
-  products: Awaited<ReturnType<typeof getProducts>>;
-  loadedOrder: Awaited<ReturnType<typeof getOrder>>;
+  products: ProductEntity[];
+  loadedOrder: OrderEntity;
   deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
 };
 
@@ -128,7 +132,8 @@ export const action: ActionFunction = async ({ request }) => {
   else if (_action === 'update') return await upsertOrderAction(values);
   else if (_action === 'set-delivery') {
     const date = DateTime.fromISO(values.date as string);
-    const deliveryDate = await getNextOrCreateDelivery(date);
+    let deliveryService = new DeliveryService();
+    const deliveryDate = await deliveryService.getNextOrCreateDelivery(date);
 
     await updateOrder(+values.id, {
       deliveryId: deliveryDate.id,
@@ -143,7 +148,10 @@ export const action: ActionFunction = async ({ request }) => {
   return await updateStatusAction(+values.id, _action as string);
 };
 
-function resolveCoffeeCode(productId: number | null, products: Product[]) {
+function resolveCoffeeCode(
+  productId: number | null,
+  products: ProductEntity[]
+) {
   if (!productId) return 'n/a';
   const product = products.find((c) => c.id === productId);
   return product?.productCode || `${productId}`;
@@ -159,7 +167,7 @@ export default function UpdateOrder() {
   const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [openCompleteAndShip, setOpenCompleteAndShip] = useState(false);
 
-  const [order, setOrder] = useState<Order>();
+  const [order, setOrder] = useState<OrderEntity>();
   const [deliveryDate, setDeliveryDate] = useState(deliveryDates[0]);
   const [openSetNewDelivery, setOpenSetNewDelivery] = useState(false);
 
@@ -168,7 +176,7 @@ export default function UpdateOrder() {
   }, [loadedOrder]);
 
   useEffect(() => {
-    setOpenSnack(!!data?.didUpdate);
+    setOpenSnack(!!(data as any)?.didUpdate);
   }, [data]);
 
   if (!order) return null;
@@ -219,7 +227,7 @@ export default function UpdateOrder() {
     {
       label: 'Subscription',
       data: order.subscription.recipientName,
-      dataLinkUrl: `/subscriptions/admin/${order.subscriptionId}`,
+      dataLinkUrl: `/subscriptions/admin/${order.subscription.id}`,
     },
     {
       label: 'Special request',
@@ -285,21 +293,23 @@ export default function UpdateOrder() {
         onClose={() => setOpenSnack(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert severity="success">{data?.updateMessage || 'Updated'}</Alert>
+        <Alert severity="success">
+          {(data as any)?.updateMessage || 'Updated'}
+        </Alert>
       </Snackbar>
 
       <Typography variant="h1">Order Details</Typography>
       <Grid container>
         <Grid item md={6}>
           <Box sx={{ m: 1 }}>
-            <DataLabel dataFields={dataFields} />
+            <DataLabel dataFields={dataFields as any} />
           </Box>
         </Grid>
 
         {order.wooOrderId && (
           <Grid item md={6}>
             <Box sx={{ m: 1 }}>
-              <DataLabel dataFields={dataFieldsWoo} />
+              <DataLabel dataFields={dataFieldsWoo as any} />
             </Box>
           </Grid>
         )}
@@ -307,7 +317,7 @@ export default function UpdateOrder() {
         {order.subscription?.fikenContactId && (
           <Grid item md={6}>
             <Box sx={{ m: 1 }}>
-              <DataLabel dataFields={dataFieldsFiken} />
+              <DataLabel dataFields={dataFieldsFiken as any} />
             </Box>
           </Grid>
         )}
@@ -385,9 +395,9 @@ export default function UpdateOrder() {
           <input
             type="hidden"
             name="subscriptionId"
-            value={order.subscriptionId}
+            value={order.subscription.id}
           />
-          <input type="hidden" name="deliveryId" value={order.deliveryId} />
+          <input type="hidden" name="deliveryId" value={order.delivery.id} />
           <input type="hidden" name="type" value={order.type} />
           <input
             type="hidden"
@@ -420,7 +430,7 @@ export default function UpdateOrder() {
                   label="Name"
                   variant="outlined"
                   defaultValue={order.name}
-                  error={data?.validationErrors?.name}
+                  error={(data as any)?.validationErrors?.name}
                 />
               </FormControl>
             </div>
@@ -431,7 +441,7 @@ export default function UpdateOrder() {
                   label="Address1"
                   variant="outlined"
                   defaultValue={order.address1}
-                  error={data?.validationErrors?.address1}
+                  error={(data as any)?.validationErrors?.address1}
                 />
               </FormControl>
               <FormControl>
@@ -440,7 +450,7 @@ export default function UpdateOrder() {
                   label="Address2"
                   variant="outlined"
                   defaultValue={order.address2}
-                  error={data?.validationErrors?.address2}
+                  error={(data as any)?.validationErrors?.address2}
                 />
               </FormControl>
             </div>
@@ -451,7 +461,7 @@ export default function UpdateOrder() {
                   label="Postal code"
                   variant="outlined"
                   defaultValue={order.postalCode}
-                  error={data?.validationErrors?.postalCode}
+                  error={(data as any)?.validationErrors?.postalCode}
                 />
               </FormControl>
               <FormControl>
@@ -460,7 +470,7 @@ export default function UpdateOrder() {
                   label="Place"
                   variant="outlined"
                   defaultValue={order.postalPlace}
-                  error={data?.validationErrors?.postalPlace}
+                  error={(data as any)?.validationErrors?.postalPlace}
                 />
               </FormControl>
             </div>
@@ -471,7 +481,7 @@ export default function UpdateOrder() {
                   label="Email"
                   variant="outlined"
                   defaultValue={order.email}
-                  error={data?.validationErrors?.email}
+                  error={(data as any)?.validationErrors?.email}
                 />
               </FormControl>
               <FormControl>
@@ -480,7 +490,7 @@ export default function UpdateOrder() {
                   label="Mobile"
                   variant="outlined"
                   defaultValue={order.mobile}
-                  error={data?.validationErrors?.mobile}
+                  error={(data as any)?.validationErrors?.mobile}
                 />
               </FormControl>
             </div>
@@ -515,7 +525,7 @@ export default function UpdateOrder() {
                   label="Quantity 250"
                   variant="outlined"
                   defaultValue={order.quantity250}
-                  error={data?.validationErrors?.quantity250}
+                  error={(data as any)?.validationErrors?.quantity250}
                 />
               </FormControl>
               <FormControl>
@@ -524,7 +534,7 @@ export default function UpdateOrder() {
                   label="Quantity 500"
                   variant="outlined"
                   defaultValue={order.quantity500}
-                  error={data?.validationErrors?.quantity500}
+                  error={(data as any)?.validationErrors?.quantity500}
                 />
               </FormControl>
               <FormControl>
@@ -533,7 +543,7 @@ export default function UpdateOrder() {
                   label="Quantity 1200"
                   variant="outlined"
                   defaultValue={order.quantity1200}
-                  error={data?.validationErrors?.quantity1200}
+                  error={(data as any)?.validationErrors?.quantity1200}
                 />
               </FormControl>
             </div>
@@ -565,13 +575,13 @@ export default function UpdateOrder() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {order.orderItems.map((item: OrderItem) => (
+                  {order.orderItems.map((item: OrderItemEntity) => (
                     <TableRow
                       key={item.id}
                       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       <TableCell>
-                        {resolveCoffeeCode(item.productId, products)}
+                        {resolveCoffeeCode(item.product.id, products)}
                       </TableCell>
                       <TableCell>
                         {coffeeVariationToLabel(item.variation)}
@@ -596,7 +606,7 @@ export default function UpdateOrder() {
         maxWidth={'xl'}
       >
         <Box sx={modalStyle}>
-          {!data?.completeAndShipOrderActionResult && (
+          {!(data as any)?.completeAndShipOrderActionResult && (
             <Grid container>
               <Grid item xs={12} style={{ textAlign: 'center' }}>
                 <CircularProgress color="primary" />
@@ -604,10 +614,10 @@ export default function UpdateOrder() {
               </Grid>
             </Grid>
           )}
-          {data?.completeAndShipOrderActionResult && (
+          {(data as any)?.completeAndShipOrderActionResult && (
             <Box>
               <CompleteAndShipResultBox
-                result={data.completeAndShipOrderActionResult}
+                result={(data as any).completeAndShipOrderActionResult}
               />
 
               <Grid container>
@@ -647,7 +657,7 @@ export default function UpdateOrder() {
                   >
                     {deliveryDates.map((date: DeliveryDate) => (
                       <MenuItem value={date.id} key={date.id}>
-                        {toPrettyDateTextLong(date.date)}
+                        {toPrettyDateTextLong(date.date as unknown as Date)}
                       </MenuItem>
                     ))}
                   </Select>

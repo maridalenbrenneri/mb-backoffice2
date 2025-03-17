@@ -6,8 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
-import { CoffeeEntity } from './coffee.entity';
-import { ProductEntity } from './product.entity';
+import { ProductEntity } from '../product/product.entity';
 import { OrderEntity } from './order.entity';
 
 @Entity({ name: 'OrderItem' })
@@ -23,13 +22,6 @@ export class OrderItemEntity {
 
   @Column({ type: 'integer' })
   quantity!: number;
-
-  @ManyToOne(() => CoffeeEntity, (coffee) => coffee.OrderItems, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
-  coffee!: CoffeeEntity;
 
   @ManyToOne(() => ProductEntity, (product) => product.OrderItems, {
     cascade: true,

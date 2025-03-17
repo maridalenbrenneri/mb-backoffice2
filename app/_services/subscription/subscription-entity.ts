@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { OrderEntity } from './order.entity';
+import { OrderEntity } from '../order/order.entity';
 
 export enum SubscriptionType {
   PRIVATE = 'PRIVATE',

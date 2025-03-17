@@ -8,8 +8,8 @@ import {
   OneToMany,
 } from 'typeorm';
 import { OrderItemEntity } from './order-item.entity';
-import { SubscriptionEntity } from './subscription-entity';
-import { DeliveryEntity } from './delivery/delivery.entity';
+import { SubscriptionEntity } from '../subscription/subscription-entity';
+import { DeliveryEntity } from '../delivery/delivery.entity';
 
 export enum OrderStatus {
   ACTIVE = 'ACTIVE',

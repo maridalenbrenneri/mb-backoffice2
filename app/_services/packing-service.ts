@@ -1,60 +1,67 @@
-import type { Order } from '@prisma/client';
-import { SubscriptionSpecialRequest } from '@prisma/client';
-import { OrderType, ShippingType, SubscriptionType } from '@prisma/client';
-import { OrderStatus } from '@prisma/client';
-import { getOrders } from '../repositories/order/order.server';
+import { OrderService } from '~/_services/order/order.service';
+
 import {
   STAFF_SUBSCRIPTIONS,
   TAKE_MAX_ROWS,
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
-} from '../settings';
+} from '../_libs/core/settings';
+import {
+  OrderEntity,
+  OrderStatus,
+  OrderType,
+  ShippingType,
+} from '~/_services/order/order.entity';
+import {
+  SubscriptionSpecialRequest,
+  SubscriptionType,
+} from '~/_services/subscription/subscription-entity';
 
 export type WizardOrdersSent = {
-  orders: Order[];
+  orders: OrderEntity[];
   errors: string[];
 };
 
 export type WizardPreviewGroup = {
   totalCount: number;
   orders: {
-    all: Order[];
-    allSpecialRequets: Order[];
+    all: OrderEntity[];
+    allSpecialRequets: OrderEntity[];
     privates: {
       custom: {
-        pickUp: Order[];
-        ship: Order[];
+        pickUp: OrderEntity[];
+        ship: OrderEntity[];
       };
       renewal: {
-        pickUp: Order[];
+        pickUp: OrderEntity[];
         ship: {
-          ABO1: Order[];
-          ABO2: Order[];
-          ABO3: Order[];
-          ABO4: Order[];
-          ABO5: Order[];
-          ABO6: Order[];
-          ABO7: Order[];
+          ABO1: OrderEntity[];
+          ABO2: OrderEntity[];
+          ABO3: OrderEntity[];
+          ABO4: OrderEntity[];
+          ABO5: OrderEntity[];
+          ABO6: OrderEntity[];
+          ABO7: OrderEntity[];
         };
       };
     };
     b2bs: {
       custom: {
-        pickUp: Order[];
-        ship: Order[];
+        pickUp: OrderEntity[];
+        ship: OrderEntity[];
       };
       renewal: {
-        pickUp: Order[];
-        ship: Order[];
+        pickUp: OrderEntity[];
+        ship: OrderEntity[];
       };
     };
     staff: {
-      all: Order[];
+      all: OrderEntity[];
     };
   };
 };
 
-function filterPrivateAboQuantity(o: Order, quantity: number) {
+function filterPrivateAboQuantity(o: OrderEntity, quantity: number) {
   if (
     (o.type !== OrderType.RENEWAL && o.type !== OrderType.NON_RENEWAL) ||
     o.shippingType !== ShippingType.SHIP
@@ -72,7 +79,9 @@ function isSystemSubscription(subscriptionId: number) {
 }
 
 export async function generatePreview(deliveryIds: number[]) {
-  const orders = await getOrders({
+  const orderService = new OrderService();
+
+  const orders = await orderService.getOrders({
     where: {
       status: OrderStatus.ACTIVE,
       deliveryId: { in: deliveryIds },
@@ -198,8 +207,8 @@ export async function generatePreview(deliveryIds: number[]) {
   const b2bs = orders.filter(
     (o) =>
       o.subscription.type === SubscriptionType.B2B &&
-      !STAFF_SUBSCRIPTIONS.includes(o.subscriptionId) &&
-      !isSystemSubscription(o.subscriptionId)
+      !STAFF_SUBSCRIPTIONS.includes(o.subscription.id) &&
+      !isSystemSubscription(o.subscription.id)
   );
 
   preview.orders.b2bs.custom.pickUp = b2bs.filter(
@@ -225,13 +234,14 @@ export async function generatePreview(deliveryIds: number[]) {
   );
 
   preview.orders.allSpecialRequets = orders.filter(
-    (o) => o.subscription.specialRequest !== SubscriptionSpecialRequest.NONE &&
-    !STAFF_SUBSCRIPTIONS.includes(o.subscriptionId)
+    (o) =>
+      o.subscription.specialRequest !== SubscriptionSpecialRequest.NONE &&
+      !STAFF_SUBSCRIPTIONS.includes(o.subscription.id)
   );
 
   // STAFF
   preview.orders.staff.all = orders.filter((o) =>
-    STAFF_SUBSCRIPTIONS.includes(o.subscriptionId)
+    STAFF_SUBSCRIPTIONS.includes(o.subscription.id)
   );
 
   preview.orders.all = orders;
