@@ -36,38 +36,40 @@ import {
   updateSpecialRequest,
 } from './_shared';
 
-import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
-import {
-  SubscriptionSpecialRequest,
-  type Subscription,
-} from '~/_libs/core/repositories/subscription';
-
 import Orders from '~/components/Orders';
 import {
   FIKEN_CONTACT_URL,
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
-} from '~/_libs/core/settings';
+} from '~/settings';
 import DataLabel from '~/components/DataLabel';
-import type { DeliveryDate } from '~/_libs/core/utils/dates';
-import { toPrettyDateTextLong } from '~/_libs/core/utils/dates';
-import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
-import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
+import type { DeliveryDate } from '~/utils/dates';
+import { toPrettyDateTextLong } from '~/utils/dates';
+import { getNextDeliveryDates } from '~/utils/dates';
+import { toPrettyDate, toPrettyDateTime } from '~/utils/dates';
 import { useEffect, useState } from 'react';
 import { modalStyle } from '~/style/theme';
 import {
   createCustomOrder,
   createNonRecurringOrder,
-} from '~/_libs/core/services/order-service';
+} from '~/services/order.service';
 import {
   renderFrequency,
   renderShippingTypes,
   renderStatus,
 } from './_shared.controls';
 import { QuantityTextField } from '~/components/QuantityTextField';
+import {
+  getSubscriptions,
+  getSubscription,
+} from '~/services/subscription.service';
+import {
+  SubscriptionSpecialRequest,
+  SubscriptionEntity,
+} from '~/services/entities';
 
 type LoaderData = {
-  loadedSubscription: Subscription;
+  loadedSubscription: SubscriptionEntity;
   deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
 };
 
@@ -113,38 +115,34 @@ export const action: ActionFunction = async ({ request }) => {
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.subscriptionId, `params.id is required`);
 
-  const subscriptions = await subscriptionRepository.getSubscriptions({
-    where: { id: +params.subscriptionId },
-    include: {
-      orders: {
-        include: {
-          delivery: true,
-          orderItems: {
-            select: {
-              id: true,
-              variation: true,
-              quantity: true,
-              product: true,
-            },
-          },
-        },
-        orderBy: {
-          updatedAt: 'desc',
-        },
-      },
-    },
-  });
+  try {
+    const loadedSubscription = await getSubscription({
+      where: { id: +params.subscriptionId },
+      relations: ['orders'],
+    });
 
-  const loadedSubscription = subscriptions?.length ? subscriptions[0] : null;
-  invariant(
-    loadedSubscription,
-    `Subscription not found: ${params.subscriptionId}`
-  );
+    if (!loadedSubscription) {
+      throw new Error(`Subscription not found: ${params.subscriptionId}`);
+    }
 
-  const allDates = getNextDeliveryDates(20);
-  const deliveryDates = allDates.filter((d) => d.type === 'MONTHLY');
+    // Sort orders by updatedAt desc
+    if (loadedSubscription.orders) {
+      loadedSubscription.orders.sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+    }
 
-  return json({ loadedSubscription, deliveryDates });
+    const allDates = getNextDeliveryDates(20);
+    const deliveryDates = allDates.filter((d) => d.type === 'MONTHLY');
+
+    return json({ loadedSubscription, deliveryDates });
+  } catch (error) {
+    console.error('Error loading subscription:', error);
+    throw new Error(
+      `There was an error loading subscription by the id ${params.subscriptionId}. Sorry.`
+    );
+  }
 };
 
 export default function UpdateSubscription() {
@@ -154,7 +152,7 @@ export default function UpdateSubscription() {
   const { loadedSubscription, deliveryDates } =
     useLoaderData() as unknown as LoaderData;
 
-  const [subscription, setSubscription] = useState<Subscription>();
+  const [subscription, setSubscription] = useState<SubscriptionEntity>();
   const [deliveryDate, setDeliveryDate] = useState(deliveryDates[0]);
   const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [openSetFirstDelivery, setOpenSetFirstDelivery] = useState(false);

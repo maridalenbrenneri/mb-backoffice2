@@ -1,10 +1,10 @@
-import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
-import * as orderRepository from '~/_libs/core/repositories/order';
+import * as subscriptionRepository from '~/services/subscription.service';
+import * as orderRepository from '~/services/order.service';
 
-import { OrderStatus, OrderType } from '~/_libs/core/repositories/order';
+import { OrderEntity, OrderStatus, OrderType } from '~/services/entities';
 
 import { fetchOrders } from './orders/fetch';
-import { getNextOrCreateDelivery } from '../core/services/delivery-service';
+import { getNextOrCreateDelivery } from '~/services/delivery.service';
 import type { OrderInfo } from './orders/woo-api-to-order';
 import wooApiToOrderInfo, {
   hasSupportedStatus,
@@ -12,12 +12,20 @@ import wooApiToOrderInfo, {
 import {
   WOO_NON_RECURRENT_SUBSCRIPTION_ID,
   WOO_RENEWALS_SUBSCRIPTION_ID,
-} from '../core/settings';
+} from '../../settings';
 import orderUpdateStatus from './order-update-status';
 import { WOO_STATUS_COMPLETED } from './constants';
 import { type WooOrder } from './orders/types';
-import { getAllProducts } from '../core/repositories/product';
-import { SubscriptionType } from '~/_libs/core/repositories/subscription';
+import { getAllProducts } from '~/services/product.service';
+import {
+  SubscriptionStatus,
+  SubscriptionType,
+} from '~/services/entities/enums';
+import {
+  createGiftSubscriptionFromWoo,
+  getSubscription,
+  updateStatusOnSubscription,
+} from '~/services/subscription.service';
 
 async function resolveSubscription(info: OrderInfo) {
   if (!info.wooCustomerId) {
@@ -25,7 +33,7 @@ async function resolveSubscription(info: OrderInfo) {
     return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
   }
 
-  const subscription = await subscriptionRepository.getSubscription({
+  const subscription = await getSubscription({
     where: {
       type: SubscriptionType.PRIVATE, // This is needed because orders with gift subscriptions ordered by an owner of a subscription will have same customer id
       wooCustomerId: info.wooCustomerId,
@@ -114,15 +122,12 @@ export default async function importWooOrders() {
       });
 
       if (info.order.status === OrderStatus.CANCELLED && exists) {
-        await subscriptionRepository.updateStatusOnSubscription(
-          exists.id,
-          subscriptionRepository.SubscriptionStatus.DELETED
-        );
+        await updateStatusOnSubscription(exists.id, SubscriptionStatus.DELETED);
         updated++;
       }
 
       if (!exists) {
-        await subscriptionRepository.createGiftSubscriptionFromWoo(gift);
+        await createGiftSubscriptionFromWoo(gift);
         created++;
       }
 
@@ -146,7 +151,7 @@ export default async function importWooOrders() {
 
       let res = await orderRepository.upsertOrderFromWoo(
         info.order.wooOrderId as number,
-        info.order
+        info.order as OrderEntity
       );
 
       if (res.result === 'new') created++;
@@ -163,7 +168,7 @@ export default async function importWooOrders() {
 
       let res = await orderRepository.upsertOrderFromWoo(
         info.order.wooOrderId as number,
-        info.order
+        info.order as OrderEntity
       );
 
       if (res.result === 'new') {

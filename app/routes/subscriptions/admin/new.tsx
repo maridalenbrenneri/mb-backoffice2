@@ -22,7 +22,7 @@ import {
   TextField,
 } from '@mui/material';
 
-import { SubscriptionType } from '~/_libs/core/repositories/subscription/types';
+import { SubscriptionType } from '~/services/entities/enums';
 
 import { createAction } from './_shared';
 import {

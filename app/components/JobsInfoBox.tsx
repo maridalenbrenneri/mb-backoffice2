@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material';
 
-import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { toPrettyDateTime } from '~/utils/dates';
 import DataLabel from './DataLabel';
 
 export default function JobsInfoBox(props: {

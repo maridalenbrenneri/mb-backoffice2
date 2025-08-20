@@ -1,17 +1,19 @@
-import { OrderStatus, OrderType } from '@prisma/client';
 import { DateTime } from 'luxon';
-import { createOrders } from '../repositories/order/order.server';
+import { In } from 'typeorm';
+import { createOrders } from '~/services/order.service';
 
-import * as subscriptionRepository from '../repositories/subscription';
 import {
   SubscriptionFrequency,
   SubscriptionStatus,
   SubscriptionType,
   ShippingType,
-} from '../repositories/subscription/';
+  OrderType,
+  OrderStatus,
+} from '~/services/entities/enums';
 
 import { SUBSCRIPTION_RENEWAL_WEEKDAY, TAKE_MAX_ROWS } from '../settings';
-import { getNextOrCreateDelivery } from './delivery-service';
+import { getNextOrCreateDelivery } from '~/services/delivery.service';
+import { getSubscriptions } from '~/services/subscription.service';
 
 function isTimeToCreateRenewalOrders() {
   return DateTime.now().weekday === SUBSCRIPTION_RENEWAL_WEEKDAY;
@@ -19,70 +21,49 @@ function isTimeToCreateRenewalOrders() {
 
 // B2B MONTHTLY_3RD AND FORTNIGHTLY
 async function getActiveSubscriptions3RD() {
-  return await subscriptionRepository.getSubscriptions({
+  return await getSubscriptions({
     where: {
       type: SubscriptionType.B2B,
       status: SubscriptionStatus.ACTIVE,
-      frequency: {
-        in: [
-          SubscriptionFrequency.FORTNIGHTLY,
-          SubscriptionFrequency.MONTHLY_3RD,
-        ],
-      },
+      frequency: In([
+        SubscriptionFrequency.FORTNIGHTLY,
+        SubscriptionFrequency.MONTHLY_3RD,
+      ]),
     },
-    include: {
-      orders: {
-        where: {
-          type: OrderType.RENEWAL,
-        },
-        select: {
-          createdAt: true,
-          deliveryId: true,
-        },
-      },
-    },
+    relations: ['orders'],
     take: TAKE_MAX_ROWS,
   });
 }
 
 // GET MONTHLY AND B2B FORTNIGHTLY
 async function getActiveSubscriptionsMonthly() {
-  return await subscriptionRepository.getSubscriptions({
+  // Get PRIVATE_GIFT subscriptions with MONTHLY frequency
+  const privateGiftSubscriptions = await getSubscriptions({
     where: {
-      OR: [
-        {
-          AND: [
-            { type: SubscriptionType.PRIVATE_GIFT },
-            { frequency: SubscriptionFrequency.MONTHLY },
-          ],
-        },
-        {
-          AND: {
-            type: SubscriptionType.B2B,
-            frequency: {
-              in: [
-                SubscriptionFrequency.MONTHLY,
-                SubscriptionFrequency.FORTNIGHTLY,
-              ],
-            },
-          },
-        },
-      ],
+      type: SubscriptionType.PRIVATE_GIFT,
+      frequency: SubscriptionFrequency.MONTHLY,
       status: SubscriptionStatus.ACTIVE,
     },
-    include: {
-      orders: {
-        where: {
-          type: OrderType.RENEWAL,
-        },
-        select: {
-          createdAt: true,
-          deliveryId: true,
-        },
-      },
-    },
+    relations: ['orders'],
     take: TAKE_MAX_ROWS,
   });
+
+  // Get B2B subscriptions with MONTHLY or FORTNIGHTLY frequency
+  const b2bSubscriptions = await getSubscriptions({
+    where: {
+      type: SubscriptionType.B2B,
+      frequency: In([
+        SubscriptionFrequency.MONTHLY,
+        SubscriptionFrequency.FORTNIGHTLY,
+      ]),
+      status: SubscriptionStatus.ACTIVE,
+    },
+    relations: ['orders'],
+    take: TAKE_MAX_ROWS,
+  });
+
+  // Combine the results
+  return [...privateGiftSubscriptions, ...b2bSubscriptions];
 }
 
 export async function createRenewalOrders(ignoreRenewalDay: boolean = false) {

@@ -1,10 +1,10 @@
 import { json, redirect } from '@remix-run/node';
 
-import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
-import type { CreateSubscriptionData } from '~/_libs/core/repositories/subscription';
-import { isEmpty } from '~/_libs/core/utils/are-equal';
+import * as subscriptionRepository from '~/services/subscription.service';
+import type { CreateSubscriptionData } from '~/services/subscription.service';
+import { isEmpty } from '~/utils/are-equal';
 
-import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
+import { isUnsignedInt, parseIntOrZero } from '~/utils/numbers';
 
 type CreateActionData = {
   validationErrors?:

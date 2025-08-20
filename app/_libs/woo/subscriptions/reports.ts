@@ -15,7 +15,7 @@ import {
   WOO_ABO_PRODUCT_VARIATION_6_2,
   WOO_ABO_PRODUCT_VARIATION_7_1,
   WOO_ABO_PRODUCT_VARIATION_7_2,
-} from '../../core/settings';
+} from '../../../settings';
 
 function resolveType(price: number, wooSubscriptions: any[]) {
   let total = 0;

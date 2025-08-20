@@ -7,14 +7,14 @@ import {
   WOO_STATUS_PENDING_CANCEL,
 } from '../constants';
 
-import * as settings from '../../core/settings';
-import type { WooUpsertSubscriptionData } from '../../core/repositories/subscription/types';
+import * as settings from '../../../settings';
+import type { WooUpsertSubscriptionData } from '~/services/subscription.service';
 import {
   ShippingType,
   SubscriptionFrequency,
   SubscriptionStatus,
   SubscriptionType,
-} from '../../core/repositories/subscription/types';
+} from '~/services/entities/enums';
 import type { WooSubscription, WooSubscriptionLineItem } from './types';
 
 const resolveSubscriptionVariation = (
@@ -122,7 +122,7 @@ export const wooApiToUpsertSubscriptionData = (
 
   let variation = resolveSubscriptionVariation(subscription.line_items[0]);
 
-  if(!variation) return null;
+  if (!variation) return null;
 
   let status = resolveSubscriptionStatus(subscription.status);
 

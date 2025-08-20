@@ -1,7 +1,6 @@
-import { ProductStatus, ProductStockStatus } from '@prisma/client';
 import { json } from '@remix-run/node';
-
-import { getProducts } from '~/_libs/core/repositories/product';
+import { getProducts } from '~/services/product.service';
+import { ProductStatus, ProductStockStatus } from '~/services/entities';
 
 const defaultStatus = ProductStatus.PUBLISHED;
 const defaultStockStatus = ProductStockStatus.IN_STOCK;

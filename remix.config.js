@@ -15,6 +15,7 @@ module.exports = {
   assetsBuildDirectory: 'public/build',
   serverBuildPath: 'build/index.js',
   publicPath: '/build/',
+  browserNodeBuiltinsPolyfill: { modules: { buffer: true } },
 
   routes(defineRoutes) {
     // uses the v1 convention, works in v1.15+ and v2

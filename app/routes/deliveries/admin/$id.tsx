@@ -21,50 +21,52 @@ import {
   Alert,
 } from '@mui/material';
 
-import { getDeliveryById } from '~/_libs/core/repositories/delivery.server';
-import type { Delivery } from '~/_libs/core/repositories/delivery.server';
+import { getDeliveryById } from '~/services/delivery.service';
 import { upsertAction } from './_shared';
-import {
-  toPrettyDateTextLong,
-  toPrettyDateTime,
-} from '~/_libs/core/utils/dates';
+import { toPrettyDateTextLong, toPrettyDateTime } from '~/utils/dates';
 import Orders from '~/components/Orders';
 import { useEffect, useState } from 'react';
-import type { Product } from '@prisma/client';
-import { OrderStatus, ProductStatus, ProductStockStatus } from '@prisma/client';
+import {
+  OrderStatus,
+  ProductStatus,
+  ProductStockStatus,
+} from '~/services/entities/enums';
 import DataLabel from '~/components/DataLabel';
-import { getProducts } from '~/_libs/core/repositories/product';
+import { getProducts } from '~/services/product.service';
+import { DeliveryEntity, ProductEntity } from '~/services/entities';
 
 type LoaderData = {
-  loadedDelivery: Delivery;
-  products: Product[];
+  loadedDelivery: DeliveryEntity;
+  products: ProductEntity[];
 };
 
 export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.id, `params.id is required`);
 
   const loadedDelivery = await getDeliveryById(+params.id, {
-    product1: true,
-    product2: true,
-    product3: true,
-    product4: true,
-    orders: {
-      where: { status: { in: [OrderStatus.ACTIVE, OrderStatus.COMPLETED] } },
-      include: {
-        orderItems: {
-          select: {
-            id: true,
-            variation: true,
-            quantity: true,
-            product: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    },
+    relations: [
+      'product1',
+      'product2',
+      'product3',
+      'product4',
+      'orders',
+      'orders.orderItems',
+    ],
   });
+
+  // Filter orders to only include ACTIVE and COMPLETED orders and sort them
+  if (loadedDelivery?.orders) {
+    loadedDelivery.orders = loadedDelivery.orders
+      .filter(
+        (order) =>
+          order.status === OrderStatus.ACTIVE ||
+          order.status === OrderStatus.COMPLETED
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  }
 
   invariant(loadedDelivery, `Delivery not found: ${params.id}`);
 
@@ -94,12 +96,12 @@ export const action: ActionFunction = async ({ request }) => {
 export default function UpdateDelivery() {
   const { loadedDelivery, products } = useLoaderData() as unknown as LoaderData;
 
-  const data = useActionData();
+  const data = useActionData() as any;
   // const transition = useTransition();
   const navigation = useNavigation();
   const isUpdating = Boolean(navigation.state === 'submitting');
 
-  const [delivery, setDelivery] = useState<Delivery>();
+  const [delivery, setDelivery] = useState<DeliveryEntity>();
   const [openSnack, setOpenSnack] = useState<boolean>(false);
 
   useEffect(() => {
@@ -112,7 +114,7 @@ export default function UpdateDelivery() {
 
   if (!delivery) return null;
 
-  const dataFields: any[] = [
+  const dataFields: { label: string; data: string | number | null }[] = [
     {
       label: 'Date',
       data: toPrettyDateTextLong(delivery.date),
@@ -144,7 +146,7 @@ export default function UpdateDelivery() {
           sx={{ minWidth: 250 }}
           size="small"
         >
-          {products.map((product: Product) => (
+          {products.map((product: ProductEntity) => (
             <MenuItem
               value={product.id}
               key={product.id}
@@ -155,7 +157,7 @@ export default function UpdateDelivery() {
                     : 400,
               }}
             >
-              {product.productCode || 'code not set'} - {product.name}
+              {product.productCode || 'n/a'} - {product.name}
               {` - `}
               <small>{product.stockStatus}</small>
             </MenuItem>
@@ -182,7 +184,7 @@ export default function UpdateDelivery() {
         <Grid container>
           <Grid item>
             <Box sx={{ m: 1 }}>
-              <DataLabel dataFields={dataFields} />
+              <DataLabel dataFields={dataFields as any} />
             </Box>
           </Grid>
           <Grid item>

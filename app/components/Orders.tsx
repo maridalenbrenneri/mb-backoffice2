@@ -10,18 +10,14 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-import type { Order } from '@prisma/client';
-
-import { toPrettyDateText, toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { toPrettyDateText, toPrettyDateTime } from '~/utils/dates';
 import { TableFooter } from '@mui/material';
-import {
-  generateReference,
-  resolveSource,
-} from '~/_libs/core/services/order-service';
-import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
+import { generateReference, resolveSource } from '~/services/order.service';
+import { FIKEN_CONTACT_URL } from '~/settings';
+import { OrderEntity } from '~/services/entities';
 
 export default function Orders(props: {
-  orders: Order[];
+  orders: OrderEntity[];
   extraFields?: string[] | null | undefined; // "delivery", "fiken"
 }) {
   const { orders, extraFields } = props;
@@ -61,7 +57,7 @@ export default function Orders(props: {
             </TableRow>
           </TableHead>
           <TableBody>
-            {orders.map((order: Order) => (
+            {orders.map((order: OrderEntity) => (
               <TableRow
                 key={order.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

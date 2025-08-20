@@ -1,20 +1,24 @@
 import { DateTime } from 'luxon';
 
-import type { GiftSubscriptionCreateInput } from '@prisma/client';
-import { SubscriptionStatus } from '@prisma/client';
-import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
+import { WOO_GABO_PRODUCT_ID } from '~/settings';
 
-import { WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
-import { resolveStatusForGiftSubscription } from '~/_libs/core/services/subscription-service';
 import { resolveMetadataValue } from '../utils';
-import { getNextFirstTuesday } from '~/_libs/core/utils/dates';
+import { getNextFirstTuesday } from '~/utils/dates';
 import { WOO_STATUS_CANCELLED, WOO_STATUS_DELETED } from '../constants';
 import { type WooOrderLineItem, type WooOrder } from './types';
+import {
+  resolveStatusForGiftSubscription,
+  WooGiftSubscriptionCreateInput,
+} from '~/services/subscription.service';
+import {
+  SubscriptionFrequency,
+  SubscriptionStatus,
+} from '~/services/entities/enums';
 
 function createGiftSubscription(
   order: WooOrder,
   item: WooOrderLineItem
-): GiftSubscriptionCreateInput {
+): WooGiftSubscriptionCreateInput {
   const startDateString = resolveMetadataValue(item.meta_data, 'abo_start');
 
   const startDate = !startDateString
@@ -35,12 +39,12 @@ function createGiftSubscription(
       : resolveStatusForGiftSubscription(duration_months, startDate);
 
   return {
-    type: SubscriptionType.PRIVATE_GIFT,
     status,
     frequency: SubscriptionFrequency.MONTHLY,
     quantity250: +resolveMetadataValue(item.meta_data, 'poser', 0),
 
     wooCreatedAt: new Date(order.date_created),
+    wooUpdatedAt: new Date(order.date_modified),
     wooCustomerId: order.customer_id,
     wooCustomerName: `${order.billing.first_name} ${order.billing.last_name}`,
     gift_wooOrderId: order.id,
@@ -64,7 +68,6 @@ function createGiftSubscription(
 
     quantity500: 0,
     quantity1200: 0,
-    fikenContactId: null,
     internalNote: null,
   };
 }
@@ -72,8 +75,8 @@ function createGiftSubscription(
 // THERE CAN BE MULTIPLE GIFT SUBSCRIPTIONS IN ONE ORDER, USE SOME DATA FROM ORDER AND SOME FROM EACH ORDER LINE
 export default function wooApiToGiftSubscriptions(
   gaboOrders: WooOrder[]
-): GiftSubscriptionCreateInput[] {
-  const data = new Array<GiftSubscriptionCreateInput>();
+): WooGiftSubscriptionCreateInput[] {
+  const data = new Array<WooGiftSubscriptionCreateInput>();
 
   for (const order of gaboOrders) {
     for (const item of order.line_items) {

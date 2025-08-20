@@ -9,8 +9,6 @@ import {
 } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 
-import type { Delivery, Order } from '@prisma/client';
-
 import {
   Accordion,
   AccordionDetails,
@@ -32,24 +30,25 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DoneIcon from '@mui/icons-material/Done';
 
-import { completeAndShipOrders } from '~/_libs/core/services/order-service';
-import { generatePreview } from '~/_libs/core/services/packing-service';
+import { completeAndShipOrders } from '~/services/order.service';
+import { generatePreview } from '~/services/packing.service';
 import Orders from '../../components/Orders';
-import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
+import { COMPLETE_ORDERS_BATCH_MAX } from '~/settings';
 import { modalStyle } from '~/style/theme';
-import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
-import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
-import { toPrettyDateText } from '~/_libs/core/utils/dates';
-import { deliveryDayTypeToLabel } from '~/_libs/core/utils/labels';
+import { getDeliveries } from '~/services/delivery.service';
+import { getNextOrCreateDelivery } from '~/services/delivery.service';
+import { toPrettyDateText } from '~/utils/dates';
+import { deliveryDayTypeToLabel } from '~/utils/labels';
 import CompleteAndShipResultBox from '~/components/CompleteAndShipResultBox';
+import { DeliveryEntity, OrderEntity } from '~/services/entities';
 
 type LoaderData = {
   preview: Awaited<ReturnType<typeof generatePreview>>;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
-  selectedDelivery: Delivery;
+  selectedDelivery: DeliveryEntity;
 };
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
   const search = new URLSearchParams(url.search);
   const deliveryId = search.get('deliveryId');
@@ -107,35 +106,41 @@ export default function Packing() {
   const navigation = useNavigation();
 
   const isWorking = Boolean(navigation.state === 'submitting');
-  const [delivery, setDelivery] = useState<Delivery>();
-  const [deliveries, setDeliveries] = useState<Delivery[]>();
+  const [delivery, setDelivery] = useState<DeliveryEntity>();
+  const [deliveries, setDeliveries] = useState<DeliveryEntity[]>();
   const [resultData, setResultData] = useState<any>(null);
   const [expanded, setExpanded] = useState<string | false>(false);
   const [open, setOpen] = useState(false);
-  const [currentOrders, setCurrentOrders] = useState<Order[]>([]);
-  const [allOrders, setAllOrders] = useState<Order[]>([]);
-  const [specialRequestOrders, setSpecialRequestOrders] = useState<Order[]>([]);
-  const [customPickUpOrders, setPickUpCustomOrders] = useState<Order[]>([]);
-  const [renewalPickUpOrders, setPickUpRenewalOrders] = useState<Order[]>([]);
-  const [customOrders, setCustomOrders] = useState<Order[]>([]);
-  const [renewalABO1Orders, setRenewalABO1Orders] = useState<Order[]>([]);
-  const [renewalABO2Orders, setRenewalABO2Orders] = useState<Order[]>([]);
-  const [renewalABO3Orders, setRenewalABO3Orders] = useState<Order[]>([]);
-  const [renewalABO4Orders, setRenewalABO4Orders] = useState<Order[]>([]);
-  const [renewalABO5Orders, setRenewalABO5Orders] = useState<Order[]>([]);
-  const [renewalABO6Orders, setRenewalABO6Orders] = useState<Order[]>([]);
-  const [renewalABO7Orders, setRenewalABO7Orders] = useState<Order[]>([]);
-
-  const [b2bCustomPickUpOrders, setB2bPickUpCustomOrders] = useState<Order[]>(
+  const [currentOrders, setCurrentOrders] = useState<OrderEntity[]>([]);
+  const [allOrders, setAllOrders] = useState<OrderEntity[]>([]);
+  const [specialRequestOrders, setSpecialRequestOrders] = useState<
+    OrderEntity[]
+  >([]);
+  const [customPickUpOrders, setPickUpCustomOrders] = useState<OrderEntity[]>(
     []
   );
-  const [b2bRenewalPickUpOrders, setB2bPickUpRenewalOrders] = useState<Order[]>(
+  const [renewalPickUpOrders, setPickUpRenewalOrders] = useState<OrderEntity[]>(
     []
   );
-  const [b2bCustomOrders, setB2bCustomOrders] = useState<Order[]>([]);
-  const [b2bRenewalOrders, setB2bRenewalOrders] = useState<Order[]>([]);
+  const [customOrders, setCustomOrders] = useState<OrderEntity[]>([]);
+  const [renewalABO1Orders, setRenewalABO1Orders] = useState<OrderEntity[]>([]);
+  const [renewalABO2Orders, setRenewalABO2Orders] = useState<OrderEntity[]>([]);
+  const [renewalABO3Orders, setRenewalABO3Orders] = useState<OrderEntity[]>([]);
+  const [renewalABO4Orders, setRenewalABO4Orders] = useState<OrderEntity[]>([]);
+  const [renewalABO5Orders, setRenewalABO5Orders] = useState<OrderEntity[]>([]);
+  const [renewalABO6Orders, setRenewalABO6Orders] = useState<OrderEntity[]>([]);
+  const [renewalABO7Orders, setRenewalABO7Orders] = useState<OrderEntity[]>([]);
 
-  const [staffOrders, setStaffOrders] = useState<Order[]>([]);
+  const [b2bCustomPickUpOrders, setB2bPickUpCustomOrders] = useState<
+    OrderEntity[]
+  >([]);
+  const [b2bRenewalPickUpOrders, setB2bPickUpRenewalOrders] = useState<
+    OrderEntity[]
+  >([]);
+  const [b2bCustomOrders, setB2bCustomOrders] = useState<OrderEntity[]>([]);
+  const [b2bRenewalOrders, setB2bRenewalOrders] = useState<OrderEntity[]>([]);
+
+  const [staffOrders, setStaffOrders] = useState<OrderEntity[]>([]);
 
   useEffect(() => {
     setAllOrders(preview.orders.all);
@@ -174,7 +179,7 @@ export default function Packing() {
 
   if (!preview || !deliveries || !delivery) return null;
 
-  const handleOpen = (orders: Order[]) => {
+  const handleOpen = (orders: OrderEntity[]) => {
     setCurrentOrders(orders);
     setOpen(true);
   };
@@ -212,7 +217,7 @@ export default function Packing() {
 
   const renderAccordian = (
     title: string,
-    orders: Order[],
+    orders: OrderEntity[],
     ship: boolean = true,
     isB2B: boolean = false,
     isAll: boolean = false,

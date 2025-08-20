@@ -26,10 +26,12 @@ import {
   Snackbar,
 } from '@mui/material';
 
-import { ProductStatus, ProductStockStatus } from '@prisma/client';
-
-import type { Product } from '~/_libs/core/repositories/product';
-import { toPrettyDateTime } from '~/_libs/core/utils/dates';
+import {
+  ProductStatus,
+  ProductStockStatus,
+  type ProductEntity,
+} from '~/services/entities';
+import { toPrettyDateTime } from '~/utils/dates';
 import { Edit } from '@mui/icons-material';
 import { productActionHandler } from './actions';
 import type { LoaderData } from './loader';
@@ -40,7 +42,7 @@ import SetProductStockStatusDialog from './set-product-stock-status-dialog';
 const defaultStatus = ProductStatus.PUBLISHED;
 const defaultStockStatus = ProductStockStatus.IN_STOCK;
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: { request: Request }) => {
   return await productLoader(request);
 };
 
@@ -60,7 +62,9 @@ export default function Products() {
     params.get('stockStatus') || defaultStockStatus
   );
 
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductEntity | null>(
+    null
+  );
   const [isSetProductCodeDialogOpen, setIsSetProductCodeDialogOpen] =
     useState(false);
   const [
@@ -92,7 +96,7 @@ export default function Products() {
     });
   };
 
-  const openSetProductCodeDialog = (product: Product) => {
+  const openSetProductCodeDialog = (product: ProductEntity) => {
     setSelectedProduct(product);
     setIsSetProductCodeDialogOpen(true);
   };
@@ -102,7 +106,7 @@ export default function Products() {
     setIsSetProductCodeDialogOpen(false);
   };
 
-  const openSetProductStockStatusDialog = (product: Product) => {
+  const openSetProductStockStatusDialog = (product: ProductEntity) => {
     setSelectedProduct(product);
     setIsSetProductStockStatusDialogOpen(true);
   };
@@ -176,7 +180,7 @@ export default function Products() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {products.map((product: Product) => (
+            {products.map((product: ProductEntity) => (
               <TableRow
                 key={product.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

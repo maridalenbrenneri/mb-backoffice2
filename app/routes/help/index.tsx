@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import { Alert, Box } from '@mui/material';
-import { COMPLETE_ORDERS_BATCH_MAX } from '~/_libs/core/settings';
+import { COMPLETE_ORDERS_BATCH_MAX } from '~/settings';
 
 export default function JobResult() {
   return (

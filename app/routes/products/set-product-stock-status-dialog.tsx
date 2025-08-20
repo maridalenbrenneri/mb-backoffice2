@@ -10,13 +10,13 @@ import {
   Select,
 } from '@mui/material';
 
-import { ProductStockStatus, type Product } from '@prisma/client';
+import { ProductStockStatus, ProductEntity } from '~/services/entities';
 import { Form } from '@remix-run/react';
 
 import { modalStyle } from '~/style/theme';
 
 export default function SetProductStockStatusDialog(props: {
-  product: Product | null;
+  product: ProductEntity | null;
   open: boolean;
   onClose: () => void;
 }) {

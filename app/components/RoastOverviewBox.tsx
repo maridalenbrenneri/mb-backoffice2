@@ -9,10 +9,14 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-import type { Delivery, Product, Subscription } from '@prisma/client';
+import type {
+  DeliveryEntity,
+  ProductEntity,
+  SubscriptionEntity,
+} from '~/services/entities';
 
-import { toPrettyDateText } from '~/_libs/core/utils/dates';
-import { getRoastOverview } from '~/_libs/core/services/roast-service';
+import { toPrettyDateText } from '~/utils/dates';
+import { getRoastOverview } from '~/services/roast.service';
 import {
   FormControl,
   FormGroup,
@@ -23,17 +27,17 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { getNextDeliveryFromList } from '~/_libs/core/services/delivery-service';
-import { roundTotalKg } from '~/_libs/core/utils/numbers';
-import { deliveryDayTypeToLabel } from '~/_libs/core/utils/labels';
+import { getNextDeliveryFromList } from '~/services/delivery.service';
+import { roundTotalKg } from '~/utils/numbers';
+import { deliveryDayTypeToLabel } from '~/utils/labels';
 
 export default function RoastOverviewBox(props: {
-  subscriptions: Subscription[];
-  deliveries: Delivery[];
-  coffees: Product[];
+  subscriptions: SubscriptionEntity[];
+  deliveries: DeliveryEntity[];
+  coffees: ProductEntity[];
 }) {
   const { subscriptions, deliveries, coffees } = props;
-  const [delivery, setDelivery] = useState<Delivery>();
+  const [delivery, setDelivery] = useState<DeliveryEntity>();
   const [overview, setOverview] = useState<any>();
 
   const notSetLabel = '[Not set]';
@@ -63,7 +67,9 @@ export default function RoastOverviewBox(props: {
   if (!overview) return null;
 
   const handleChange = (e: any) => {
-    setDelivery(deliveries.find((c) => c.id === e.target.value) as Delivery);
+    setDelivery(
+      deliveries.find((c) => c.id === e.target.value) as DeliveryEntity
+    );
   };
 
   return (

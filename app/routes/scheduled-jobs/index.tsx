@@ -1,6 +1,7 @@
 import { json } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import JSONPretty from 'react-json-pretty';
+import { useEffect, useState } from 'react';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -12,11 +13,9 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Box, Button, FormControl } from '@mui/material';
 
-import type { JobResult } from '@prisma/client';
-
-import { getJobResults } from '~/_libs/core/repositories/job-result.server';
-import { toPrettyDateTime } from '~/_libs/core/utils/dates';
-import { useEffect, useState } from 'react';
+import { getJobResults } from '~/services/job-result.service';
+import { toPrettyDateTime } from '~/utils/dates';
+import { JobResultEntity } from '~/services/entities';
 
 type LoaderData = {
   results: Awaited<ReturnType<typeof getJobResults>>;
@@ -33,7 +32,7 @@ export default function JobResultPage() {
   const { results } = useLoaderData() as unknown as LoaderData;
   const fetcher = useFetcher();
 
-  const [jobResult, setJobResult] = useState<JobResult[]>();
+  const [jobResult, setJobResult] = useState<JobResultEntity[]>();
 
   useEffect(() => {
     setJobResult(results);
@@ -43,24 +42,23 @@ export default function JobResultPage() {
 
   const isRunningImportWooProducts =
     fetcher.state === 'submitting' &&
-    fetcher.submission.formData.get('_action') === 'woo-import-products';
+    fetcher.formData?.get('_action') === 'woo-import-products';
 
   const isRunningImportWooOrders =
     fetcher.state === 'submitting' &&
-    fetcher.submission.formData.get('_action') === 'woo-import-orders';
+    fetcher.formData?.get('_action') === 'woo-import-orders';
 
   const isRunningImportWooSubscriptions =
     fetcher.state === 'submitting' &&
-    fetcher.submission.formData.get('_action') === 'woo-import-subscriptions';
+    fetcher.formData?.get('_action') === 'woo-import-subscriptions';
 
   const isRunningUpdateStatusOnGiftSubscriptions =
     fetcher.state === 'submitting' &&
-    fetcher.submission.formData.get('_action') ===
-      'update-status-on-gift-subscriptions';
+    fetcher.formData?.get('_action') === 'update-status-on-gift-subscriptions';
 
   const isRunningCreateRenewalOrders =
     fetcher.state === 'submitting' &&
-    fetcher.submission.formData.get('_action') === 'create-renewal-orders';
+    fetcher.formData?.get('_action') === 'create-renewal-orders';
 
   const importWooProducts = jobResult.find(
     (r) => r.name === 'woo-import-products'

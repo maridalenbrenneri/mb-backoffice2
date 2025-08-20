@@ -1,4 +1,4 @@
-import * as subscriptionRepository from '../core/repositories/subscription';
+import * as subscriptionRepository from '~/services/subscription.service';
 import fetchSubscriptions from './subscriptions/fetch';
 import { wooApiToUpsertSubscriptionData } from './subscriptions/woo-api-to-subscription';
 
@@ -15,7 +15,7 @@ export default async function importWooSubscriptionStats() {
   let invalidItems: number[] = [];
 
   let upsertData: any[] = [];
-  
+
   wooSubscriptions.forEach((s) => {
     let data = wooApiToUpsertSubscriptionData(s);
     if (data) upsertData.push(data);
@@ -36,8 +36,10 @@ export default async function importWooSubscriptionStats() {
     updated,
     notChanged,
     errors: invalidItems.length
-      ? `Invalid items, most likely unknown subscription product id. Subscription ids: ${invalidItems.join(', ')}`
-      : null
+      ? `Invalid items, most likely unknown subscription product id. Subscription ids: ${invalidItems.join(
+          ', '
+        )}`
+      : null,
   };
 
   console.debug(`=> DONE`, res);

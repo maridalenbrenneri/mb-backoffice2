@@ -1,9 +1,17 @@
-import type { Delivery, Order, Product, Subscription } from '@prisma/client';
-import { OrderStatus } from '@prisma/client';
-import { SubscriptionFrequency, SubscriptionType } from '@prisma/client';
-import { OrderType } from '@prisma/client';
+import type {
+  DeliveryEntity,
+  OrderEntity,
+  SubscriptionEntity,
+  ProductEntity,
+} from '~/services/entities';
+import {
+  OrderStatus,
+  SubscriptionFrequency,
+  SubscriptionType,
+  OrderType,
+} from '~/services/entities';
 import { DateTime } from 'luxon';
-import { getNextTuesday } from '../utils/dates';
+import { getNextTuesday } from '~/utils/dates';
 
 function calculateWeightByCoffee(_250: any, _500: any, _1200: any) {
   const coffee1kg =
@@ -45,12 +53,12 @@ function _agg(quantity: number) {
   return { coffee1, coffee2, coffee3, coffee4 };
 }
 
-function fromItems(orders: Order[]) {
+function fromItems(orders: OrderEntity[]) {
   const data = new Map();
 
   for (const order of orders) {
     for (const item of order.orderItems) {
-      const row = data.get(item.coffeeId) || { _250: 0, _500: 0, _1200: 0 };
+      const row = data.get(item.productId) || { _250: 0, _500: 0, _1200: 0 };
 
       if (item.variation === '_250') {
         row._250 += item.quantity;
@@ -69,7 +77,7 @@ function fromItems(orders: Order[]) {
 }
 
 function aggregateCoffeesOrders(
-  orders: Order[],
+  orders: OrderEntity[],
   _250: any,
   _500: any,
   _1200: any
@@ -96,7 +104,7 @@ function aggregateCoffeesOrders(
 }
 
 function aggregateCoffeesFromSubscriptions(
-  subscriptions: Subscription[],
+  subscriptions: SubscriptionEntity[],
   _250: any,
   _500: any,
   _1200: any
@@ -124,15 +132,15 @@ function aggregateCoffeesFromSubscriptions(
   return { _250, _500, _1200 };
 }
 
-function resolveCoffee(coffees: Product[], productId: number) {
+function resolveCoffee(coffees: ProductEntity[], productId: number) {
   console.debug('resolveCoffee', productId);
   return coffees.find((c) => c.id === productId);
 }
 
 export function getRoastOverview(
-  subscriptions: Subscription[],
-  delivery: Delivery | undefined = undefined,
-  coffees: Product[] = []
+  subscriptions: SubscriptionEntity[],
+  delivery: DeliveryEntity | undefined = undefined,
+  coffees: ProductEntity[] = []
 ) {
   if (!delivery)
     throw new Error('No delivery set, cannot resolve roast overview');
@@ -140,19 +148,19 @@ export function getRoastOverview(
   let includedSubscriptionCount = 0;
   let includedOrderCount = 0;
   const coffeesFromCustomOrdersNotSetOnDelivery: any[] = [];
-  const fortnigthlyPrivateOrdersOnDelivery: Order[] = [];
+  const fortnigthlyPrivateOrdersOnDelivery: OrderEntity[] = [];
 
   let _250 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
   let _500 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
   let _1200 = { coffee1: 0, coffee2: 0, coffee3: 0, coffee4: 0 };
 
   // MAKE SURE WE ONLY USE ACTIVE AND COMPLETED ORDERS IN ESTIMATION
-  const orders = delivery.orders.filter(
-    (o: Order) =>
+  const orders = (delivery.orders || []).filter(
+    (o: OrderEntity) =>
       o.status === OrderStatus.ACTIVE || o.status === OrderStatus.COMPLETED
   );
 
-  console.log('delivery.orders', delivery.orders.length);
+  console.log('delivery.orders', delivery.orders?.length || 0);
   console.log('orders', orders.length);
 
   // ADD MONTHLY SUBSCRIPTIONS (ESTIMATE, NOT FROM ACTUAL RENEWAL ORDERS)
@@ -222,7 +230,7 @@ export function getRoastOverview(
   );
   fortnightlyPrivate.forEach((s) => {
     // Exclude if renewal order exist on Delivery (renewal orders will be added below)
-    const order = orders.find((o: Order) => o.subscriptionId === s.id);
+    const order = orders.find((o: OrderEntity) => o.subscriptionId === s.id);
     if (order) {
       console.debug(
         'Subscription already has a renewal order on delivery',
@@ -282,7 +290,7 @@ export function getRoastOverview(
 
   // ADD NON-RENEWAL ORDERS TO OVERVIEW (FROM PASSIVE SUBSCRIPTIONS OR MANUALLY CREATED ORDERS ON ACTIVE SUBSCRIPTIONS)
   const nonRecurringOrders = orders.filter(
-    (o: Order) => o.type === OrderType.NON_RENEWAL
+    (o: OrderEntity) => o.type === OrderType.NON_RENEWAL
   );
   if (nonRecurringOrders.length) {
     aggregateCoffeesOrders(nonRecurringOrders, _250, _500, _1200);
@@ -300,7 +308,9 @@ export function getRoastOverview(
   }
 
   // ADD CUSTOM ORDERS
-  const customOrders = orders.filter((o: Order) => o.type === OrderType.CUSTOM);
+  const customOrders = orders.filter(
+    (o: OrderEntity) => o.type === OrderType.CUSTOM
+  );
   if (customOrders.length) {
     const map = fromItems(customOrders);
 

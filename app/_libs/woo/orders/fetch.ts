@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { z } from 'zod';
 
-import { WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS } from '~/_libs/core/settings';
+import { WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS } from '~/settings';
 import { WOO_API_DEFAULT_PER_PAGE, WOO_API_BASE_URL } from '../constants';
 import { WooOrderData, type WooOrder } from './types';
 

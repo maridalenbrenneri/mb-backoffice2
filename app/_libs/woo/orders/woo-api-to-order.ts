@@ -1,13 +1,16 @@
-import type { Order } from '@prisma/client';
-import { OrderStatus, OrderType, ShippingType } from '@prisma/client';
-import { WOO_ABO_PRODUCT_ID, WOO_GABO_PRODUCT_ID } from '~/_libs/core/settings';
+import {
+  OrderStatus,
+  OrderType,
+  ShippingType,
+} from '~/services/entities/enums';
+import { WOO_ABO_PRODUCT_ID, WOO_GABO_PRODUCT_ID } from '~/settings';
 import * as constants from '../constants';
 import {
   getSubstringInsideParentheses,
   resolveQuantityAndFrequency,
 } from '../utils';
 import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
-import { WOO_NO_SHIPPING_COUPON } from '../../core/settings';
+import { WOO_NO_SHIPPING_COUPON } from '../../../settings';
 import { type WooOrderLineItem, type WooOrder } from './types';
 
 export type OrderInfo = {

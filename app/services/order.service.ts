@@ -1,27 +1,26 @@
-import type { Order } from '../repositories/order';
-import { OrderStatus, OrderType } from '../repositories/order';
-
-import * as subscriptionRepository from '../repositories/subscription';
+import { ensureDataSourceInitialized } from '~/typeorm/data-source';
+import { OrderEntity, OrderItemEntity } from '~/services/entities';
 import {
+  OrderStatus,
+  OrderType,
   SubscriptionType,
   SubscriptionSpecialRequest,
   ShippingType,
-} from '../repositories/subscription/';
-
+} from '~/services/entities';
+import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '~/settings';
+import { COMPLETE_ORDERS_DELAY, WEIGHT_STANDARD_PACKAGING } from '~/settings';
 import { printConsignmentLabels, sendConsignment } from '~/_libs/cargonizer';
-import { updateOrder } from '../repositories/order/order.server';
-import { updateOrderStatus } from '../repositories/order/order.server';
-import { getOrder, upsertOrder } from '../repositories/order/order.server';
-import { COMPLETE_ORDERS_DELAY, WEIGHT_STANDARD_PACKAGING } from '../settings';
-import { getNextOrCreateDelivery } from './delivery-service';
-
 import * as woo from '~/_libs/woo';
 import {
   WOO_STATUS_CANCELLED,
   WOO_STATUS_COMPLETED,
   WOO_STATUS_PROCESSING,
 } from '~/_libs/woo/constants';
-import { resolveSpecialRequestCode } from './subscription-service';
+import { resolveSpecialRequestCode } from '~/services/subscription.service';
+import { getNextOrCreateDelivery } from '~/services/delivery.service';
+import { getSubscription } from '~/services/subscription.service';
+
+export type { OrderEntity as Order };
 
 export interface Quantites {
   _250: number;
@@ -29,6 +28,250 @@ export interface Quantites {
   _1200: number;
 }
 
+export type OrderItemUpsertData = Pick<
+  OrderItemEntity,
+  'orderId' | 'productId' | 'variation' | 'quantity'
+>;
+
+async function getOrderRepo() {
+  const ds = await ensureDataSourceInitialized();
+  return ds.getRepository(OrderEntity);
+}
+
+async function getOrderItemRepo() {
+  const ds = await ensureDataSourceInitialized();
+  return ds.getRepository(OrderItemEntity);
+}
+
+// Repository functions
+export async function getOrders(filter?: any) {
+  filter = filter || {};
+
+  const options: any = {};
+
+  // Handle include to relations conversion if needed
+  if (filter.include) {
+    // Convert include object to relations array
+    const relations: string[] = [];
+    Object.keys(filter.include).forEach((key) => {
+      relations.push(key);
+    });
+    options.relations = relations;
+  } else if (filter.relations) {
+    options.relations = filter.relations;
+  }
+
+  // Copy other filter properties
+  if (filter.where) options.where = filter.where;
+  if (filter.orderBy) options.order = filter.orderBy; // TypeORM uses 'order' not 'orderBy'
+  if (filter.take) options.take = filter.take;
+  if (filter.skip) options.skip = filter.skip;
+
+  // ADD DEFAULT FILTER VALUES IF NOT OVERIDDEN IN FILTER INPUT
+  if (!options.order) options.order = { updatedAt: 'desc' };
+  if (!options.take || options.take > TAKE_MAX_ROWS)
+    options.take = TAKE_DEFAULT_ROWS;
+  // TODO: Always exclude DELETED
+
+  const repo = await getOrderRepo();
+  return repo.find(options);
+}
+
+export async function getOrder(filter: any) {
+  if (!filter) return null;
+
+  const options: any = {};
+
+  // Handle include to relations conversion if needed
+  if (filter.include) {
+    // Convert include object to relations array
+    const relations: string[] = [];
+    Object.keys(filter.include).forEach((key) => {
+      relations.push(key);
+    });
+    options.relations = relations;
+  } else if (filter.relations) {
+    options.relations = filter.relations;
+  }
+
+  // Copy other filter properties
+  if (filter.where) options.where = filter.where;
+  if (filter.orderBy) options.order = filter.orderBy; // TypeORM uses 'order' not 'orderBy'
+  if (filter.take) options.take = filter.take;
+  if (filter.skip) options.skip = filter.skip;
+
+  const repo = await getOrderRepo();
+  return repo.findOne(options);
+}
+
+export async function getOrderById(id: number) {
+  const repo = await getOrderRepo();
+  return repo.findOne({ where: { id } });
+}
+
+export async function updateOrderStatus(id: number, status: OrderStatus) {
+  const repo = await getOrderRepo();
+  const entity = await repo.preload({ id, status } as any);
+  if (!entity) return null;
+  return await repo.save(entity);
+}
+
+export async function updateOrder(id: number, data: any) {
+  const repo = await getOrderRepo();
+  const entity = await repo.preload({ id, ...(data as any) } as any);
+  if (!entity) return null;
+  return await repo.save(entity);
+}
+
+export async function upsertOrder(id: number | null, data: any) {
+  const repo = await getOrderRepo();
+  if (id) {
+    const entity = await repo.preload({ id, ...(data as any) } as any);
+    if (!entity) return null;
+    return await repo.save(entity);
+  } else {
+    const entity = repo.create({
+      type: data.type,
+      status: data.status,
+      shippingType: data.shippingType || ShippingType.SHIP,
+      subscriptionId: data.subscriptionId,
+      deliveryId: data.deliveryId,
+      name: data.name,
+      address1: data.address1,
+      address2: data.address2,
+      postalCode: data.postalCode,
+      postalPlace: data.postalPlace,
+      email: data.email,
+      mobile: data.mobile,
+      quantity250: data.quantity250,
+      quantity500: data.quantity500,
+      quantity1200: data.quantity1200,
+      trackingUrl: data.trackingUrl,
+    });
+    return await repo.save(entity);
+  }
+}
+
+export async function upsertOrderItem(
+  id: number | null,
+  data: OrderItemUpsertData
+) {
+  const repo = await getOrderItemRepo();
+  if (id) {
+    const entity = await repo.preload({ id, ...(data as any) } as any);
+    if (!entity) return null;
+    return await repo.save(entity);
+  } else {
+    const entity = repo.create({
+      orderId: data.orderId,
+      productId: data.productId,
+      quantity: data.quantity,
+      variation: data.variation,
+    });
+    return await repo.save(entity);
+  }
+}
+
+export async function upsertOrderFromWoo(
+  wooOrderId: number,
+  data: OrderEntity
+): Promise<
+  | { result: 'updated' | 'new' | 'notChanged'; orderId: number }
+  | { result: 'ignored' }
+> {
+  const repo = await getOrderRepo();
+  const existing = await repo.findOne({
+    where: { wooOrderId },
+  });
+
+  // WE ONLY UPDATE STATUS FROM WOO ON EXISTING ORDERS, NOTHING ELSE IS OVERWRITTEN
+  if (existing) {
+    if (existing.status !== data.status) {
+      const entity = await repo.preload({
+        id: existing.id,
+        status: data.status,
+      } as any);
+      if (entity) {
+        await repo.save(entity);
+      }
+      return { result: 'updated', orderId: existing.id };
+    } else {
+      return { result: 'notChanged', orderId: existing.id };
+    }
+  }
+
+  console.debug(
+    'Creating order from woo',
+    data.subscriptionId,
+    data.wooOrderId,
+    data.wooOrderNumber,
+    data.status
+  );
+
+  // NEVER INSERT NOT ACTIVE ORDERS
+  if (data.status !== OrderStatus.ACTIVE) {
+    console.debug(
+      "Upsert Order From Woo: Order does not exist and not active, won't create",
+      data.wooOrderId,
+      data.status
+    );
+    return { result: 'ignored' };
+  }
+
+  const entity = repo.create({
+    wooOrderId,
+    wooCreatedAt: data.wooCreatedAt,
+    type: data.type,
+    status: data.status,
+    shippingType: data.shippingType,
+    subscriptionId: data.subscriptionId,
+    deliveryId: data.deliveryId,
+    name: data.name,
+    address1: data.address1,
+    address2: data.address2,
+    postalCode: data.postalCode,
+    postalPlace: data.postalPlace,
+    email: data.email,
+    mobile: data.mobile,
+    quantity250: data.quantity250,
+    quantity500: 0,
+    quantity1200: 0,
+    customerNote: data.customerNote,
+  });
+
+  const order = await repo.save(entity);
+  return { result: 'new', orderId: order.id };
+}
+
+export async function upsertOrderItemFromWoo(
+  wooOrderItemId: number,
+  data: OrderItemUpsertData
+) {
+  const repo = await getOrderItemRepo();
+  const existing = await repo.findOne({
+    where: { wooOrderItemId },
+  });
+
+  // WE NEVER UPDATE AN ORDER ITEM FROM WOO
+  if (existing) return existing;
+
+  const entity = repo.create({
+    wooOrderItemId,
+    orderId: data.orderId,
+    productId: data.productId,
+    quantity: data.quantity,
+    variation: data.variation,
+  });
+
+  return await repo.save(entity);
+}
+
+export async function createOrders(orders: any[]) {
+  const repo = await getOrderRepo();
+  return repo.save(orders);
+}
+
+// Service functions
 async function _createOrder(
   subscriptionId: number,
   type: OrderType,
@@ -37,12 +280,12 @@ async function _createOrder(
     _500: 0,
     _1200: 0,
   }
-): Promise<Order> {
-  const subscription = await subscriptionRepository.getSubscription({
+): Promise<OrderEntity> {
+  const subscription = await getSubscription({
     where: { id: subscriptionId },
-    include: {
+    relations: {
       orders: {
-        include: {
+        relations: {
           delivery: true,
           orderItems: true,
         },
@@ -103,7 +346,7 @@ export async function createCustomOrder(subscriptionId: number) {
 }
 
 export function calculateWeight(
-  order: Order,
+  order: OrderEntity,
   includePackaging: boolean = true
 ) {
   let weight = 0;
@@ -123,7 +366,7 @@ export function calculateWeight(
   return weight;
 }
 
-export function resolveSource(order: Order) {
+export function resolveSource(order: OrderEntity) {
   if (order.wooOrderId) return `woo`;
 
   if (order.subscription?.type === SubscriptionType.B2B) return 'b2b';
@@ -132,7 +375,7 @@ export function resolveSource(order: Order) {
   return 'n/a';
 }
 
-export function generateReference(order: Order) {
+export function generateReference(order: OrderEntity) {
   let reference = '';
 
   if (order.orderItems) {
@@ -172,10 +415,10 @@ async function getOrderFromDb(orderId: number) {
     where: {
       id: orderId,
     },
-    include: {
+    relations: {
       subscription: true,
       orderItems: {
-        include: {
+        relations: {
           product: true,
         },
       },

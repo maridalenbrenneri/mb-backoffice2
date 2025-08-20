@@ -7,13 +7,13 @@ import {
   TextField,
 } from '@mui/material';
 
-import type { Product } from '@prisma/client';
+import type { ProductEntity } from '~/services/entities';
 import { Form } from '@remix-run/react';
 
 import { modalStyle } from '~/style/theme';
 
 export default function SetProductCodeDialog(props: {
-  product: Product | null;
+  product: ProductEntity | null;
   open: boolean;
   onClose: () => void;
 }) {

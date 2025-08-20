@@ -1,5 +1,6 @@
-import * as productRepository from '~/_libs/core/repositories/product';
+// import * as productRepository from '~/_libs/core/repositories/product';
 
+import { woo_upsertProductFromWoo } from '~/services/product.service';
 import { fetchProducts } from './products/fetch';
 import type { WooProduct } from './products/types';
 import wooApiToProductUpsertData from './products/woo-api-to-product';
@@ -19,8 +20,11 @@ export default async function importWooProducts() {
   let ignored = 0;
 
   for (const data of wooProducts) {
+    console.debug('Processing product', data.id);
     let upsertData = await wooApiToProductUpsertData(data);
-    let res = await productRepository.upsertProductFromWoo(upsertData);
+    // let res = await productRepository.upsertProductFromWoo(upsertData);
+
+    let res = await woo_upsertProductFromWoo(upsertData);
 
     if (res.result === 'new') created++;
     else if (res.result === 'updated') updated++;

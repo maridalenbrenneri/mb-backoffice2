@@ -39,23 +39,21 @@ import DoneIcon from '@mui/icons-material/Done';
 import CancelIcon from '@mui/icons-material/Cancel';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
-import type { Order, OrderItem, Product } from '@prisma/client';
-import { ShippingType } from '@prisma/client';
-import { OrderStatus, OrderType } from '@prisma/client';
+import type {
+  OrderEntity,
+  OrderItemEntity,
+  ProductEntity,
+} from '~/services/entities';
+import { ShippingType } from '~/services/entities';
+import { OrderStatus, OrderType } from '~/services/entities';
 
-import {
-  getOrder,
-  updateOrder,
-} from '~/_libs/core/repositories/order/order.server';
+import { getOrder, updateOrder } from '~/services/order.service';
 import { upsertOrderAction } from './_shared';
 import DataLabel from '~/components/DataLabel';
-import type { DeliveryDate } from '~/_libs/core/utils/dates';
-import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
-import {
-  toPrettyDateTextLong,
-  toPrettyDateTime,
-} from '~/_libs/core/utils/dates';
-import { coffeeVariationToLabel } from '~/_libs/core/utils/labels';
+import type { DeliveryDate } from '~/utils/dates';
+import { getNextDeliveryDates } from '~/utils/dates';
+import { toPrettyDateTextLong, toPrettyDateTime } from '~/utils/dates';
+import { coffeeVariationToLabel } from '~/utils/labels';
 import { useEffect, useState } from 'react';
 import { modalStyle } from '~/style/theme';
 import {
@@ -63,12 +61,12 @@ import {
   cancelOrder,
   completeAndShipOrders,
   completeOrder,
-} from '~/_libs/core/services/order-service';
-import { FIKEN_CONTACT_URL } from '~/_libs/core/settings';
-import { getNextOrCreateDelivery } from '~/_libs/core/services/delivery-service';
+} from '~/services/order.service';
+import { FIKEN_CONTACT_URL } from '~/settings';
+import { getNextOrCreateDelivery } from '~/services/delivery.service';
 import { DateTime } from 'luxon';
 import CompleteAndShipResultBox from '~/components/CompleteAndShipResultBox';
-import { getProducts } from '~/_libs/core/repositories/product';
+import { getProducts } from '~/services/product.service';
 
 type LoaderData = {
   products: Awaited<ReturnType<typeof getProducts>>;
@@ -143,7 +141,10 @@ export const action: ActionFunction = async ({ request }) => {
   return await updateStatusAction(+values.id, _action as string);
 };
 
-function resolveCoffeeCode(productId: number | null, products: Product[]) {
+function resolveCoffeeCode(
+  productId: number | null,
+  products: ProductEntity[]
+) {
   if (!productId) return 'n/a';
   const product = products.find((c) => c.id === productId);
   return product?.productCode || `${productId}`;
@@ -159,7 +160,7 @@ export default function UpdateOrder() {
   const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [openCompleteAndShip, setOpenCompleteAndShip] = useState(false);
 
-  const [order, setOrder] = useState<Order>();
+  const [order, setOrder] = useState<OrderEntity>();
   const [deliveryDate, setDeliveryDate] = useState(deliveryDates[0]);
   const [openSetNewDelivery, setOpenSetNewDelivery] = useState(false);
 
@@ -565,7 +566,7 @@ export default function UpdateOrder() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {order.orderItems.map((item: OrderItem) => (
+                  {order.orderItems.map((item: OrderItemEntity) => (
                     <TableRow
                       key={item.id}
                       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

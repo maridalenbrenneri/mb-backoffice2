@@ -1,13 +1,14 @@
 import { json } from '@remix-run/node';
 
-import type { ProductStockStatus } from '@prisma/client';
-
-import * as productRepository from '~/_libs/core/repositories/product';
-import { nullIfEmptyOrWhitespace } from '~/_libs/core/utils/strings';
-import * as productService from '~/_libs/core/services/product-service';
+import { nullIfEmptyOrWhitespace } from '~/utils/strings';
+import { ProductStockStatus } from '~/services/entities/enums';
+import {
+  updateProduct,
+  woo_productSetStockStatus,
+} from '~/services/product.service';
 
 const updateProductCode = async (values: any) => {
-  await productRepository.updateProduct(+values.id, {
+  await updateProduct(+values.id, {
     productCode: nullIfEmptyOrWhitespace(values.productCode),
   });
 
@@ -27,13 +28,13 @@ const updateStockStatus = async (values: any) => {
     });
   }
 
-  await productService.productSetStockStatus(
+  await woo_productSetStockStatus(
     +values.id,
     stockStatus as ProductStockStatus
   );
 
-  await productRepository.updateProduct(+values.id, {
-    stockStatus,
+  await updateProduct(+values.id, {
+    stockStatus: stockStatus as ProductStockStatus,
   });
 
   return json({

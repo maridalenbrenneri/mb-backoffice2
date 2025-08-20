@@ -4,7 +4,7 @@ import {
   SubscriptionFrequency,
   SubscriptionStatus,
   SubscriptionType,
-} from '~/_libs/core/repositories/subscription/types';
+} from '~/services/entities/enums';
 
 export const renderTypes = (type: SubscriptionType = SubscriptionType.B2B) => {
   return (

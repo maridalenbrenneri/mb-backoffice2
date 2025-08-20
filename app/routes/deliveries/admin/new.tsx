@@ -15,12 +15,11 @@ import type { SelectChangeEvent } from '@mui/material/Select';
 import Select from '@mui/material/Select';
 
 import { createAction } from './_shared';
-import type { DeliveryDate } from '~/_libs/core/utils/dates';
-import { toPrettyDateTextLong } from '~/_libs/core/utils/dates';
-import { getNextDeliveryDates } from '~/_libs/core/utils/dates';
-import type { Product } from '@prisma/client';
-import { ProductStatus } from '@prisma/client';
-import { getProducts } from '~/_libs/core/repositories/product';
+import type { DeliveryDate } from '~/utils/dates';
+import { toPrettyDateTextLong } from '~/utils/dates';
+import { getNextDeliveryDates } from '~/utils/dates';
+import { ProductEntity, ProductStatus } from '~/services/entities';
+import { getProducts } from '~/services/product.service';
 
 type LoaderData = {
   deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
@@ -97,7 +96,7 @@ export default function NewDelivery() {
               displayEmpty
               sx={{ minWidth: 200 }}
             >
-              {products.map((product: Product) => (
+              {products.map((product: ProductEntity) => (
                 <MenuItem value={product.id} key={product.id}>
                   {product.productCode} - {product.name}
                 </MenuItem>

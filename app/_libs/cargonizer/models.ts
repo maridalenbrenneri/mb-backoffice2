@@ -1,7 +1,7 @@
-import type { Order } from '@prisma/client';
+import type { OrderEntity } from '~/services/entities';
 
 export interface SendConsignmentInput {
-  order: Order;
+  order: OrderEntity;
 }
 
 export interface CargonizerConsignment {

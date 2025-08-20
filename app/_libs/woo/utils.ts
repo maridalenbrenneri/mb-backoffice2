@@ -1,5 +1,5 @@
-import { SubscriptionFrequency } from '@prisma/client';
-import * as settings from '../core/settings';
+import { SubscriptionFrequency } from '~/services/entities/enums';
+import * as settings from '../../settings';
 import { type WooOrderMetaData } from './orders/types';
 
 export function resolveQuantityAndFrequency(variationId: number) {

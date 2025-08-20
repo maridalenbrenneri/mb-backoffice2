@@ -10,26 +10,27 @@ import {
   Typography,
 } from '@mui/material';
 
-import type { Delivery, Product } from '@prisma/client';
+import { SubscriptionStatus, OrderStatus } from '~/services/entities/enums';
+import { getSubscriptions } from '~/services/subscription.service';
+import { getLastJobResult } from '~/services/job-result.service';
+import { getProducts } from '~/services/product.service';
 
-import { SubscriptionStatus } from '~/_libs/core/repositories/subscription';
-import type { Subscription } from '~/_libs/core/repositories/subscription';
-import * as subscriptionRepo from '~/_libs/core/repositories/subscription';
+import {
+  DeliveryEntity,
+  ProductEntity,
+  SubscriptionEntity,
+} from '~/services/entities';
 
-import { OrderStatus } from '~/_libs/core/repositories/order';
+import { getDeliveries } from '~/services/delivery.service';
+import { resolveAboStats } from '~/services/subscription-stats.service';
 
-import { getLastJobResult } from '~/_libs/core/repositories/job-result.server';
-import { getDeliveries } from '~/_libs/core/repositories/delivery.server';
+import { getCargonizerProfile } from '~/_libs/cargonizer';
+import { TAKE_MAX_ROWS } from '~/settings';
 
-import { resolveAboStats } from '~/_libs/core/services/subscription-stats';
 import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
 import RoastOverviewBox from '~/components/RoastOverviewBox';
-import { getCargonizerProfile } from '~/_libs/cargonizer';
 import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
-
-import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
-import { getProducts } from '~/_libs/core/repositories/product';
 import StaffSubscriptions from '~/components/StaffSubscriptions';
 
 type LoaderData = {
@@ -38,9 +39,7 @@ type LoaderData = {
   wooOrderImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   updateGaboStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
   createRenewalOrdersResult: Awaited<ReturnType<typeof getLastJobResult>>;
-  allActiveSubscriptions: Awaited<
-    ReturnType<typeof subscriptionRepo.getSubscriptions>
-  >;
+  allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
   currentCoffees: Awaited<ReturnType<typeof getProducts>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
@@ -59,7 +58,7 @@ export const loader = async () => {
     'create-renewal-orders'
   );
 
-  const allActiveSubscriptions = await subscriptionRepo.getSubscriptions({
+  const allActiveSubscriptions = await getSubscriptions({
     where: {
       status: SubscriptionStatus.ACTIVE,
     },
@@ -78,35 +77,27 @@ export const loader = async () => {
   // DELIVERIES USED IN ROAST OVERVIEW - ONLY "ACTIVE" AND "COMPLETED"
   // TODO: ROAST OVERVIEW SHOULD DO IT'S OWN DATA LOADING
   const currentDeliveries = await getDeliveries({
-    include: {
-      product1: { select: { id: true, productCode: true } },
-      product2: { select: { id: true, productCode: true } },
-      product3: { select: { id: true, productCode: true } },
-      product4: { select: { id: true, productCode: true } },
-      orders: {
-        where: {
-          status: { in: [OrderStatus.ACTIVE, OrderStatus.COMPLETED] },
-        },
-        select: {
-          id: true,
-          subscriptionId: true,
-          status: true,
-          type: true,
-          quantity250: true,
-          quantity500: true,
-          quantity1200: true,
-          orderItems: {
-            select: {
-              productId: true,
-              quantity: true,
-              variation: true,
-            },
-          },
-        },
-      },
-    },
+    relations: [
+      'product1',
+      'product2',
+      'product3',
+      'product4',
+      'orders',
+      'orders.orderItems',
+    ],
     orderBy: { date: 'desc' },
     take: 5,
+  });
+
+  // Filter orders to only include ACTIVE and COMPLETED orders
+  currentDeliveries.forEach((delivery) => {
+    if (delivery.orders) {
+      delivery.orders = delivery.orders.filter(
+        (order) =>
+          order.status === OrderStatus.ACTIVE ||
+          order.status === OrderStatus.COMPLETED
+      );
+    }
   });
 
   const currentCoffees = await getProducts({
@@ -146,9 +137,9 @@ export default function Index() {
     cargonizerProfile,
   } = useLoaderData() as unknown as LoaderData;
 
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>();
-  const [deliveries, setDeliveries] = useState<Delivery[]>();
-  const [coffees, setCoffees] = useState<Product[]>();
+  const [subscriptions, setSubscriptions] = useState<SubscriptionEntity[]>();
+  const [deliveries, setDeliveries] = useState<DeliveryEntity[]>();
+  const [coffees, setCoffees] = useState<ProductEntity[]>();
   const [cargonizer, setCargonizer] = useState();
 
   const [orderImportResult, setOrderImportResult] = useState<any>(null);

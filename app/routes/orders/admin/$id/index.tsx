@@ -21,9 +21,9 @@ import {
 } from '@mui/material';
 
 import { upsertOrderItemAction } from '../_shared';
-import { getOrderById } from '~/_libs/core/repositories/order/order.server';
-import type { Product } from '~/_libs/core/repositories/product';
-import { getProducts } from '~/_libs/core/repositories/product';
+import { getOrderById } from '~/services/order.service';
+import type { ProductEntity } from '~/services/entities';
+import { getProducts } from '~/services/product.service';
 
 type LoaderData = {
   coffees: Awaited<ReturnType<typeof getProducts>>;
@@ -54,9 +54,9 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function NewOrderItem() {
   const { coffees, order } = useLoaderData() as unknown as LoaderData;
-  const errors = useActionData();
+  const errors = useActionData() as any;
   const navigation = useNavigation();
-  const isCreating = Boolean(navigation.state === 'submitting');  
+  const isCreating = Boolean(navigation.state === 'submitting');
 
   if (!order || order.wooOrderId) return null;
 
@@ -78,7 +78,7 @@ export default function NewOrderItem() {
               defaultValue={coffees[0].id}
               sx={{ minWidth: 250 }}
             >
-              {coffees.map((coffee: Product) => (
+              {coffees.map((coffee: ProductEntity) => (
                 <MenuItem value={coffee.id} key={coffee.id}>
                   {coffee.productCode} - {coffee.name}
                 </MenuItem>

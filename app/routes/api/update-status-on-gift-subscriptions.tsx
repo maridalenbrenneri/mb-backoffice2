@@ -2,8 +2,8 @@ import { json } from '@remix-run/node';
 import type { ActionFunction } from '@remix-run/node';
 import { DateTime } from 'luxon';
 
-import { updateStatusOnGiftSubscriptions } from '~/_libs/core/services/subscription-service';
-import { createJobResult } from '~/_libs/core/repositories/job-result.server';
+import { updateStatusOnGiftSubscriptions } from '~/services/subscription.service';
+import { createJobResult } from '~/services/job-result.service';
 
 export const action: ActionFunction = async ({ request }) => {
   if (request.method !== 'POST')
@@ -28,9 +28,9 @@ export const action: ActionFunction = async ({ request }) => {
       jobStartedAt,
       name,
       result: null,
-      errors: err.message,
+      errors: err instanceof Error ? err.message : 'Unknown error',
     });
 
-    return { errors: err.message };
+    return { errors: err instanceof Error ? err.message : 'Unknown error' };
   }
 };

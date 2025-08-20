@@ -1,4 +1,4 @@
-import { FIKEN_API_URL, FIKEN_COMPANY_SLUG } from '../core/settings';
+import { FIKEN_API_URL, FIKEN_COMPANY_SLUG } from '../../settings';
 
 const fiken_uri = `${FIKEN_API_URL}/companies/${FIKEN_COMPANY_SLUG}`;
 

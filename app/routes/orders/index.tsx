@@ -16,10 +16,9 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
-import type { Order } from '@prisma/client';
-import { OrderStatus } from '@prisma/client';
+import { OrderEntity, OrderStatus } from '~/services/entities';
 
-import { getOrders } from '~/_libs/core/repositories/order/order.server';
+import { getOrders } from '~/services/order.service';
 import { useEffect, useState } from 'react';
 import {
   Box,
@@ -29,12 +28,9 @@ import {
   Select,
   TableFooter,
 } from '@mui/material';
-import { toPrettyDateText, toPrettyDateTime } from '~/_libs/core/utils/dates';
-import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
-import {
-  generateReference,
-  resolveSource,
-} from '~/_libs/core/services/order-service';
+import { toPrettyDateText, toPrettyDateTime } from '~/utils/dates';
+import { TAKE_MAX_ROWS } from '~/settings';
+import { generateReference, resolveSource } from '~/services/order.service';
 
 const defaultStatus = OrderStatus.ACTIVE;
 
@@ -56,33 +52,18 @@ function buildFilter(search: URLSearchParams) {
     filter.where.id = { in: orderIds };
   }
 
-  filter.include = {
-    delivery: {
-      select: {
-        id: true,
-        date: true,
-      },
-    },
-    orderItems: {
-      select: {
-        variation: true,
-        quantity: true,
-        product: true,
-      },
-    },
-    subscription: {
-      select: {
-        id: true,
-        type: true,
-      },
-    },
-  };
+  filter.relations = [
+    'delivery',
+    'orderItems',
+    'orderItems.product',
+    'subscription',
+  ];
   filter.take = TAKE_MAX_ROWS;
 
   return filter;
 }
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
   const search = new URLSearchParams(url.search);
 
@@ -100,7 +81,7 @@ export default function Orders() {
   const [params] = useSearchParams();
   const submit = useSubmit();
 
-  const [orders, setOrders] = useState<Order[]>();
+  const [orders, setOrders] = useState<OrderEntity[]>();
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
 
   useEffect(() => {
@@ -170,7 +151,7 @@ export default function Orders() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {orders.map((order: Order) => (
+              {orders.map((order: OrderEntity) => (
                 <TableRow
                   key={order.id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

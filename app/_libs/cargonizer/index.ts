@@ -1,17 +1,13 @@
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
-import { SubscriptionType, type Order } from '@prisma/client';
-
 import type {
   CargonizerConsignment,
   SendConsignmentInput,
   SendOrderResult,
 } from './models';
-import * as settings from '../core/settings';
-import {
-  calculateWeight,
-  generateReference,
-} from '../core/services/order-service';
+import * as settings from '../../settings';
+import { calculateWeight, generateReference } from '~/services/order.service';
+import { OrderEntity, SubscriptionType } from '~/services/entities';
 
 const api_key = process.env.CARGONIZER_API_KEY;
 const sender_id = settings.CARGONIZER_SENDER_ID;
@@ -139,7 +135,7 @@ export async function printConsignmentLabels(consignmentIds: number[]) {
   }
 }
 
-function mapToCargonizerConsignment(order: Order) {
+function mapToCargonizerConsignment(order: OrderEntity) {
   console.debug(
     '[Cargonizer] Mapping to cargonizer consigment, subscription',
     order.subscription

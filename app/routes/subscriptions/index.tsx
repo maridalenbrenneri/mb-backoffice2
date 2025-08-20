@@ -7,6 +7,7 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import { useEffect, useState } from 'react';
+import { ILike, In } from 'typeorm';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -27,24 +28,23 @@ import {
   TextField,
 } from '@mui/material';
 
-import * as subscriptionRepository from '~/_libs/core/repositories/subscription';
-import type { Subscription } from '~/_libs/core/repositories/subscription';
 import {
   SubscriptionStatus,
   SubscriptionType,
-} from '~/_libs/core/repositories/subscription';
+} from '~/services/entities/enums';
 
-import { resolveSubscriptionCode } from '~/_libs/core/services/subscription-service';
-import { TAKE_MAX_ROWS } from '~/_libs/core/settings';
-import { toPrettyDate, toPrettyDateTime } from '~/_libs/core/utils/dates';
+import { resolveSubscriptionCode } from '~/services/subscription.service';
+
+import { TAKE_MAX_ROWS } from '~/settings';
+import { toPrettyDate, toPrettyDateTime } from '~/utils/dates';
+import { getSubscriptions } from '~/services/subscription.service';
+import { SubscriptionEntity } from '~/services/entities';
 
 const defaultStatus = '_all';
 const defaultType = '_all';
 
 type LoaderData = {
-  loadedSubscriptions: Awaited<
-    ReturnType<typeof subscriptionRepository.getSubscriptions>
-  >;
+  loadedSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -52,14 +52,10 @@ function buildFilter(search: URLSearchParams) {
 
   const getStatusFilter = search.get('status') || defaultStatus;
   if (getStatusFilter === '_all') {
-    filter.where.OR = [
-      {
-        status: SubscriptionStatus.ACTIVE,
-      },
-      {
-        status: SubscriptionStatus.PASSIVE,
-      },
-    ];
+    filter.where.status = In([
+      SubscriptionStatus.ACTIVE,
+      SubscriptionStatus.PASSIVE,
+    ]);
   } else {
     filter.where.status = getStatusFilter;
   }
@@ -69,26 +65,17 @@ function buildFilter(search: URLSearchParams) {
 
   const getRecipientNameFilter = search.get('recipientName');
   if (getRecipientNameFilter)
-    filter.where.recipientName = {
-      contains: getRecipientNameFilter,
-      mode: 'insensitive',
-    };
+    filter.where.recipientName = ILike(`%${getRecipientNameFilter}%`);
 
   const getRecipientEmailFilter = search.get('recipientEmail');
   if (getRecipientEmailFilter)
-    filter.where.recipientEmail = {
-      contains: getRecipientEmailFilter,
-      mode: 'insensitive',
-    };
+    filter.where.recipientEmail = ILike(`%${getRecipientEmailFilter}%`);
 
   const getCustomerNameFilter = search.get('customerName');
   if (getCustomerNameFilter)
-    filter.where.wooCustomerName = {
-      contains: getCustomerNameFilter,
-      mode: 'insensitive',
-    };
+    filter.where.wooCustomerName = ILike(`%${getCustomerNameFilter}%`);
 
-  filter.orderBy = {
+  filter.order = {
     id: 'desc',
   };
 
@@ -97,15 +84,13 @@ function buildFilter(search: URLSearchParams) {
   return filter;
 }
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
   const search = new URLSearchParams(url.search);
 
   const filter = buildFilter(search);
 
-  const loadedSubscriptions = await subscriptionRepository.getSubscriptions(
-    filter
-  );
+  const loadedSubscriptions = await getSubscriptions(filter);
 
   return json<LoaderData>({
     loadedSubscriptions,
@@ -117,7 +102,7 @@ export default function Subscriptions() {
   const [params] = useSearchParams();
   const submit = useSubmit();
 
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>();
+  const [subscriptions, setSubscriptions] = useState<SubscriptionEntity[]>();
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
   const [type, setType] = useState(params.get('type') || defaultType);
   const [recipientName, setRecipientName] = useState(
@@ -196,7 +181,7 @@ export default function Subscriptions() {
     });
   };
 
-  const gaboInfoString = (s: Subscription) => {
+  const gaboInfoString = (s: SubscriptionEntity) => {
     if (s.type !== SubscriptionType.PRIVATE_GIFT) return '';
 
     return `
@@ -324,7 +309,7 @@ export default function Subscriptions() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {subscriptions.map((subscription: Subscription) => (
+              {subscriptions.map((subscription: SubscriptionEntity) => (
                 <TableRow key={subscription.id}>
                   <TableCell>
                     <Link to={`admin/${subscription.id}`}>

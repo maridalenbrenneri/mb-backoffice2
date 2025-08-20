@@ -8,7 +8,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { Grid, Typography } from '@mui/material';
 
-import type { SubscriptionStats } from '~/_libs/core/services/subscription-stats';
+import type { SubscriptionStats } from '~/services/subscription-stats.service';
 import DataLabel from './DataLabel';
 
 export default function SubscriptionStatsBox(props: {

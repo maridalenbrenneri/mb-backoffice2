@@ -1,9 +1,9 @@
-import { OrderType } from '@prisma/client';
 import { json, redirect } from '@remix-run/node';
+import { OrderType } from '~/services/entities/enums';
 
-import { upsertOrderItem } from '~/_libs/core/repositories/order/order.server';
-import { upsertOrder } from '~/_libs/core/repositories/order/order.server';
-import { isUnsignedInt, parseIntOrZero } from '~/_libs/core/utils/numbers';
+import { upsertOrderItem } from '~/services/order.service';
+import { upsertOrder } from '~/services/order.service';
+import { isUnsignedInt, parseIntOrZero } from '~/utils/numbers';
 
 type OrderActionData = {
   validationErrors?:
