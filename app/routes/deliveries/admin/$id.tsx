@@ -31,7 +31,7 @@ import {
 import Orders from '~/components/Orders';
 import { useEffect, useState } from 'react';
 import type { Product } from '@prisma/client';
-import { OrderStatus, ProductStatus } from '@prisma/client';
+import { OrderStatus, ProductStatus, ProductStockStatus } from '@prisma/client';
 import DataLabel from '~/components/DataLabel';
 import { getProducts } from '~/_libs/core/repositories/product';
 
@@ -72,8 +72,17 @@ export const loader: LoaderFunction = async ({ params }) => {
     where: {
       status: ProductStatus.PUBLISHED,
     },
+    take: 8,
   });
   invariant(products, `Products not found`);
+
+  // Sort products so IN_STOCK appear first, then by name
+  products.sort((a, b) => {
+    const aPriority = a.stockStatus === ProductStockStatus.IN_STOCK ? 0 : 1;
+    const bPriority = b.stockStatus === ProductStockStatus.IN_STOCK ? 0 : 1;
+    if (aPriority !== bPriority) return aPriority - bPriority;
+    return a.name.localeCompare(b.name);
+  });
 
   return json({ loadedDelivery, products });
 };
@@ -136,7 +145,16 @@ export default function UpdateDelivery() {
           size="small"
         >
           {products.map((product: Product) => (
-            <MenuItem value={product.id} key={product.id}>
+            <MenuItem
+              value={product.id}
+              key={product.id}
+              sx={{
+                fontWeight:
+                  product.stockStatus === ProductStockStatus.IN_STOCK
+                    ? 700
+                    : 400,
+              }}
+            >
               {product.productCode || 'code not set'} - {product.name}
               {` - `}
               <small>{product.stockStatus}</small>
