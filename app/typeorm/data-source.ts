@@ -17,10 +17,22 @@ export function getDataSource() {
 
   const isProduction = process.env.NODE_ENV === 'production';
 
-  // Modify DATABASE_URL to include SSL parameters for production
-  let databaseUrl = process.env.DATABASE_URL;
-  if (isProduction && databaseUrl && !databaseUrl.includes('sslmode=')) {
-    databaseUrl += '?sslmode=require';
+  const databaseUrl = process.env.DATABASE_URL;
+
+  // Determine SSL behavior based on Fly.io topology
+  // - Internal host ("*.internal") → no SSL (pgbouncer on 5432 typically has TLS disabled)
+  // - Any external host → SSL (no cert verification)
+  let sslOption: boolean | { rejectUnauthorized: false } = false;
+  if (isProduction && databaseUrl) {
+    try {
+      const parsed = new URL(databaseUrl);
+      const hostname = parsed.hostname ?? '';
+      const isInternal = hostname.endsWith('.internal');
+      sslOption = isInternal ? false : { rejectUnauthorized: false };
+    } catch {
+      // If parsing fails, default to using SSL in production
+      sslOption = { rejectUnauthorized: false };
+    }
   }
 
   _dataSource = new DataSource({
@@ -51,6 +63,8 @@ export function getDataSource() {
       connectionTimeoutMillis: 10000, // Time to acquire connection
       idleTimeoutMillis: 30000, // Time connection can be idle
     },
+
+    ssl: sslOption,
 
     // Additional TypeORM settings
     cache: {
