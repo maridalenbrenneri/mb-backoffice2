@@ -17,9 +17,15 @@ export function getDataSource() {
 
   const isProduction = process.env.NODE_ENV === 'production';
 
+  // Modify DATABASE_URL to include SSL parameters for production
+  let databaseUrl = process.env.DATABASE_URL;
+  if (isProduction && databaseUrl && !databaseUrl.includes('sslmode=')) {
+    databaseUrl += '?sslmode=require';
+  }
+
   _dataSource = new DataSource({
     type: 'postgres',
-    url: process.env.DATABASE_URL,
+    url: databaseUrl,
     entities: [
       UserEntity,
       ProductEntity,
@@ -45,9 +51,6 @@ export function getDataSource() {
       connectionTimeoutMillis: 10000, // Time to acquire connection
       idleTimeoutMillis: 30000, // Time connection can be idle
     },
-
-    // SSL configuration for production (e.g., Fly.io)
-    ssl: isProduction ? { rejectUnauthorized: false } : false,
 
     // Additional TypeORM settings
     cache: {
