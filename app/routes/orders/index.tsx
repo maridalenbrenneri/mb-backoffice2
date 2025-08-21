@@ -18,7 +18,7 @@ import Typography from '@mui/material/Typography';
 
 import { OrderEntity, OrderStatus } from '~/services/entities';
 
-import { getOrders } from '~/services/order.service';
+import { getOrdersPaginated } from '~/services/order.service';
 import { useEffect, useState } from 'react';
 import {
   Box,
@@ -29,13 +29,12 @@ import {
   TableFooter,
 } from '@mui/material';
 import { toPrettyDateText, toPrettyDateTime } from '~/utils/dates';
-import { TAKE_MAX_ROWS } from '~/settings';
 import { generateReference, resolveSource } from '~/services/order.service';
 
 const defaultStatus = OrderStatus.ACTIVE;
 
 type LoaderData = {
-  loadedOrders: Awaited<ReturnType<typeof getOrders>>;
+  loadedOrders: Awaited<ReturnType<typeof getOrdersPaginated>>;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -58,7 +57,6 @@ function buildFilter(search: URLSearchParams) {
     'orderItems.product',
     'subscription',
   ];
-  filter.take = TAKE_MAX_ROWS;
 
   return filter;
 }
@@ -69,7 +67,13 @@ export const loader = async ({ request }: { request: Request }) => {
 
   const filter = buildFilter(search);
 
-  const loadedOrders = await getOrders(filter);
+  // pagination params
+  const pageParam = parseInt(search.get('page') || '1', 10);
+  const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  const take = 100;
+  const skip = (page - 1) * take;
+
+  const loadedOrders = await getOrdersPaginated({ ...filter, take, skip });
 
   return json<LoaderData>({
     loadedOrders,
@@ -82,10 +86,15 @@ export default function Orders() {
   const submit = useSubmit();
 
   const [orders, setOrders] = useState<OrderEntity[]>();
+  const [total, setTotal] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 100;
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
 
   useEffect(() => {
-    setOrders(loadedOrders);
+    setOrders(loadedOrders.data);
+    setTotal(loadedOrders.total);
+    setPage(loadedOrders.page);
   }, [loadedOrders]);
 
   if (!orders) return null;
@@ -135,7 +144,9 @@ export default function Orders() {
             <TableHead>
               <TableRow>
                 <TableCell colSpan={9}>
-                  <small>{orders.length} orders</small>
+                  <small>
+                    {orders.length} of {total} orders
+                  </small>
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -184,7 +195,45 @@ export default function Orders() {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell>{orders.length} orders</TableCell>
+                <TableCell colSpan={9}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <small>
+                      Showing {(page - 1) * pageSize + 1}–
+                      {Math.min(page * pageSize, total)} of {total}
+                    </small>
+                    <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+                      <Link
+                        to={`?${new URLSearchParams({
+                          status,
+                          page: String(Math.max(page - 1, 1)),
+                        }).toString()}`}
+                        aria-disabled={page <= 1}
+                        style={{
+                          pointerEvents: page <= 1 ? 'none' : 'auto',
+                          opacity: page <= 1 ? 0.5 : 1,
+                        }}
+                      >
+                        Prev
+                      </Link>
+                      <Link
+                        to={`?${new URLSearchParams({
+                          status,
+                          page: String(
+                            page * pageSize < total ? page + 1 : page
+                          ),
+                        }).toString()}`}
+                        aria-disabled={page * pageSize >= total}
+                        style={{
+                          pointerEvents:
+                            page * pageSize >= total ? 'none' : 'auto',
+                          opacity: page * pageSize >= total ? 0.5 : 1,
+                        }}
+                      >
+                        Next
+                      </Link>
+                    </Box>
+                  </Box>
+                </TableCell>
               </TableRow>
             </TableFooter>
           </Table>

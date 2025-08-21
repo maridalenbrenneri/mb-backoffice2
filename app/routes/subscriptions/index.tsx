@@ -35,16 +35,15 @@ import {
 
 import { resolveSubscriptionCode } from '~/services/subscription.service';
 
-import { TAKE_MAX_ROWS } from '~/settings';
 import { toPrettyDate, toPrettyDateTime } from '~/utils/dates';
-import { getSubscriptions } from '~/services/subscription.service';
+import { getSubscriptionsPaginated } from '~/services/subscription.service';
 import { SubscriptionEntity } from '~/services/entities';
 
 const defaultStatus = '_all';
 const defaultType = '_all';
 
 type LoaderData = {
-  loadedSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
+  loadedSubscriptions: Awaited<ReturnType<typeof getSubscriptionsPaginated>>;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -79,8 +78,6 @@ function buildFilter(search: URLSearchParams) {
     id: 'desc',
   };
 
-  filter.take = TAKE_MAX_ROWS;
-
   return filter;
 }
 
@@ -90,7 +87,16 @@ export const loader = async ({ request }: { request: Request }) => {
 
   const filter = buildFilter(search);
 
-  const loadedSubscriptions = await getSubscriptions(filter);
+  const pageParam = parseInt(search.get('page') || '1', 10);
+  const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  const take = 100;
+  const skip = (page - 1) * take;
+
+  const loadedSubscriptions = await getSubscriptionsPaginated({
+    ...filter,
+    take,
+    skip,
+  });
 
   return json<LoaderData>({
     loadedSubscriptions,
@@ -103,6 +109,9 @@ export default function Subscriptions() {
   const submit = useSubmit();
 
   const [subscriptions, setSubscriptions] = useState<SubscriptionEntity[]>();
+  const [total, setTotal] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 100;
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
   const [type, setType] = useState(params.get('type') || defaultType);
   const [recipientName, setRecipientName] = useState(
@@ -116,7 +125,9 @@ export default function Subscriptions() {
   );
 
   useEffect(() => {
-    setSubscriptions(loadedSubscriptions);
+    setSubscriptions(loadedSubscriptions.data);
+    setTotal(loadedSubscriptions.total);
+    setPage(loadedSubscriptions.page);
   }, [loadedSubscriptions]);
 
   if (!subscriptions) return null;
@@ -291,8 +302,52 @@ export default function Subscriptions() {
           >
             <TableHead>
               <TableRow>
-                <TableCell colSpan={6} sx={{ border: 0 }}>
-                  {subscriptions.length} subscriptions
+                <TableCell colSpan={10} sx={{ border: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <small>
+                      Showing {(page - 1) * pageSize + 1}–
+                      {Math.min(page * pageSize, total)} of {total}
+                    </small>
+                    <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+                      <Link
+                        to={`?${new URLSearchParams({
+                          status,
+                          type,
+                          recipientName,
+                          recipientEmail,
+                          customerName,
+                          page: String(Math.max(page - 1, 1)),
+                        }).toString()}`}
+                        aria-disabled={page <= 1}
+                        style={{
+                          pointerEvents: page <= 1 ? 'none' : 'auto',
+                          opacity: page <= 1 ? 0.5 : 1,
+                        }}
+                      >
+                        Prev
+                      </Link>
+                      <Link
+                        to={`?${new URLSearchParams({
+                          status,
+                          type,
+                          recipientName,
+                          recipientEmail,
+                          customerName,
+                          page: String(
+                            page * pageSize < total ? page + 1 : page
+                          ),
+                        }).toString()}`}
+                        aria-disabled={page * pageSize >= total}
+                        style={{
+                          pointerEvents:
+                            page * pageSize >= total ? 'none' : 'auto',
+                          opacity: page * pageSize >= total ? 0.5 : 1,
+                        }}
+                      >
+                        Next
+                      </Link>
+                    </Box>
+                  </Box>
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -342,7 +397,53 @@ export default function Subscriptions() {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell>{subscriptions.length} subscriptions</TableCell>
+                <TableCell colSpan={10}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <small>
+                      Showing {(page - 1) * pageSize + 1}–
+                      {Math.min(page * pageSize, total)} of {total}
+                    </small>
+                    <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+                      <Link
+                        to={`?${new URLSearchParams({
+                          status,
+                          type,
+                          recipientName,
+                          recipientEmail,
+                          customerName,
+                          page: String(Math.max(page - 1, 1)),
+                        }).toString()}`}
+                        aria-disabled={page <= 1}
+                        style={{
+                          pointerEvents: page <= 1 ? 'none' : 'auto',
+                          opacity: page <= 1 ? 0.5 : 1,
+                        }}
+                      >
+                        Prev
+                      </Link>
+                      <Link
+                        to={`?${new URLSearchParams({
+                          status,
+                          type,
+                          recipientName,
+                          recipientEmail,
+                          customerName,
+                          page: String(
+                            page * pageSize < total ? page + 1 : page
+                          ),
+                        }).toString()}`}
+                        aria-disabled={page * pageSize >= total}
+                        style={{
+                          pointerEvents:
+                            page * pageSize >= total ? 'none' : 'auto',
+                          opacity: page * pageSize >= total ? 0.5 : 1,
+                        }}
+                      >
+                        Next
+                      </Link>
+                    </Box>
+                  </Box>
+                </TableCell>
               </TableRow>
             </TableFooter>
           </Table>

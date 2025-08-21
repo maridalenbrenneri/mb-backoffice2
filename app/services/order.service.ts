@@ -77,6 +77,45 @@ export async function getOrders(filter?: any) {
   return repo.find(options);
 }
 
+export async function getOrdersPaginated(filter?: any) {
+  filter = filter || {};
+
+  const options: any = {};
+
+  // Handle include to relations conversion if needed
+  if (filter.include) {
+    const relations: string[] = [];
+    Object.keys(filter.include).forEach((key) => {
+      relations.push(key);
+    });
+    options.relations = relations;
+  } else if (filter.relations) {
+    options.relations = filter.relations;
+  }
+
+  // Copy other filter properties
+  if (filter.where) options.where = filter.where;
+  if (filter.orderBy) options.order = filter.orderBy; // TypeORM uses 'order' not 'orderBy'
+  if (typeof filter.take === 'number')
+    options.take = Math.min(filter.take, TAKE_MAX_ROWS);
+  if (typeof filter.skip === 'number') options.skip = filter.skip;
+
+  // Defaults
+  if (!options.order) options.order = { updatedAt: 'desc' };
+  if (!options.take || options.take > TAKE_MAX_ROWS)
+    options.take = TAKE_DEFAULT_ROWS;
+
+  const repo = await getOrderRepo();
+  const [data, total] = await repo.findAndCount(options);
+
+  return {
+    data,
+    total,
+    pageSize: options.take,
+    page: Math.floor((options.skip || 0) / options.take) + 1,
+  };
+}
+
 export async function getOrder(filter: any) {
   if (!filter) return null;
 

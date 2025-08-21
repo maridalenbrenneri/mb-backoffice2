@@ -160,6 +160,42 @@ export async function getSubscriptions(filter?: any) {
   return repo.find(options);
 }
 
+export async function getSubscriptionsPaginated(filter?: any) {
+  filter = filter || {};
+
+  const options: any = {};
+
+  if (filter.include) {
+    const relations: string[] = [];
+    Object.keys(filter.include).forEach((key) => {
+      relations.push(key);
+    });
+    options.relations = relations;
+  } else if (filter.relations) {
+    options.relations = filter.relations;
+  }
+
+  if (filter.where) options.where = filter.where;
+  if (filter.orderBy) options.order = filter.orderBy;
+  if (typeof filter.take === 'number')
+    options.take = Math.min(filter.take, TAKE_MAX_ROWS);
+  if (typeof filter.skip === 'number') options.skip = filter.skip;
+
+  if (!options.order) options.order = { updatedAt: 'desc' };
+  if (!options.take || options.take > TAKE_MAX_ROWS)
+    options.take = TAKE_DEFAULT_ROWS;
+
+  const repo = await getRepo();
+  const [data, total] = await repo.findAndCount(options);
+
+  return {
+    data,
+    total,
+    pageSize: options.take,
+    page: Math.floor((options.skip || 0) / options.take) + 1,
+  };
+}
+
 export async function create(data: CreateSubscriptionData) {
   const repo = await getRepo();
   const entity = repo.create(data);
