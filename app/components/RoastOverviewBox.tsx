@@ -181,7 +181,7 @@ export default function RoastOverviewBox(props: {
             <TableRow>
               <TableCell>
                 <big>
-                  <Link to={`deliveries/admin/${delivery.id}`}>
+                  <Link to={`/deliveries/admin/${delivery.id}`}>
                     Edit coffees for Delivery day / View orders
                   </Link>
                 </big>

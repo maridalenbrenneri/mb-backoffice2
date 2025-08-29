@@ -51,6 +51,7 @@ export const loader: LoaderFunction = async ({ params }) => {
       'product4',
       'orders',
       'orders.orderItems',
+      'orders.orderItems.product',
     ],
   });
 

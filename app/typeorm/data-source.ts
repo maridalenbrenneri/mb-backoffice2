@@ -48,7 +48,10 @@ export function getDataSource() {
       JobResultEntity,
     ],
     synchronize: false,
-    logging: isProduction ? ['error', 'warn'] : ['query', 'error', 'warn'],
+    logging:
+      process.env.TYPEORM_LOGGING === 'true'
+        ? ['query', 'error', 'warn']
+        : ['error', 'warn'],
 
     // Connection pool configuration
     extra: {
