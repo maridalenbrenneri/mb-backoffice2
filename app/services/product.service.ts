@@ -80,6 +80,16 @@ export async function getProductById(id: number) {
 
 // MUTATIONS
 
+export async function createProduct(data: Partial<ProductEntity>) {
+  const repo = await getRepo();
+  let productId = await repo.save(repo.create(data));
+
+  // TODO: Creste product in Woo
+  // Get woo product id, save on Product
+
+  return productId;
+}
+
 export async function updateProduct(id: number, data: Partial<ProductEntity>) {
   const repo = await getRepo();
   const entity = await repo.preload({ id, ...(data as any) } as any);
@@ -113,8 +123,10 @@ export async function woo_productSetStockStatus(
   productId: number,
   stockStatus: ProductStockStatus
 ) {
-  const stock_status =
-    stockStatus === ProductStockStatus.IN_STOCK ? 'instock' : 'outofstock';
+  let stock_status = 'outofstock';
+  if (stockStatus === ProductStockStatus.IN_STOCK) stock_status = 'instock';
+  if (stockStatus === ProductStockStatus.ON_BACKORDER)
+    stock_status = 'onbackorder';
 
   const data: WooProductUpdate = {
     stock_status,
