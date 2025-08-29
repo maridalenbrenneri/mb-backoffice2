@@ -324,10 +324,8 @@ async function _createOrder(
     where: { id: subscriptionId },
     relations: {
       orders: {
-        relations: {
-          delivery: true,
-          orderItems: true,
-        },
+        delivery: true,
+        orderItems: true,
       },
     },
   });
@@ -457,9 +455,7 @@ async function getOrderFromDb(orderId: number) {
     relations: {
       subscription: true,
       orderItems: {
-        relations: {
-          product: true,
-        },
+        product: true,
       },
     },
   });
