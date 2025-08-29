@@ -7,17 +7,24 @@ export enum CoffeeStatus {
   DELETED = 'DELETED',
 }
 
-// Product
+// Product - Woo status
 export enum ProductStatus {
-  PUBLISHED = 'PUBLISHED',
-  PRIVATE = 'PRIVATE',
+  DRAFT = 'DRAFT', // Never published in Woo
+  PUBLISHED = 'PUBLISHED', // Published in Woo
+  PRIVATE = 'PRIVATE', // Hidden in Woo
   DELETED = 'DELETED',
 }
 
+// Product - Woo stock status
 export enum ProductStockStatus {
+  ON_BACKORDER = 'ON_BACKORDER',
   IN_STOCK = 'IN_STOCK',
   OUT_OF_STOCK = 'OUT_OF_STOCK',
-  IN_ORDER = 'IN_ORDER',
+}
+
+export enum ProductStockLocation {
+  IN_DELIVERY = 'IN_DELIVERY',
+  IN_ROASTERY = 'IN_ROASTERY',
 }
 
 // Subscription

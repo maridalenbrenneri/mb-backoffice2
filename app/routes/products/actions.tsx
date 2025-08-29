@@ -3,9 +3,14 @@ import { json } from '@remix-run/node';
 import { nullIfEmptyOrWhitespace } from '~/utils/strings';
 import { ProductStockStatus } from '~/services/entities/enums';
 import {
+  createProduct,
   updateProduct,
   woo_productSetStockStatus,
 } from '~/services/product.service';
+
+const createNewProduct = async (values: any) => {
+  await createProduct(values);
+};
 
 const updateProductCode = async (values: any) => {
   await updateProduct(+values.id, {

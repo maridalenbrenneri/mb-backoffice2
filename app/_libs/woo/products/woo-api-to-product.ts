@@ -12,6 +12,7 @@ const resolveProductStatus = (wooStatus: string): ProductStatus => {
 };
 
 const resolveProductStockStatus = (wooStatus: string): ProductStockStatus => {
+  if (wooStatus === 'onbackorder') return ProductStockStatus.ON_BACKORDER;
   if (wooStatus === 'instock') return ProductStockStatus.IN_STOCK;
   if (wooStatus === 'outofstock') return ProductStockStatus.OUT_OF_STOCK;
 

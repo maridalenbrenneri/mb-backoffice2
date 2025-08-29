@@ -6,7 +6,11 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { ProductStatus, ProductStockStatus } from './enums';
+import {
+  ProductStatus,
+  ProductStockLocation,
+  ProductStockStatus,
+} from './enums';
 import { DeliveryEntity } from './delivery.entity';
 import { OrderItemEntity } from './order-item.entity';
 
@@ -48,6 +52,18 @@ export class ProductEntity {
 
   @Column({ type: 'timestamptz', nullable: true })
   wooUpdatedAt!: Date | null;
+
+  @Column({ type: 'integer', nullable: true })
+  stockInitial!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  stockRemaining!: number | null;
+
+  @Column({ type: 'boolean', default: false })
+  labelsPrinted!: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  infoLink!: string | null;
 
   @OneToMany(() => DeliveryEntity, (delivery) => delivery.product1)
   deliveriesAsProduct1!: DeliveryEntity[];
