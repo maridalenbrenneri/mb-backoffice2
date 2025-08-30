@@ -10,7 +10,6 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ message: 'Method not allowed' }, 405);
 
   const url = new URL(request.url);
-
   let full = url.searchParams.get('full') === 'true';
 
   const name = full
