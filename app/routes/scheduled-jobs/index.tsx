@@ -97,9 +97,10 @@ export default function JobResultPage() {
             >
               <TableCell>woo-import-orders</TableCell>
               <TableCell>
-                Import of orders from Woo updated in last 7 days. Status changes
-                are synced with Backoffice, but no other changes are updated
-                after first import. Runs every hour.
+                Import of orders from Woo updated in last 1 day. Fetches all
+                orders. Status changes are synced with Backoffice, but no other
+                changes are updated after first import. Runs every 30 minutes
+                between 06:00 and 23:00.
               </TableCell>
               <TableCell>
                 <small>
@@ -155,7 +156,9 @@ export default function JobResultPage() {
             >
               <TableCell>woo-import-subscriptions</TableCell>
               <TableCell>
-                Import of all subscriptions from Woo. Runs once a day at 03:00.
+                Import of subscriptions from Woo updated in last 1 day. Runs
+                every hour between 06:00 and 23:00. Fetches all subscriptions
+                monthly.
               </TableCell>
               <TableCell>
                 <small>

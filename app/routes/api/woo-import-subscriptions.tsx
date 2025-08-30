@@ -10,9 +10,9 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ message: 'Method not allowed' }, 405);
 
   const url = new URL(request.url);
-  let all = url.searchParams.get('full') === 'true';
+  let full = url.searchParams.get('full') === 'true';
 
-  const name = all
+  const name = full
     ? 'woo-import-subscriptions-full'
     : 'woo-import-subscriptions';
   const jobStartedAt = DateTime.now().toJSDate();
@@ -20,7 +20,7 @@ export const action: ActionFunction = async ({ request }) => {
   console.time('woo-import-subscriptions');
 
   try {
-    let result = await woo.importWooSubscriptions();
+    let result = await woo.importWooSubscriptions(full);
 
     await createJobResult({
       jobStartedAt,
