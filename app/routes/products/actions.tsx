@@ -3,14 +3,9 @@ import { json } from '@remix-run/node';
 import { nullIfEmptyOrWhitespace } from '~/utils/strings';
 import { ProductStockStatus } from '~/services/entities/enums';
 import {
-  createProduct,
   updateProduct,
   woo_productSetStockStatus,
 } from '~/services/product.service';
-
-const createNewProduct = async (values: any) => {
-  await createProduct(values);
-};
 
 const updateProductCode = async (values: any) => {
   await updateProduct(+values.id, {
@@ -38,8 +33,12 @@ const updateStockStatus = async (values: any) => {
     stockStatus as ProductStockStatus
   );
 
+  let stockRemaining =
+    stockStatus === ProductStockStatus.OUT_OF_STOCK ? 0 : undefined;
+
   await updateProduct(+values.id, {
     stockStatus: stockStatus as ProductStockStatus,
+    stockRemaining,
   });
 
   return json({
@@ -48,22 +47,41 @@ const updateStockStatus = async (values: any) => {
   });
 };
 
+const updateStockRemaining = async (values: any) => {
+  await updateProduct(+values.id, {
+    stockRemaining: values.stockRemaining,
+  });
+
+  return json({
+    didUpdate: true,
+    updateMessage: 'Product stock remaining was updated',
+  });
+};
+
+const updateLabelsPrinted = async (values: any) => {
+  await updateProduct(+values.id, {
+    labelsPrinted: values.labelsPrinted,
+  });
+
+  return json({
+    didUpdate: true,
+    updateMessage: 'Product labels printed was updated',
+  });
+};
+
 export const productActionHandler = async (request: any) => {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
   if (_action === 'set-product-code') {
-    await updateProductCode(values);
-    return {
-      didUpdate: true,
-      updateMessage: 'Product code was updated',
-    };
+    return await updateProductCode(values);
   } else if (_action === 'set-product-stock-status') {
-    await updateStockStatus(values);
-    return {
-      didUpdate: true,
-      updateMessage: 'Product stock status was updated',
-    };
+    return await updateStockStatus(values);
+  } else if (_action === 'set-product-stock-remaining') {
+    console.log('set-product-stock-remaining', values);
+    return await updateStockRemaining(values);
+  } else if (_action === 'set-product-labels-printed') {
+    return await updateLabelsPrinted(values);
   }
 
   return null;

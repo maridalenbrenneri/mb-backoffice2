@@ -84,6 +84,8 @@ export async function createProduct(data: Partial<ProductEntity>) {
   const repo = await getRepo();
   let productId = await repo.save(repo.create(data));
 
+  console.log('createProduct', productId);
+
   // TODO: Creste product in Woo
   // Get woo product id, save on Product
 

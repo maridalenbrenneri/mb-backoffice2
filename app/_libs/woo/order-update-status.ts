@@ -4,7 +4,9 @@ export default async function orderUpdateStatus(
   wooOrderId: number,
   status: 'processing' | 'completed' | 'cancelled'
 ) {
-  if (!process.env.WOO_ALLOW_UPDATE) return { error: 'Woo Update not enabled' };
+  if (process.env.WOO_ALLOW_UPDATE !== 'true') {
+    return { error: 'Woo Update not enabled' };
+  }
 
   const url = `${WOO_API_BASE_URL}orders/${wooOrderId}?${process.env.WOO_SECRET_PARAM}`;
 
