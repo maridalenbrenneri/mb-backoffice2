@@ -7,7 +7,7 @@ import { WooOrderData, type WooOrder } from './types';
 
 async function fetchPage(
   page: number = 1,
-  updatedAfter: string
+  updatedAfter: string =
 ): Promise<{ nextPage: number | null; orders: WooOrder[] }> {
   const url = `${WOO_API_BASE_URL}orders?page=${page}&per_page=${WOO_API_DEFAULT_PER_PAGE}&modified_after=${updatedAfter}&${process.env.WOO_SECRET_PARAM}`;
 
