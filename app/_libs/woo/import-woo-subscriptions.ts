@@ -2,10 +2,10 @@ import * as subscriptionRepository from '~/services/subscription.service';
 import fetchSubscriptions from './subscriptions/fetch';
 import { wooApiToUpsertSubscriptionData } from './subscriptions/woo-api-to-subscription';
 
-export default async function importWooSubscriptionStats() {
+export default async function importWooSubscription(fetchAll: boolean = false) {
   console.debug('FETCHING WOO SUBSCRIPTIONS...');
 
-  const wooSubscriptions = await fetchSubscriptions();
+  const wooSubscriptions = await fetchSubscriptions(fetchAll);
 
   console.debug(`Fetched ${wooSubscriptions.length} subscriptions from Woo`);
 

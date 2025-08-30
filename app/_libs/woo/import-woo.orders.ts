@@ -59,13 +59,13 @@ async function resolveSubscription(info: OrderInfo) {
   return subscription.id;
 }
 
-export default async function importWooOrders() {
+export default async function importWooOrders(fetchAll: boolean = false) {
   console.debug('FETCHING WOO ORDERS...');
 
   let wooOrders: WooOrder[] = [];
   const ordersWithUnknownProduct: number[] = [];
 
-  const allWooOrders = await fetchOrders();
+  const allWooOrders = await fetchOrders(fetchAll);
 
   wooOrders = allWooOrders.filter((order) => hasSupportedStatus(order));
 

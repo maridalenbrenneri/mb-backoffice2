@@ -7,7 +7,7 @@ import { WooOrderData, type WooOrder } from './types';
 
 async function fetchPage(
   page: number = 1,
-  updatedAfter: string
+  updatedAfter: string =
 ): Promise<{ nextPage: number | null; orders: WooOrder[] }> {
   const url = `${WOO_API_BASE_URL}orders?page=${page}&per_page=${WOO_API_DEFAULT_PER_PAGE}&modified_after=${updatedAfter}&${process.env.WOO_SECRET_PARAM}`;
 
@@ -35,12 +35,16 @@ async function fetchPage(
   };
 }
 
-export async function fetchOrders(): Promise<WooOrder[]> {
+export async function fetchOrders(
+  fetchAll: boolean = false
+): Promise<WooOrder[]> {
   let orders: Array<WooOrder> = [];
+
+  let days = fetchAll ? 90 : WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS;
 
   const updatedAfter = DateTime.now()
     .startOf('day')
-    .minus({ days: WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS })
+    .minus({ days })
     .toISO({ suppressMilliseconds: true, includeOffset: false });
 
   let page: number | null = 1;
