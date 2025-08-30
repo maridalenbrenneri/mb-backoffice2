@@ -4,7 +4,7 @@
 
 export const WOO_API_BASE_URL = 'https://maridalenbrenneri.no/wp-json/wc/v3/';
 export const WOO_SUBSCRIPTION_API_BASE_URL =
-  'https://maridalenbrenneri.no/wp-json/wc/v1/';
+  'https://maridalenbrenneri.no/wp-json/wc/v3/';
 
 export const WOO_API_DEFAULT_PER_PAGE = 50;
 
