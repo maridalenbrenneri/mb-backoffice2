@@ -13,6 +13,7 @@ async function _fetchSubscriptions(
   console.debug(`Fetching woo subscriptions from page ${page}`);
 
   let days = fetchAll ? 30 : WOO_IMPORT_SUBSCRIPTIONS_FROM_TODAY_MINUS_DAYS;
+
   const after = DateTime.now()
     .startOf('day')
     .minus({ days })
