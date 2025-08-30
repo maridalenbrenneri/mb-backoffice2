@@ -1,112 +1,23 @@
-import type { ActionFunction } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
 import { Form, useActionData, useNavigation } from '@remix-run/react';
-import { useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import {
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-} from '@mui/material';
+import { Button, FormControl, TextField } from '@mui/material';
 
-import {
-  ProductEntity,
-  ProductStatus,
-  ProductStockStatus,
-} from '~/services/entities';
-import { createProduct } from '~/services/product.service';
-import { isUnsignedInt } from '~/utils/numbers';
-
-const validate = (values: any) => {
-  return {
-    country: values.country ? null : 'Country is required',
-    name: values.name ? null : 'Name is required',
-    productCode: values.productCode ? null : 'Product code is required',
-    stockStatus: values.stockStatus ? null : 'Stock status is required',
-    stockInitial: isUnsignedInt(values.quantity250)
-      ? null
-      : 'Must be a number greater or equal to zero',
-  };
-};
-
-type CreateActionData = {
-  validationErrors?:
-    | {
-        name: null | string;
-        productCode: null | string;
-        country: null | string;
-        stockStatus: null | string;
-        stockInitial: null | string;
-      }
-    | undefined;
-  didUpdate?: boolean | undefined;
-  updateMessage?: string | undefined;
-};
+import { createAction, CreateActionData, renderStockStatus } from './_shared';
+import { ActionFunction } from '@remix-run/node';
 
 export const action: ActionFunction = async ({ request }) => {
+  console.log('AM I HERE IN NEW');
+
   const formData = await request.formData();
-  const values = Object.fromEntries(formData);
+  const { ...values } = Object.fromEntries(formData);
 
-  console.log('createProduct values', values);
-
-  // const validationErrors = validate(values);
-
-  // if (Object.values(validationErrors).some((errorMessage) => errorMessage)) {
-  //   console.error('Errors in form', validationErrors);
-  //   return json<CreateActionData>({ validationErrors });
-  // }
-
-  const data: Partial<ProductEntity> = {
-    productCode: values.productCode as string | null,
-    country: values.country as string | null,
-    name: values.name as string,
-    status: values.status as ProductStatus,
-    stockStatus: values.stockStatus as ProductStockStatus,
-    stockInitial: +values.stockInitial,
-    stockRemaining: +values.stockInitial,
-    category: 'coffee',
-  };
-
-  await createProduct(data);
-
-  return redirect(`/products}`);
-};
-
-const renderStockStatus = (
-  status: ProductStockStatus = ProductStockStatus.ON_BACKORDER
-) => {
-  return (
-    <FormControl>
-      <InputLabel id={`product-stock-status`}>Stock status</InputLabel>
-      <Select
-        labelId={`product-stock-status`}
-        name={`stockStatus`}
-        defaultValue={status}
-        sx={{ minWidth: 200, marginBottom: 2 }}
-        size="small"
-      >
-        <MenuItem value={ProductStockStatus.ON_BACKORDER}>
-          On backorder
-        </MenuItem>
-        <MenuItem value={ProductStockStatus.IN_STOCK}>
-          In stock (In roastery)
-        </MenuItem>
-        <MenuItem value={ProductStockStatus.OUT_OF_STOCK}>
-          {' '}
-          Out of stock
-        </MenuItem>
-      </Select>
-    </FormControl>
-  );
+  return await createAction(values);
 };
 
 export default function NewProduct() {
-  const errors = useActionData();
+  const data = useActionData<CreateActionData>();
   const navigation = useNavigation();
 
   const isCreating = Boolean(navigation.state === 'submitting');
@@ -128,7 +39,7 @@ export default function NewProduct() {
               variant="outlined"
               size="small"
               defaultValue={''}
-              error={errors?.country}
+              error={data?.validationErrors?.country ? true : false}
             />
           </FormControl>
 
@@ -139,7 +50,7 @@ export default function NewProduct() {
               variant="outlined"
               size="small"
               defaultValue={''}
-              error={errors?.name}
+              error={data?.validationErrors?.name ? true : false}
             />
           </FormControl>
 
@@ -150,23 +61,23 @@ export default function NewProduct() {
               variant="outlined"
               size="small"
               defaultValue={''}
-              error={errors?.productCode}
+              error={data?.validationErrors?.productCode ? true : false}
             />
           </FormControl>
         </div>
         <div>
+          {renderStockStatus()}
+
           <FormControl>
             <TextField
               name="stockInitial"
               label="Stock initial (kg)"
               variant="outlined"
               defaultValue={0}
-              error={errors?.stockInitial}
+              error={data?.validationErrors?.stockInitial ? true : false}
               size="small"
             />
           </FormControl>
-
-          {renderStockStatus()}
         </div>
 
         <div>
@@ -177,6 +88,7 @@ export default function NewProduct() {
               variant="outlined"
               size="small"
               defaultValue={''}
+              sx={{ width: '190%' }}
             />
           </FormControl>
         </div>
@@ -189,6 +101,8 @@ export default function NewProduct() {
               variant="outlined"
               size="small"
               multiline
+              rows={2}
+              sx={{ width: '190%' }}
             />
           </FormControl>
         </div>

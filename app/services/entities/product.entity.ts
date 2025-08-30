@@ -80,6 +80,9 @@ export class ProductEntity {
   @OneToMany(() => OrderItemEntity, (item) => item.product)
   orderItems!: OrderItemEntity[];
 
+  @Column({ type: 'text', nullable: true })
+  internalNote!: string | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
