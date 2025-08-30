@@ -10,12 +10,12 @@ import {
   Select,
 } from '@mui/material';
 
-import { ProductStockStatus, ProductEntity } from '~/services/entities';
+import { ProductEntity } from '~/services/entities';
 import { Form } from '@remix-run/react';
 
 import { modalStyle } from '~/style/theme';
 
-export default function SetProductStockStatusDialog(props: {
+export default function SetProductLabelsPrintedDialog(props: {
   product: ProductEntity | null;
   open: boolean;
   onClose: () => void;
@@ -31,33 +31,20 @@ export default function SetProductStockStatusDialog(props: {
           <Grid container>
             <Grid item xs={12} style={{ textAlign: 'center' }}>
               <FormControl>
-                <InputLabel id={`product-stock-status`}>
-                  Stock status
+                <InputLabel id={`product-set-labels-printed`}>
+                  Labels printed
                 </InputLabel>
                 <Select
-                  labelId={`product-stock-status`}
-                  name={`stockStatus`}
-                  defaultValue={product?.stockStatus}
+                  labelId={`product-set-labels-printed`}
+                  name={`labelsPrinted`}
+                  defaultValue={product?.labelsPrinted}
                   sx={{ minWidth: 200, marginBottom: 2 }}
                   size="small"
                 >
-                  <MenuItem value={ProductStockStatus.ON_BACKORDER}>
-                    On backorder
-                  </MenuItem>
-                  <MenuItem value={ProductStockStatus.IN_STOCK}>
-                    In stock
-                  </MenuItem>
-                  <MenuItem value={ProductStockStatus.OUT_OF_STOCK}>
-                    {' '}
-                    Out of stock
-                  </MenuItem>
+                  <MenuItem value={'true'}>Yes</MenuItem>
+                  <MenuItem value={'false'}>No</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} style={{ textAlign: 'center' }}>
-              <Alert severity="info">
-                This will update the stock status in Woo webshop
-              </Alert>
             </Grid>
             <Grid item xs={6} style={{ textAlign: 'left' }}>
               <Button
@@ -77,7 +64,7 @@ export default function SetProductStockStatusDialog(props: {
                 sx={{ m: 2, marginTop: 4 }}
                 type="submit"
                 name="_action"
-                value="set-product-stock-status"
+                value="set-product-labels-printed"
               >
                 Update
               </Button>

@@ -1,28 +1,24 @@
 import type { ActionFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from '@remix-run/react';
+import { Form, useActionData, useNavigation } from '@remix-run/react';
 import { useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import {
-  Alert,
   Button,
-  Checkbox,
   FormControl,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
   TextField,
 } from '@mui/material';
 
-import { ProductEntity, ProductStockStatus } from '~/services/entities';
+import {
+  ProductEntity,
+  ProductStatus,
+  ProductStockStatus,
+} from '~/services/entities';
 import { createProduct } from '~/services/product.service';
 import { isUnsignedInt } from '~/utils/numbers';
 
@@ -52,21 +48,27 @@ type CreateActionData = {
   updateMessage?: string | undefined;
 };
 
-export const createAction = async (values: any) => {
-  const validationErrors = validate(values);
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  const values = Object.fromEntries(formData);
 
-  if (Object.values(validationErrors).some((errorMessage) => errorMessage)) {
-    console.error('Errors in form', validationErrors);
-    return json<CreateActionData>({ validationErrors });
-  }
+  console.log('createProduct values', values);
+
+  // const validationErrors = validate(values);
+
+  // if (Object.values(validationErrors).some((errorMessage) => errorMessage)) {
+  //   console.error('Errors in form', validationErrors);
+  //   return json<CreateActionData>({ validationErrors });
+  // }
 
   const data: Partial<ProductEntity> = {
-    productCode: values.type,
-    country: values.country,
-    name: values.name,
-    status: values.status,
-    stockStatus: values.stockStatus,
-    stockInitial: values.stockInitial,
+    productCode: values.productCode as string | null,
+    country: values.country as string | null,
+    name: values.name as string,
+    status: values.status as ProductStatus,
+    stockStatus: values.stockStatus as ProductStockStatus,
+    stockInitial: +values.stockInitial,
+    stockRemaining: +values.stockInitial,
     category: 'coffee',
   };
 
@@ -117,7 +119,7 @@ export default function NewProduct() {
       }}
     >
       <Typography variant="h2">Create New Product</Typography>
-      <Form>
+      <Form method="post">
         <div>
           <FormControl>
             <TextField

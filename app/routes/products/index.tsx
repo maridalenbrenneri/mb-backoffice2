@@ -1,6 +1,7 @@
 import type { ActionFunction } from '@remix-run/node';
 import {
   Form,
+  Link,
   useActionData,
   useLoaderData,
   useSearchParams,
@@ -39,6 +40,9 @@ import type { LoaderData } from './loader';
 import { productLoader } from './loader';
 import SetProductCodeDialog from './set-product-code-dialog';
 import SetProductStockStatusDialog from './set-product-stock-status-dialog';
+import SetProductStockRemainingDialog from './set-product-stock-remaining';
+import StockDisplay from '~/components/StockDisplay';
+import SetProductLabelsPrintedDialog from './set-product-labels-printed';
 
 const defaultStatus = ProductStatus.PUBLISHED;
 const defaultStockStatus = ProductStockStatus.IN_STOCK;
@@ -64,25 +68,26 @@ export default function Products() {
   const [stockStatus, setStockStatus] = useState(
     params.get('stockStatus') || defaultStockStatus
   );
-  const [stockInitial, setStockInitial] = useState(
-    params.get('stockInitial') || ''
-  );
-  const [stockRemaining, setStockRemaining] = useState(
-    params.get('stockRemaining') || ''
-  );
-  const [labelsPrinted, setLabelsPrinted] = useState(
-    params.get('labelsPrinted') || false
-  );
-  const [infoLink, setInfoLink] = useState(params.get('infoLink') || '');
-
   const [selectedProduct, setSelectedProduct] = useState<ProductEntity | null>(
     null
   );
+
   const [isSetProductCodeDialogOpen, setIsSetProductCodeDialogOpen] =
     useState(false);
+
   const [
     isSetProductStockStatusDialogOpen,
     setIsSetProductStockStatusDialogOpen,
+  ] = useState(false);
+
+  const [
+    isSetProductStockRemainingDialogOpen,
+    setIsSetProductStockRemainingDialogOpen,
+  ] = useState(false);
+
+  const [
+    isSetProductLabelsPrintedDialogOpen,
+    setIsSetProductLabelsPrintedDialogOpen,
   ] = useState(false);
 
   useEffect(() => {
@@ -124,9 +129,29 @@ export default function Products() {
     setIsSetProductStockStatusDialogOpen(true);
   };
 
+  const openSetProductStockRemainingDialog = (product: ProductEntity) => {
+    setSelectedProduct(product);
+    setIsSetProductStockRemainingDialogOpen(true);
+  };
+
+  const openSetProductLabelsPrintedDialog = (product: ProductEntity) => {
+    setSelectedProduct(product);
+    setIsSetProductLabelsPrintedDialogOpen(true);
+  };
+
   const onCloseSetProductStockStatusDialog = () => {
     setSelectedProduct(null);
     setIsSetProductStockStatusDialogOpen(false);
+  };
+
+  const onCloseSetProductStockRenamingDialog = () => {
+    setSelectedProduct(null);
+    setIsSetProductStockRemainingDialogOpen(false);
+  };
+
+  const onCloseSetProductLabelsPrintedDialog = () => {
+    setSelectedProduct(null);
+    setIsSetProductLabelsPrintedDialogOpen(false);
   };
 
   const getStockStatusLabel = (stockStatus: ProductStockStatus) => {
@@ -157,7 +182,7 @@ export default function Products() {
 
       <Form method="get">
         <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`product-status`}>Status</InputLabel>
+          <InputLabel id={`product-status`}>In webshop</InputLabel>
           <Select
             labelId={`product-status`}
             name={`status`}
@@ -167,8 +192,7 @@ export default function Products() {
             size="small"
           >
             <MenuItem value={'_all'}>All</MenuItem>
-            <MenuItem value={ProductStatus.PUBLISHED}>Published</MenuItem>
-            <MenuItem value={ProductStatus.PRIVATE}>Private</MenuItem>
+            <MenuItem value={ProductStatus.PUBLISHED}>YES</MenuItem>
           </Select>
         </FormControl>
 
@@ -201,10 +225,9 @@ export default function Products() {
               <TableCell>Id</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Code</TableCell>
-              <TableCell>Origin</TableCell>
+              {/* <TableCell>Origin</TableCell> */}
               <TableCell>In webshop</TableCell>
               <TableCell>Stock status</TableCell>
-              <TableCell>Stock initial</TableCell>
               <TableCell>Stock remaining</TableCell>
               <TableCell>Labels printed</TableCell>
               <TableCell>Info link</TableCell>
@@ -220,7 +243,7 @@ export default function Products() {
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell>
-                  <small>{product.id}</small>
+                  <Link to={`admin/${product.id}`}>{product.id}</Link>
                 </TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>
@@ -242,7 +265,7 @@ export default function Products() {
                     <Edit />
                   </Button>
                 </TableCell>
-                <TableCell>{product.country || ''}</TableCell>
+                {/* <TableCell>{product.country || ''}</TableCell> */}
                 <TableCell>
                   {product.status === ProductStatus.PUBLISHED ? (
                     <span
@@ -265,54 +288,72 @@ export default function Products() {
                   )}
                 </TableCell>
                 <TableCell>
-                  {product.stockStatus === ProductStockStatus.IN_STOCK ? (
-                    <span
-                      style={{
-                        backgroundColor: '#2e7d32',
-                        color: '#fff',
-                        padding: '2px 6px',
-                        borderRadius: 3,
-                        fontSize: 10,
-                        display: 'inline-block',
-                      }}
-                    >
-                      {getStockStatusLabel(product.stockStatus)}
-                    </span>
-                  ) : product.stockStatus ===
-                    ProductStockStatus.ON_BACKORDER ? (
-                    <span
-                      style={{
-                        backgroundColor: '#f57c00',
-                        color: '#fff',
-                        padding: '2px 6px',
-                        borderRadius: 3,
-                        fontSize: 10,
-                        display: 'inline-block',
-                      }}
-                    >
-                      {getStockStatusLabel(product.stockStatus)}
-                    </span>
-                  ) : (
-                    <small>{getStockStatusLabel(product.stockStatus)}</small>
-                  )}
-
                   <Button
                     sx={{
+                      textTransform: 'none',
                       color: '#999',
-                      fontSize: 10,
-                      minWidth: 0,
-                      paddingLeft: 0.5,
                     }}
                     onClick={() => openSetProductStockStatusDialog(product)}
                     variant="text"
                   >
-                    <Edit />
+                    {product.stockStatus === ProductStockStatus.IN_STOCK ? (
+                      <span
+                        style={{
+                          backgroundColor: '#2e7d32',
+                          color: '#fff',
+                          padding: '2px 6px',
+                          borderRadius: 3,
+                          fontSize: 10,
+                          display: 'inline-block',
+                        }}
+                      >
+                        {getStockStatusLabel(product.stockStatus)}
+                      </span>
+                    ) : product.stockStatus ===
+                      ProductStockStatus.ON_BACKORDER ? (
+                      <span
+                        style={{
+                          backgroundColor: '#f57c00',
+                          color: '#fff',
+                          padding: '2px 6px',
+                          borderRadius: 3,
+                          fontSize: 10,
+                          display: 'inline-block',
+                        }}
+                      >
+                        {getStockStatusLabel(product.stockStatus)}
+                      </span>
+                    ) : (
+                      <small>{getStockStatusLabel(product.stockStatus)}</small>
+                    )}
                   </Button>
                 </TableCell>
-                <TableCell>{product.stockInitial || ''}</TableCell>
-                <TableCell>{product.stockRemaining || ''}</TableCell>
-                <TableCell>{product.labelsPrinted ? 'Yes' : 'No'}</TableCell>
-                <TableCell>{product.infoLink || ''}</TableCell>
+                <TableCell>
+                  <Button
+                    sx={{
+                      textTransform: 'none',
+                    }}
+                    onClick={() => openSetProductStockRemainingDialog(product)}
+                    variant="text"
+                  >
+                    <StockDisplay
+                      stockRemaining={product.stockRemaining || 0}
+                    />
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    sx={{
+                      textTransform: 'none',
+                      color: 'black',
+                    }}
+                    onClick={() => openSetProductLabelsPrintedDialog(product)}
+                    variant="text"
+                  >
+                    {product.labelsPrinted ? 'Yes' : 'No'}
+                  </Button>
+                </TableCell>
+                <TableCell>{product.infoLink || 'n/a'}</TableCell>
                 <TableCell>
                   <a
                     href={product.wooProductUrl || ''}
@@ -344,6 +385,18 @@ export default function Products() {
         product={selectedProduct}
         open={isSetProductCodeDialogOpen}
         onClose={onCloseSetProductCodeDialog}
+      />
+
+      <SetProductStockRemainingDialog
+        product={selectedProduct}
+        open={isSetProductStockRemainingDialogOpen}
+        onClose={onCloseSetProductStockRenamingDialog}
+      />
+
+      <SetProductLabelsPrintedDialog
+        product={selectedProduct}
+        open={isSetProductLabelsPrintedDialogOpen}
+        onClose={onCloseSetProductLabelsPrintedDialog}
       />
     </main>
   );
