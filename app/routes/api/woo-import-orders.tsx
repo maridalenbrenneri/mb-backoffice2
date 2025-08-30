@@ -9,11 +9,14 @@ export const action: ActionFunction = async ({ request }) => {
   if (request.method !== 'POST')
     return json({ message: 'Method not allowed' }, 405);
 
-  const name = 'woo-import-orders';
+  const url = new URL(request.url);
+  let full = url.searchParams.get('full') === 'true';
+
+  const name = full ? 'woo-import-orders-full' : 'woo-import-orders';
   const jobStartedAt = DateTime.now().toJSDate();
 
   try {
-    const result = await woo.importWooOrders();
+    const result = await woo.importWooOrders(full);
 
     await createJobResult({
       jobStartedAt,

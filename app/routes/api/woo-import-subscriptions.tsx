@@ -9,7 +9,12 @@ export const action: ActionFunction = async ({ request }) => {
   if (request.method !== 'POST')
     return json({ message: 'Method not allowed' }, 405);
 
-  const name = 'woo-import-subscriptions';
+  const url = new URL(request.url);
+  let all = url.searchParams.get('full') === 'true';
+
+  const name = all
+    ? 'woo-import-subscriptions-full'
+    : 'woo-import-subscriptions';
   const jobStartedAt = DateTime.now().toJSDate();
 
   console.time('woo-import-subscriptions');

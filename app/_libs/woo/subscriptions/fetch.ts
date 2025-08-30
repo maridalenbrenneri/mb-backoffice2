@@ -1,19 +1,24 @@
+import { DateTime } from 'luxon';
 import * as constants from '../constants';
 import type { WooSubscription } from './types';
+import { WOO_IMPORT_SUBSCRIPTIONS_FROM_TODAY_MINUS_DAYS } from '~/settings';
 
-async function _fetchSubscriptions(page: number = 1): Promise<{
+async function _fetchSubscriptions(
+  page: number = 1,
+  fetchAll: boolean = false
+): Promise<{
   nextPage: number | null;
   subscriptions: WooSubscription[];
 }> {
   console.debug(`Fetching woo subscriptions from page ${page}`);
 
-  // const after = DateTime.now()
-  //   .startOf('day')
-  //   .minus({ days: 15 })
-  //   .toISO({ suppressMilliseconds: true, includeOffset: false });
-  // &after=${after}
+  let days = fetchAll ? 45 : WOO_IMPORT_SUBSCRIPTIONS_FROM_TODAY_MINUS_DAYS;
+  const after = DateTime.now()
+    .startOf('day')
+    .minus({ days })
+    .toISO({ suppressMilliseconds: true, includeOffset: false });
 
-  const url = `${constants.WOO_SUBSCRIPTION_API_BASE_URL}subscriptions?page=${page}&per_page=${constants.WOO_API_DEFAULT_PER_PAGE}&${process.env.WOO_SECRET_PARAM}`;
+  const url = `${constants.WOO_SUBSCRIPTION_API_BASE_URL}subscriptions?modified_after=${after}&page=${page}&per_page=${constants.WOO_API_DEFAULT_PER_PAGE}&${process.env.WOO_SECRET_PARAM}`;
 
   const response = await fetch(url);
 
@@ -34,12 +39,14 @@ async function _fetchSubscriptions(page: number = 1): Promise<{
   };
 }
 
-export default async function fetchSubscriptions(): Promise<WooSubscription[]> {
+export default async function fetchSubscriptions(
+  fetchAll: boolean = false
+): Promise<WooSubscription[]> {
   let wooSubscriptions: Array<any> = [];
   let page: number | null = 1;
 
   do {
-    const result: any = await _fetchSubscriptions(page);
+    const result: any = await _fetchSubscriptions(page, fetchAll);
     page = result.nextPage;
     wooSubscriptions = wooSubscriptions.concat(result.subscriptions);
   } while (page);
