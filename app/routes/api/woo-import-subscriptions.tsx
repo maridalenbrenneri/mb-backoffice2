@@ -13,7 +13,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   let all = url.searchParams.get('full') === 'true';
 
-  const name = all
+  const name = full
     ? 'woo-import-subscriptions-full'
     : 'woo-import-subscriptions';
 
