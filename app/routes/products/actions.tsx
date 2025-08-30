@@ -7,17 +7,6 @@ import {
   woo_productSetStockStatus,
 } from '~/services/product.service';
 
-const updateProductCode = async (values: any) => {
-  await updateProduct(+values.id, {
-    productCode: nullIfEmptyOrWhitespace(values.productCode),
-  });
-
-  return json({
-    didUpdate: true,
-    updateMessage: 'Product code was updated',
-  });
-};
-
 const updateStockStatus = async (values: any) => {
   let stockStatus = nullIfEmptyOrWhitespace(values.stockStatus);
 
@@ -73,9 +62,7 @@ export const productActionHandler = async (request: any) => {
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
 
-  if (_action === 'set-product-code') {
-    return await updateProductCode(values);
-  } else if (_action === 'set-product-stock-status') {
+  if (_action === 'set-product-stock-status') {
     return await updateStockStatus(values);
   } else if (_action === 'set-product-stock-remaining') {
     console.log('set-product-stock-remaining', values);

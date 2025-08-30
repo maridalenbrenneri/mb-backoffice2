@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const WooProductData = z.object({
   id: z.number(),
@@ -15,5 +15,12 @@ export const WooProductUpdateData = z.object({
   stock_status: z.string().optional(),
 });
 
+export const WooProductCreateData = z.object({
+  status: z.string(),
+  stock_status: z.string(),
+  name: z.string(),
+});
+
 export type WooProduct = z.infer<typeof WooProductData>;
+export type WooProductCreate = z.infer<typeof WooProductCreateData>;
 export type WooProductUpdate = z.infer<typeof WooProductUpdateData>;

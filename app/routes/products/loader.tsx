@@ -2,8 +2,8 @@ import { json } from '@remix-run/node';
 import { getProducts } from '~/services/product.service';
 import { ProductStatus, ProductStockStatus } from '~/services/entities';
 
-const defaultStatus = ProductStatus.PUBLISHED;
-const defaultStockStatus = ProductStockStatus.IN_STOCK;
+const defaultStatus = '_all'; // ProductStatus.PUBLISHED;
+const defaultStockStatus = '_all'; // ProductStockStatus.IN_STOCK;
 
 export type LoaderData = {
   products: Awaited<ReturnType<typeof getProducts>>;

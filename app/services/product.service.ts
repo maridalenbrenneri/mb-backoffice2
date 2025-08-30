@@ -81,21 +81,38 @@ export async function getProductById(id: number) {
 // MUTATIONS
 
 export async function createProduct(data: Partial<ProductEntity>) {
+  console.log('createProduct', data);
+  // Create product in Woo
+  let wooResult = await woo.productCreate({
+    status: 'draft',
+    name: data.name as string,
+    stock_status: 'instock',
+  });
+
+  if (wooResult.kind !== 'success') {
+    console.error('createProduct error', wooResult.error);
+    return { kind: 'error', error: wooResult.error };
+  }
+
+  console.debug('wooResult', wooResult);
+
+  // Save product in database
   const repo = await getRepo();
-  let productId = await repo.save(repo.create(data));
+  let productId = await repo.save(
+    repo.create({ ...data, wooProductId: wooResult.productId || null })
+  );
 
-  console.log('createProduct', productId);
-
-  // TODO: Creste product in Woo
-  // Get woo product id, save on Product
-
-  return productId;
+  return { kind: 'success', productId };
 }
 
 export async function updateProduct(id: number, data: Partial<ProductEntity>) {
   const repo = await getRepo();
-  const entity = await repo.preload({ id, ...(data as any) } as any);
-  if (!entity) return null;
+  const entity = await repo.preload({ id: 45, name: data.name } as any);
+  if (!entity) {
+    console.error('Product not found', id);
+    return null;
+  }
+
   return await repo.save(entity);
 }
 

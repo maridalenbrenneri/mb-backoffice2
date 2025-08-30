@@ -3,6 +3,7 @@ import { redirect } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
   Form,
+  Link,
   useActionData,
   useLoaderData,
   useNavigation,
@@ -718,6 +719,8 @@ export default function UpdateSubscription() {
             </Box>
           </Grid>
         </Grid>
+        <hr></hr>
+        <Link to="/subscriptions">Back to Subscriptions</Link>
       </Box>
 
       <Dialog open={openSetFirstDelivery}>
