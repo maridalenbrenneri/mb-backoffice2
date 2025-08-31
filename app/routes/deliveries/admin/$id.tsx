@@ -32,7 +32,7 @@ import {
   ProductStockStatus,
 } from '~/services/entities/enums';
 import DataLabel from '~/components/DataLabel';
-import { getProducts } from '~/services/product.service';
+import { getCoffeeProducts } from '~/services/product.service';
 import { DeliveryEntity, ProductEntity } from '~/services/entities';
 
 type LoaderData = {
@@ -71,7 +71,7 @@ export const loader: LoaderFunction = async ({ params }) => {
 
   invariant(loadedDelivery, `Delivery not found: ${params.id}`);
 
-  const products = await getProducts({
+  const products = await getCoffeeProducts({
     where: {
       status: ProductStatus.PUBLISHED,
     },

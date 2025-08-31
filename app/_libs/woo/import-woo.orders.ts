@@ -16,7 +16,7 @@ import {
 import orderUpdateStatus from './order-update-status';
 import { WOO_STATUS_COMPLETED } from './constants';
 import { type WooOrder } from './orders/types';
-import { getAllProducts } from '~/services/product.service';
+import { getCoffeeProducts } from '~/services/product.service';
 import {
   SubscriptionStatus,
   SubscriptionType,
@@ -72,7 +72,7 @@ export default async function importWooOrders(fetchAll: boolean = false) {
   console.debug(`=> DONE (${wooOrders.length} fetched)`);
 
   const nextDelivery = await getNextOrCreateDelivery();
-  const products = await getAllProducts();
+  const products = await getCoffeeProducts();
 
   const findProductByWooProductId = (wooProductId: number) => {
     const product = products.find((c) => c.wooProductId === wooProductId);

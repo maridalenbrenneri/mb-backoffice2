@@ -2,10 +2,7 @@ import { json } from '@remix-run/node';
 
 import { nullIfEmptyOrWhitespace } from '~/utils/strings';
 import { ProductStockStatus } from '~/services/entities/enums';
-import {
-  updateProduct,
-  woo_productSetStockStatus,
-} from '~/services/product.service';
+import { updateProduct } from '~/services/product.service';
 
 const updateStockStatus = async (values: any) => {
   let stockStatus = nullIfEmptyOrWhitespace(values.stockStatus);
@@ -17,30 +14,14 @@ const updateStockStatus = async (values: any) => {
     });
   }
 
-  const wooResult = await woo_productSetStockStatus(
-    +values.id,
-    stockStatus as ProductStockStatus
-  );
-
-  if (wooResult.kind !== 'success') {
-    return json({
-      didUpdate: false,
-      updateMessage: `Failed to update Woo stock status: ${wooResult.error}`,
-    });
-  }
-
-  let stockRemaining =
-    stockStatus === ProductStockStatus.OUT_OF_STOCK ? 0 : undefined;
-
   const result = await updateProduct(+values.id, {
     stockStatus: stockStatus as ProductStockStatus,
-    stockRemaining,
   });
 
   if (result.kind !== 'success') {
     return json({
       didUpdate: false,
-      updateMessage: `Failed to update product: ${result.error}`,
+      updateMessage: `Failed to update product stock status: ${result.error}`,
     });
   }
 

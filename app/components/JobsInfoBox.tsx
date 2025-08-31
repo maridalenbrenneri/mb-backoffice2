@@ -31,7 +31,7 @@ export default function JobsInfoBox(props: {
                 'Not available',
             },
             {
-              label: 'Woo import, products',
+              label: 'Woo sync product status',
               data:
                 toPrettyDateTime(products?.createdAt, true) || 'Not available',
             },

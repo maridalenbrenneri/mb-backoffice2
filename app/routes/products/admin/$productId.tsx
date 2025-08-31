@@ -11,7 +11,7 @@ import {
 import { useEffect, useState, useRef } from 'react';
 import invariant from 'tiny-invariant';
 import { ProductEntity } from '~/services/entities';
-import { getProduct } from '~/services/product.service';
+import { getProductById } from '~/services/product.service';
 import { updateAction, CreateActionData, renderStockStatus } from './_shared';
 import Box from '@mui/material/Box';
 import {
@@ -33,9 +33,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   invariant(params.productId, `params.id is required`);
 
   try {
-    let loadedProduct = await getProduct({
-      where: { id: +params.productId },
-    });
+    let loadedProduct = await getProductById(+params.productId);
 
     if (!loadedProduct) {
       throw new Error(`Product not found: ${params.productId}`);
@@ -399,6 +397,9 @@ export default function UpdateProduct() {
       </Form>
       <hr></hr>
       <Link to="/products">Back to Products</Link>
+      <hr></hr>
+      <Typography variant="h5">Björn's debug stuff</Typography>
+      <div>{JSON.stringify(loadedProduct, null, 2)}</div>
     </Box>
   );
 }

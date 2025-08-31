@@ -1,9 +1,10 @@
 import orderUpdateStatus from './order-update-status';
 import importWooSubscriptions from './import-woo-subscriptions';
 import importWooOrders from './import-woo.orders';
-import importWooProducts from './import-woo-products';
+import syncWooProductStatus from './sync-product-status';
 import productUpdate from './product-update';
 import productCreate from './product-create';
+import wooProductCleanup from './product-cleanup';
 
 export {
   orderUpdateStatus,
@@ -11,5 +12,6 @@ export {
   productCreate,
   importWooSubscriptions,
   importWooOrders,
-  importWooProducts,
+  syncWooProductStatus,
+  wooProductCleanup,
 };

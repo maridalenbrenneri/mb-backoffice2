@@ -1,8 +1,9 @@
 import { ProductStatus, ProductStockStatus } from '~/services/entities/enums';
-import { type WooProduct } from './types';
-import { WooUpsertProductData } from '~/services/product.service';
+import { WooSyncProductWithDataFromWooInput } from '~/services/product.service';
 
-const resolveProductStatus = (wooStatus: string): ProductStatus => {
+import { type WooProduct } from './types';
+
+const mapProductStatus = (wooStatus: string): ProductStatus => {
   if (wooStatus === 'draft') return ProductStatus.DRAFT;
   if (wooStatus === 'private') return ProductStatus.PRIVATE;
   if (wooStatus === 'publish') return ProductStatus.PUBLISHED;
@@ -12,7 +13,7 @@ const resolveProductStatus = (wooStatus: string): ProductStatus => {
   return ProductStatus.PRIVATE;
 };
 
-const resolveProductStockStatus = (wooStatus: string): ProductStockStatus => {
+const mapProductStockStatus = (wooStatus: string): ProductStockStatus => {
   if (wooStatus === 'onbackorder') return ProductStockStatus.ON_BACKORDER;
   if (wooStatus === 'instock') return ProductStockStatus.IN_STOCK;
   if (wooStatus === 'outofstock') return ProductStockStatus.OUT_OF_STOCK;
@@ -24,39 +25,30 @@ const resolveProductStockStatus = (wooStatus: string): ProductStockStatus => {
   return ProductStockStatus.OUT_OF_STOCK;
 };
 
-const resolveProductCategory = (wooProductId: number): string => {
-  if (
-    [
-      456, // Abo
-      968, // Gabo
-      45168, // Testprodukt
-      46248, // Test abo vipps
-    ].includes(wooProductId)
-  ) {
-    return 'other';
-  }
-
-  return 'coffee';
-};
-
-export default async function wooApiToProductUpsertData(
+export default async function wooApiToProductEntity(
   wooProduct: WooProduct
-): Promise<WooUpsertProductData> {
-  const product: WooUpsertProductData = {
+): Promise<WooSyncProductWithDataFromWooInput> {
+  return {
     wooProductId: wooProduct.id,
-
-    status: resolveProductStatus(wooProduct.status),
-    stockStatus: resolveProductStockStatus(wooProduct.stock_status),
-
-    wooCreatedAt: wooProduct.date_created
-      ? new Date(wooProduct.date_created)
-      : new Date(wooProduct.date_modified),
+    status: mapProductStatus(wooProduct.status),
+    stockStatus: mapProductStockStatus(wooProduct.stock_status),
     wooUpdatedAt: new Date(wooProduct.date_modified),
     wooProductUrl: wooProduct.permalink,
-
-    name: wooProduct.name, // TODO: This should not be updated WOO => backoffice
-    category: resolveProductCategory(wooProduct.id),
   };
-
-  return product;
 }
+
+// No longer used, kept here for reference
+// const resolveProductCategory = (wooProductId: number): string => {
+//   if (
+//     [
+//       456, // Abo
+//       968, // Gabo
+//       45168, // Testprodukt
+//       46248, // Test abo vipps
+//     ].includes(wooProductId)
+//   ) {
+//     return 'other';
+//   }
+
+//   return 'coffee';
+// };

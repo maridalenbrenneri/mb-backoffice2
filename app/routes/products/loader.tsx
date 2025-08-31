@@ -1,12 +1,12 @@
 import { json } from '@remix-run/node';
-import { getProducts } from '~/services/product.service';
+import { getCoffeeProducts } from '~/services/product.service';
 import { ProductStatus, ProductStockStatus } from '~/services/entities';
 
 const defaultStatus = '_all'; // ProductStatus.PUBLISHED;
 const defaultStockStatus = '_all'; // ProductStockStatus.IN_STOCK;
 
 export type LoaderData = {
-  products: Awaited<ReturnType<typeof getProducts>>;
+  products: Awaited<ReturnType<typeof getCoffeeProducts>>;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -33,7 +33,7 @@ export const productLoader = async (request: any) => {
 
   console.log(filter);
 
-  const products = await getProducts(filter);
+  const products = await getCoffeeProducts(filter);
   return json<LoaderData>({
     products,
   });

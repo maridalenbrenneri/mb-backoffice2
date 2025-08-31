@@ -66,10 +66,10 @@ import { FIKEN_CONTACT_URL } from '~/settings';
 import { getNextOrCreateDelivery } from '~/services/delivery.service';
 import { DateTime } from 'luxon';
 import CompleteAndShipResultBox from '~/components/CompleteAndShipResultBox';
-import { getProducts } from '~/services/product.service';
+import { getCoffeeProducts } from '~/services/product.service';
 
 type LoaderData = {
-  products: Awaited<ReturnType<typeof getProducts>>;
+  products: Awaited<ReturnType<typeof getCoffeeProducts>>;
   loadedOrder: Awaited<ReturnType<typeof getOrder>>;
   deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
 };
@@ -87,7 +87,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   });
   invariant(loadedOrder, `Order not found: ${params.id}`);
 
-  const products = await getProducts();
+  const products = await getCoffeeProducts();
 
   const deliveryDates = getNextDeliveryDates(5);
 

@@ -23,10 +23,10 @@ import {
 import { upsertOrderItemAction } from '../_shared';
 import { getOrderById } from '~/services/order.service';
 import type { ProductEntity } from '~/services/entities';
-import { getProducts } from '~/services/product.service';
+import { getCoffeeProducts } from '~/services/product.service';
 
 type LoaderData = {
-  coffees: Awaited<ReturnType<typeof getProducts>>;
+  coffees: Awaited<ReturnType<typeof getCoffeeProducts>>;
   order: Awaited<ReturnType<typeof getOrderById>>;
 };
 
@@ -38,7 +38,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   const order = await getOrderById(+params.id);
   invariant(order, `Order not found: ${params.id}`);
 
-  const coffees = await getProducts({
+  const coffees = await getCoffeeProducts({
     where: { status: 'PUBLISHED' },
   });
 
