@@ -23,14 +23,14 @@ export default async function productUpdate(
     body: JSON.stringify(data),
   });
 
-  const json = await response.json();
-
   if (response.status !== 200) {
     return {
       kind: 'error',
-      error: `Woo Update failed: ${json.message}`,
+      error: `Woo Update failed: ${response.statusText}`,
     };
   }
+
+  const json = await response.json();
 
   return {
     kind: 'success',

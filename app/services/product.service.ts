@@ -1,9 +1,22 @@
 import * as woo from '~/_libs/woo';
 import type { WooProductUpdate } from '~/_libs/woo/products/types';
-import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '~/settings';
+import {
+  TAKE_DEFAULT_ROWS,
+  TAKE_MAX_ROWS,
+  WOO_PRODUCT_CATEGORY_BUTIKK_ID,
+} from '~/settings';
 import { areEqual } from '~/utils/are-equal';
 import { ensureDataSourceInitialized } from '~/typeorm/data-source';
 import { ProductEntity, ProductStockStatus } from '~/services/entities';
+import {
+  WOO_PRODUCT_STATUS_DRAFT,
+  WOO_PRODUCT_STOCK_STATUS_INSTOCK,
+  WOO_PRODUCT_STOCK_STATUS_ONBACKORDER,
+} from '~/_libs/woo/constants';
+import {
+  createFullProductDescription,
+  createFullProductName,
+} from '~/utils/product-utils';
 
 // WOO IMPORT
 export type WooUpsertProductData = Pick<
@@ -65,7 +78,7 @@ export async function getProduct(filter: any) {
 
   // Copy other filter properties
   if (filter.where) options.where = filter.where;
-  if (filter.orderBy) options.order = filter.orderBy; // TypeORM uses 'order' not 'orderBy'
+  if (filter.orderBy) options.order = filter.orderBy;
   if (filter.take) options.take = filter.take;
   if (filter.skip) options.skip = filter.skip;
 
@@ -78,28 +91,50 @@ export async function getProductById(id: number) {
   return repo.findOne({ where: { id } });
 }
 
+function cleanProductData(data: Partial<ProductEntity>) {
+  if (data.productCode) data.productCode = data.productCode.toUpperCase();
+
+  return data;
+}
+
 // MUTATIONS
 
+function createWooProductData(data: Partial<ProductEntity>) {
+  let stock_status =
+    data.stockStatus === ProductStockStatus.ON_BACKORDER
+      ? WOO_PRODUCT_STOCK_STATUS_ONBACKORDER
+      : WOO_PRODUCT_STOCK_STATUS_INSTOCK;
+
+  return {
+    status: WOO_PRODUCT_STATUS_DRAFT,
+    stock_status,
+    categories: [{ id: WOO_PRODUCT_CATEGORY_BUTIKK_ID }],
+    name: createFullProductName(data),
+    description: createFullProductDescription(data),
+    regular_price: data.regularPrice as string,
+  };
+}
+
 export async function createProduct(data: Partial<ProductEntity>) {
-  console.log('createProduct', data);
+  data = cleanProductData(data);
+  let wooData = createWooProductData(data);
+
   // Create product in Woo
-  let wooResult = await woo.productCreate({
-    status: 'draft',
-    name: data.name as string,
-    stock_status: 'instock',
-  });
+  let wooResult = await woo.productCreate(wooData);
 
   if (wooResult.kind !== 'success') {
     console.error('createProduct error', wooResult.error);
     return { kind: 'error', error: wooResult.error };
   }
 
-  console.debug('wooResult', wooResult);
-
   // Save product in database
   const repo = await getRepo();
   let productId = await repo.save(
-    repo.create({ ...data, wooProductId: wooResult.productId || null })
+    repo.create({
+      ...data,
+      wooProductId: wooResult.productId || null,
+      wooProductUrl: wooResult.productUrl || null,
+    })
   );
 
   return { kind: 'success', productId };
@@ -107,13 +142,49 @@ export async function createProduct(data: Partial<ProductEntity>) {
 
 export async function updateProduct(id: number, data: Partial<ProductEntity>) {
   const repo = await getRepo();
-  const entity = await repo.preload({ id: 45, name: data.name } as any);
-  if (!entity) {
+  const existingProduct = await repo.findOne({ where: { id } });
+
+  if (!existingProduct) {
     console.error('Product not found', id);
-    return null;
+    return { kind: 'error', error: 'Product not found' };
   }
 
-  return await repo.save(entity);
+  data = cleanProductData(data);
+
+  // Check if we have Woo-specific data that needs to be updated
+  const doUpdateInWoo =
+    existingProduct.wooProductId &&
+    (existingProduct.name != data.name ||
+      existingProduct.description != data.description ||
+      existingProduct.beanType != data.beanType ||
+      existingProduct.processType != data.processType ||
+      existingProduct.cuppingScore != data.cuppingScore ||
+      existingProduct.regularPrice != data.regularPrice ||
+      existingProduct.stockStatus != data.stockStatus);
+
+  if (doUpdateInWoo) {
+    let wooData = createWooProductData(data);
+
+    let wooResult = await woo.productUpdate(
+      existingProduct.wooProductId as number,
+      wooData
+    );
+
+    if (wooResult.kind !== 'success') {
+      console.error('updateProduct error', wooResult.error);
+      return { kind: 'error', error: wooResult.error };
+    }
+  }
+
+  // Update local database
+  const entity = await repo.preload({ id, ...data } as any);
+  if (!entity) {
+    console.error('Failed to preload entity', id);
+    return { kind: 'error', error: 'Failed to preload entity' };
+  }
+
+  let saved = await repo.save(entity);
+  return { kind: 'success', productId: saved.id };
 }
 
 // Update product stock status
@@ -187,6 +258,7 @@ export async function woo_upsertProductFromWoo(
         break;
       }
     }
+
     if (isChanged) {
       const toSave = await repo.preload({
         id: existing.id,
@@ -199,6 +271,8 @@ export async function woo_upsertProductFromWoo(
     }
     return { result: 'notChanged', productId: existing.id };
   }
+
+  // TODO: We should never create products in backoffice if they don't exist
 
   try {
     const created = await repo.save(

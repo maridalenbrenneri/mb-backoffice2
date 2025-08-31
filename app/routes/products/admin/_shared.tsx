@@ -44,19 +44,27 @@ export const updateAction = async (values: any) => {
     name: values.name as string,
     productCode: values.productCode as string | null,
     country: values.country as string | null,
+    stockStatus: values.stockStatus as ProductStockStatus,
     stockInitial: +values.stockInitial,
     stockRemaining: +values.stockRemaining,
     infoLink: values.infoLink as string | null,
     internalNote: values.internalNote as string | null,
     labelsPrinted: values.labelsPrinted === 'on',
+    beanType: values.beanType as string | null,
+    processType: values.processType as string | null,
+    cuppingScore: +values.cuppingScore,
+    regularPrice: values.regularPrice as string | null,
+    description: values.description as string | null,
+    wooProductId: +values.wooProductId,
   };
 
   const result = await updateProduct(+values.id, data);
 
-  if (!result) {
+  if (result.kind !== 'success') {
+    console.error('Failed to update product', result.error);
     return json<CreateActionData>({
       didUpdate: false,
-      updateMessage: 'Product not found or update failed',
+      updateMessage: 'Failed to update product',
     });
   }
 
@@ -90,9 +98,21 @@ export const createAction = async (values: any) => {
     stockRemaining: +values.stockInitial,
     infoLink: values.infoLink as string | null,
     internalNote: values.internalNote as string | null,
+    beanType: values.beanType as string | null,
+    processType: values.processType as string | null,
+    cuppingScore: +values.cuppingScore,
+    regularPrice: values.regularPrice as string | null,
+    description: values.description as string | null,
   };
 
-  await createProduct(data);
+  let result = await createProduct(data);
+
+  if (result.kind !== 'success') {
+    return json<CreateActionData>({
+      didUpdate: false,
+      updateMessage: 'Failed to create product',
+    });
+  }
   return redirect(`/products`);
 };
 
@@ -114,9 +134,7 @@ export const renderStockStatus = (
         <MenuItem value={ProductStockStatus.ON_BACKORDER}>
           On backorder
         </MenuItem>
-        <MenuItem value={ProductStockStatus.IN_STOCK}>
-          In stock (Product is in roastery)
-        </MenuItem>
+        <MenuItem value={ProductStockStatus.IN_STOCK}>In stock</MenuItem>
         <MenuItem value={ProductStockStatus.OUT_OF_STOCK}>
           {' '}
           Out of stock
