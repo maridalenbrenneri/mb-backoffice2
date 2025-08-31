@@ -2,10 +2,18 @@ import { Form, useActionData, useNavigation } from '@remix-run/react';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Button, FormControl, TextField } from '@mui/material';
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from '@mui/material';
 
 import { createAction, CreateActionData, renderStockStatus } from './_shared';
 import { ActionFunction } from '@remix-run/node';
+import { WOO_PRODUCT_REGULAR_PRICE_DEFAULT } from '~/settings';
 
 export const action: ActionFunction = async ({ request }) => {
   console.log('AM I HERE IN NEW');
@@ -62,9 +70,51 @@ export default function NewProduct() {
               size="small"
               defaultValue={''}
               error={data?.validationErrors?.productCode ? true : false}
+              sx={{
+                '& .MuiInputBase-input': {
+                  textTransform: 'uppercase',
+                },
+              }}
             />
           </FormControl>
         </div>
+
+        <div>
+          <FormControl>
+            <TextField
+              name="beanType"
+              label="Bean type"
+              variant="outlined"
+              size="small"
+              defaultValue={''}
+            />
+          </FormControl>
+
+          <FormControl sx={{ m: 1 }}>
+            <InputLabel id={`product-process-type`}>Process</InputLabel>
+            <Select
+              labelId={`product-process-type`}
+              name={`processType`}
+              defaultValue={'washed'}
+              sx={{ minWidth: 250 }}
+              size="small"
+            >
+              <MenuItem value={'dry-processed'}>Dry processed</MenuItem>
+              <MenuItem value={'washed'}>Washed</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl>
+            <TextField
+              name="cuppingScore"
+              label="Cupping score"
+              variant="outlined"
+              size="small"
+              defaultValue={0}
+            />
+          </FormControl>
+        </div>
+
         <div>
           {renderStockStatus()}
 
@@ -76,6 +126,33 @@ export default function NewProduct() {
               defaultValue={0}
               error={data?.validationErrors?.stockInitial ? true : false}
               size="small"
+            />
+          </FormControl>
+        </div>
+
+        <div>
+          <FormControl>
+            <TextField
+              name="regularPrice"
+              label="Regular price"
+              variant="outlined"
+              size="small"
+              defaultValue={WOO_PRODUCT_REGULAR_PRICE_DEFAULT}
+            />
+          </FormControl>
+        </div>
+
+        <div>
+          <FormControl>
+            <TextField
+              name="description"
+              label="Description"
+              variant="outlined"
+              size="small"
+              multiline
+              rows={2}
+              defaultValue={''}
+              sx={{ width: '190%' }}
             />
           </FormControl>
         </div>

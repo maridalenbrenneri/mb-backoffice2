@@ -65,6 +65,21 @@ export class ProductEntity {
   @Column({ type: 'text', nullable: true })
   infoLink!: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  description!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  beanType!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  processType!: string | null;
+
+  @Column({ type: 'float', nullable: true })
+  cuppingScore!: number | null;
+
+  @Column({ type: 'float', nullable: true })
+  regularPrice!: string | null;
+
   @OneToMany(() => DeliveryEntity, (delivery) => delivery.product1)
   deliveriesAsProduct1!: DeliveryEntity[];
 

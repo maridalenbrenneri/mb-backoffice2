@@ -9,7 +9,7 @@ export const WOO_SUBSCRIPTION_API_BASE_URL =
 export const WOO_API_DEFAULT_PER_PAGE = 50;
 
 //
-// PRODUCT SETTINGS
+// ORDER SETTINGS
 //
 
 export const WOO_STATUS_ANY = 'any';
@@ -22,4 +22,15 @@ export const WOO_STATUS_PENDING_CANCEL = 'pending-cancel';
 export const WOO_STATUS_EXPIRED = 'expired';
 export const WOO_STATUS_DELETED = 'deleted';
 
-export const WOO_STATUS_PUBLIC = 'publish';
+//
+// PRODUCT SETTINGS
+//
+
+export const WOO_PRODUCT_STATUS_PUBLIC = 'publish';
+export const WOO_PRODUCT_STATUS_PRIVATE = 'private';
+export const WOO_PRODUCT_STATUS_DRAFT = 'draft';
+export const WOO_PRODUCT_STATUS_DELETED = 'deleted';
+
+export const WOO_PRODUCT_STOCK_STATUS_INSTOCK = 'instock';
+export const WOO_PRODUCT_STOCK_STATUS_OUTOFSTOCK = 'outofstock';
+export const WOO_PRODUCT_STOCK_STATUS_ONBACKORDER = 'onbackorder';

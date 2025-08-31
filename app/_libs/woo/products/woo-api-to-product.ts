@@ -3,6 +3,7 @@ import { type WooProduct } from './types';
 import { WooUpsertProductData } from '~/services/product.service';
 
 const resolveProductStatus = (wooStatus: string): ProductStatus => {
+  if (wooStatus === 'draft') return ProductStatus.DRAFT;
   if (wooStatus === 'private') return ProductStatus.PRIVATE;
   if (wooStatus === 'publish') return ProductStatus.PUBLISHED;
 
@@ -53,7 +54,7 @@ export default async function wooApiToProductUpsertData(
     wooUpdatedAt: new Date(wooProduct.date_modified),
     wooProductUrl: wooProduct.permalink,
 
-    name: wooProduct.name,
+    name: wooProduct.name, // TODO: This should not be updated WOO => backoffice
     category: resolveProductCategory(wooProduct.id),
   };
 

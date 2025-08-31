@@ -34,7 +34,6 @@ import {
   type ProductEntity,
 } from '~/services/entities';
 import { toPrettyDateTime } from '~/utils/dates';
-import { Edit } from '@mui/icons-material';
 import { productActionHandler } from './actions';
 import type { LoaderData } from './loader';
 import { productLoader } from './loader';
@@ -64,6 +63,7 @@ export default function Products() {
   const [params] = useSearchParams();
   const submit = useSubmit();
   const [openSnack, setOpenSnack] = useState<boolean>(false);
+  const [openErrorSnack, setOpenErrorSnack] = useState<boolean>(false);
   const [status, setStatus] = useState(params.get('status') || defaultStatus);
   const [stockStatus, setStockStatus] = useState(
     params.get('stockStatus') || defaultStockStatus
@@ -91,7 +91,13 @@ export default function Products() {
   ] = useState(false);
 
   useEffect(() => {
-    setOpenSnack(data?.didUpdate === true);
+    if (data?.didUpdate === true) {
+      setOpenSnack(true);
+      setOpenErrorSnack(false);
+    } else if (data?.didUpdate === false) {
+      setOpenErrorSnack(true);
+      setOpenSnack(false);
+    }
   }, [data]);
 
   const doSubmit = (data: any) => {
@@ -154,13 +160,6 @@ export default function Products() {
     setIsSetProductLabelsPrintedDialogOpen(false);
   };
 
-  const getStockStatusLabel = (stockStatus: ProductStockStatus) => {
-    if (stockStatus === ProductStockStatus.IN_STOCK) return 'In stock';
-    if (stockStatus === ProductStockStatus.OUT_OF_STOCK) return 'Out of stock';
-    if (stockStatus === ProductStockStatus.ON_BACKORDER) return 'On backorder';
-    return stockStatus;
-  };
-
   return (
     <main>
       <Snackbar
@@ -170,6 +169,17 @@ export default function Products() {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert severity="success">{data?.updateMessage || 'Updated'}</Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={openErrorSnack}
+        autoHideDuration={6000}
+        onClose={() => setOpenErrorSnack(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity="error">
+          {data?.updateMessage || 'An error occurred'}
+        </Alert>
       </Snackbar>
 
       <Typography variant="h1">Products</Typography>
@@ -228,7 +238,7 @@ export default function Products() {
               <TableCell>Code</TableCell>
               <TableCell>In webshop</TableCell>
               <TableCell>Stock status</TableCell>
-              <TableCell>Stock remaining</TableCell>
+              <TableCell>Current stock</TableCell>
               <TableCell>Labels printed</TableCell>
               <TableCell>Info link</TableCell>
               <TableCell>Woo product id</TableCell>
@@ -271,7 +281,7 @@ export default function Products() {
                     </span>
                   ) : product.status === ProductStatus.PRIVATE ||
                     product.status === ProductStatus.DRAFT ? (
-                    <small>Hidden</small>
+                    <small>No</small>
                   ) : (
                     <small>{product.status}</small>
                   )}

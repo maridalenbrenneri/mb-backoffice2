@@ -17,18 +17,32 @@ const updateStockStatus = async (values: any) => {
     });
   }
 
-  await woo_productSetStockStatus(
+  const wooResult = await woo_productSetStockStatus(
     +values.id,
     stockStatus as ProductStockStatus
   );
 
+  if (wooResult.kind !== 'success') {
+    return json({
+      didUpdate: false,
+      updateMessage: `Failed to update Woo stock status: ${wooResult.error}`,
+    });
+  }
+
   let stockRemaining =
     stockStatus === ProductStockStatus.OUT_OF_STOCK ? 0 : undefined;
 
-  await updateProduct(+values.id, {
+  const result = await updateProduct(+values.id, {
     stockStatus: stockStatus as ProductStockStatus,
     stockRemaining,
   });
+
+  if (result.kind !== 'success') {
+    return json({
+      didUpdate: false,
+      updateMessage: `Failed to update product: ${result.error}`,
+    });
+  }
 
   return json({
     didUpdate: true,
@@ -37,9 +51,16 @@ const updateStockStatus = async (values: any) => {
 };
 
 const updateStockRemaining = async (values: any) => {
-  await updateProduct(+values.id, {
+  const result = await updateProduct(+values.id, {
     stockRemaining: values.stockRemaining,
   });
+
+  if (result.kind !== 'success') {
+    return json({
+      didUpdate: false,
+      updateMessage: `Failed to update product stock remaining: ${result.error}`,
+    });
+  }
 
   return json({
     didUpdate: true,
@@ -48,9 +69,16 @@ const updateStockRemaining = async (values: any) => {
 };
 
 const updateLabelsPrinted = async (values: any) => {
-  await updateProduct(+values.id, {
+  const result = await updateProduct(+values.id, {
     labelsPrinted: values.labelsPrinted,
   });
+
+  if (result.kind !== 'success') {
+    return json({
+      didUpdate: false,
+      updateMessage: `Failed to update product labels printed: ${result.error}`,
+    });
+  }
 
   return json({
     didUpdate: true,
@@ -65,7 +93,6 @@ export const productActionHandler = async (request: any) => {
   if (_action === 'set-product-stock-status') {
     return await updateStockStatus(values);
   } else if (_action === 'set-product-stock-remaining') {
-    console.log('set-product-stock-remaining', values);
     return await updateStockRemaining(values);
   } else if (_action === 'set-product-labels-printed') {
     return await updateLabelsPrinted(values);

@@ -8,7 +8,7 @@ export default async function productCreate(data: WooProductCreate) {
 
   const url = `${WOO_API_BASE_URL}products?${process.env.WOO_SECRET_PARAM}`;
 
-  console.debug(`CREATING PRODUCT IN WOO, ${JSON.stringify(data)}`);
+  console.debug(`CREATING PRODUCT IN WOO, FROM DATA, ${JSON.stringify(data)}`);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -18,17 +18,18 @@ export default async function productCreate(data: WooProductCreate) {
     body: JSON.stringify(data),
   });
 
-  const json = await response.json();
-
-  if (response.status !== 200) {
+  if (response.status !== 201) {
     return {
       kind: 'error',
-      error: `Woo Create Product failed: ${json.message}`,
+      error: `Woo Create Product failed: ${response.statusText}`,
     };
   }
+
+  const json = await response.json();
 
   return {
     kind: 'success',
     productId: json.id,
+    productUrl: json.permalink,
   };
 }

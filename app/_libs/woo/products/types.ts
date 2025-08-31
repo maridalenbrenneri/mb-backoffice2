@@ -13,12 +13,17 @@ export const WooProductData = z.object({
 export const WooProductUpdateData = z.object({
   status: z.string().optional(),
   stock_status: z.string().optional(),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  regular_price: z.string().optional(),
 });
 
 export const WooProductCreateData = z.object({
   status: z.string(),
   stock_status: z.string(),
   name: z.string(),
+  description: z.string().optional(),
+  regular_price: z.string().optional(),
 });
 
 export type WooProduct = z.infer<typeof WooProductData>;
