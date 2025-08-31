@@ -24,6 +24,7 @@ export const WooProductCreateData = z.object({
   name: z.string(),
   description: z.string().optional(),
   regular_price: z.string().optional(),
+  categories: z.array(z.object({ id: z.number() })),
 });
 
 export type WooProduct = z.infer<typeof WooProductData>;

@@ -13,7 +13,7 @@ import {
 import { SubscriptionStatus, OrderStatus } from '~/services/entities/enums';
 import { getSubscriptions } from '~/services/subscription.service';
 import { getLastJobResult } from '~/services/job-result.service';
-import { getProducts } from '~/services/product.service';
+import { getCoffeeProducts } from '~/services/product.service';
 
 import {
   DeliveryEntity,
@@ -37,16 +37,22 @@ type LoaderData = {
   wooProductImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   wooOrderImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
+  wooProductSyncStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
+  wooProductCleanupResult: Awaited<ReturnType<typeof getLastJobResult>>;
   updateGaboStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
   createRenewalOrdersResult: Awaited<ReturnType<typeof getLastJobResult>>;
+
   allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
-  currentCoffees: Awaited<ReturnType<typeof getProducts>>;
+  currentCoffees: Awaited<ReturnType<typeof getCoffeeProducts>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
 export const loader = async () => {
-  const wooProductImportResult = await getLastJobResult('woo-import-products');
+  const wooProductSyncStatusResult = await getLastJobResult(
+    'woo-product-sync-status'
+  );
+  const wooProductCleanupResult = await getLastJobResult('woo-product-cleanup');
   const wooSubscriptionImportResult = await getLastJobResult(
     'woo-import-subscriptions'
   );
@@ -100,7 +106,7 @@ export const loader = async () => {
     }
   });
 
-  const currentCoffees = await getProducts({
+  const currentCoffees = await getCoffeeProducts({
     where: { category: 'coffee' },
     select: {
       id: true,
@@ -112,7 +118,8 @@ export const loader = async () => {
   const cargonizerProfile = await getCargonizerProfile();
 
   return Response.json({
-    wooProductImportResult,
+    wooProductSyncStatusResult,
+    wooProductCleanupResult,
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
@@ -126,7 +133,8 @@ export const loader = async () => {
 
 export default function Dashboard() {
   const {
-    wooProductImportResult,
+    wooProductSyncStatusResult,
+    wooProductCleanupResult,
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
@@ -292,7 +300,7 @@ export default function Dashboard() {
         <Grid item md={7} xl={5}>
           <Paper sx={{ p: 1 }}>
             <JobsInfoBox
-              products={wooProductImportResult[0]}
+              products={wooProductSyncStatusResult[0]}
               subscriptions={wooSubscriptionImportResult[0]}
               orders={wooOrderImportResult[0]}
               gaboStatus={updateGaboStatusResult[0]}

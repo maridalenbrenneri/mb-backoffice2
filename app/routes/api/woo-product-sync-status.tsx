@@ -9,11 +9,11 @@ export const action: ActionFunction = async ({ request }) => {
   if (request.method !== 'POST')
     return json({ message: 'Method not allowed' }, 405);
 
-  const name = 'woo-import-products';
+  const name = 'woo-products-sync-status';
   const jobStartedAt = DateTime.now().toJSDate();
 
   try {
-    const result = await woo.importWooProducts();
+    const result = await woo.syncWooProductStatus();
 
     await createJobResult({
       jobStartedAt,

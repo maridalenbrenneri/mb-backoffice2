@@ -40,9 +40,13 @@ export default function JobResultPage() {
 
   if (!jobResult) return null;
 
-  const isRunningImportWooProducts =
+  const isRunningSyncWooProductStatus =
     fetcher.state === 'submitting' &&
-    fetcher.formData?.get('_action') === 'woo-import-products';
+    fetcher.formData?.get('_action') === 'woo-product-sync-status';
+
+  const isRunningWooProductCleanup =
+    fetcher.state === 'submitting' &&
+    fetcher.formData?.get('_action') === 'woo-product-cleanup';
 
   const isRunningImportWooOrders =
     fetcher.state === 'submitting' &&
@@ -60,8 +64,12 @@ export default function JobResultPage() {
     fetcher.state === 'submitting' &&
     fetcher.formData?.get('_action') === 'create-renewal-orders';
 
-  const importWooProducts = jobResult.find(
-    (r) => r.name === 'woo-import-products'
+  const syncWooProductStatus = jobResult.find(
+    (r) => r.name === 'woo-product-sync-status'
+  );
+
+  const wooProductCleanup = jobResult.find(
+    (r) => r.name === 'woo-product-cleanup'
   );
 
   const importWooOrders = jobResult.find((r) => r.name === 'woo-import-orders');
@@ -126,34 +134,6 @@ export default function JobResultPage() {
             <TableRow
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              <TableCell>woo-import-products</TableCell>
-              <TableCell>
-                Import products from Woo. Runs once a day at 17:00
-              </TableCell>
-              <TableCell>
-                <small>
-                  {toPrettyDateTime(importWooProducts?.createdAt, true)}
-                </small>
-              </TableCell>
-              <TableCell>
-                <fetcher.Form method="post" action="/api/woo-import-products">
-                  <FormControl sx={{ m: 1 }}>
-                    <Button
-                      type="submit"
-                      name="_action"
-                      value="woo-import-products"
-                      disabled={isRunningImportWooProducts}
-                    >
-                      {isRunningImportWooProducts ? 'Running...' : 'Run now'}
-                    </Button>
-                  </FormControl>
-                </fetcher.Form>
-              </TableCell>
-            </TableRow>
-
-            <TableRow
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
               <TableCell>woo-import-subscriptions</TableCell>
               <TableCell>
                 Import of subscriptions from Woo updated in last 1 day. Runs
@@ -185,6 +165,68 @@ export default function JobResultPage() {
                 </fetcher.Form>
               </TableCell>
             </TableRow>
+
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell>woo-product-sync-status</TableCell>
+              <TableCell>
+                Sync product status and stock status from Woo to Backoffice (if
+                changes done in Woo admin). Runs every hour
+              </TableCell>
+              <TableCell>
+                <small>
+                  {toPrettyDateTime(syncWooProductStatus?.createdAt, true)}
+                </small>
+              </TableCell>
+              <TableCell>
+                <fetcher.Form
+                  method="post"
+                  action="/api/woo-product-sync-status"
+                >
+                  <FormControl sx={{ m: 1 }}>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="woo-product-sync-status"
+                      disabled={isRunningSyncWooProductStatus}
+                    >
+                      {isRunningSyncWooProductStatus ? 'Running...' : 'Run now'}
+                    </Button>
+                  </FormControl>
+                </fetcher.Form>
+              </TableCell>
+            </TableRow>
+
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell>woo-product-cleanup</TableCell>
+              <TableCell>
+                Sets status 'deleted' on any products that are deleted in Woo.
+                Runs once a week.
+              </TableCell>
+              <TableCell>
+                <small>
+                  {toPrettyDateTime(wooProductCleanup?.createdAt, true)}
+                </small>
+              </TableCell>
+              <TableCell>
+                <fetcher.Form method="post" action="/api/woo-product-cleanup">
+                  <FormControl sx={{ m: 1 }}>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="woo-product-cleanup"
+                      disabled={isRunningWooProductCleanup}
+                    >
+                      {isRunningWooProductCleanup ? 'Running...' : 'Run now'}
+                    </Button>
+                  </FormControl>
+                </fetcher.Form>
+              </TableCell>
+            </TableRow>
+
             <TableRow
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
