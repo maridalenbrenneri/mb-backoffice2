@@ -7,6 +7,8 @@ import {
   TAKE_DEFAULT_ROWS,
   TAKE_MAX_ROWS,
   WOO_PRODUCT_CATEGORY_BUTIKK_ID,
+  WOO_PRODUCT_SHIPPING_CLASS_DEFAULT,
+  WOO_PRODUCT_WEIGHT_DEFAULT,
 } from '~/settings';
 import { areEqual } from '~/utils/are-equal';
 import { ensureDataSourceInitialized } from '~/typeorm/data-source';
@@ -19,6 +21,7 @@ import {
   WOO_PRODUCT_STATUS_DRAFT,
   WOO_PRODUCT_STOCK_STATUS_INSTOCK,
   WOO_PRODUCT_STOCK_STATUS_ONBACKORDER,
+  WOO_PRODUCT_STOCK_STATUS_OUTOFSTOCK,
 } from '~/_libs/woo/constants';
 import {
   createFullProductDescription,
@@ -76,7 +79,9 @@ export async function getProductById(id: number) {
 
 export async function createProduct(data: Partial<ProductEntity>) {
   data = cleanProductData(data);
-  let wooData = createWooProductData(data);
+  let wooData = toCreateWooProductData(data);
+
+  console.debug('updateProduct: doUpdateInWoo', wooData);
 
   // Create product in Woo
   let wooResult = await woo.productCreate(wooData);
@@ -114,6 +119,7 @@ export async function updateProduct(id: number, data: Partial<ProductEntity>) {
   const doUpdateInWoo =
     existingProduct.wooProductId &&
     ((data.name !== undefined && existingProduct.name != data.name) ||
+      (data.country !== undefined && existingProduct.country != data.country) ||
       (data.description !== undefined &&
         existingProduct.description != data.description) ||
       (data.beanType !== undefined &&
@@ -129,7 +135,7 @@ export async function updateProduct(id: number, data: Partial<ProductEntity>) {
 
   // We only trigger Woo Update if there are Woo-specific data that needs to be updated
   if (doUpdateInWoo) {
-    let wooData = createWooProductData(data);
+    let wooData = toUpdateWooProductData(data);
 
     let wooResult = await woo.productUpdate(
       existingProduct.wooProductId as number,
@@ -249,7 +255,9 @@ function cleanProductData(data: Partial<ProductEntity>) {
   return data;
 }
 
-function createWooProductData(data: Partial<ProductEntity>): WooProductCreate {
+function toCreateWooProductData(
+  data: Partial<ProductEntity>
+): WooProductCreate {
   let stock_status =
     data.stockStatus === ProductStockStatus.ON_BACKORDER
       ? WOO_PRODUCT_STOCK_STATUS_ONBACKORDER
@@ -260,7 +268,33 @@ function createWooProductData(data: Partial<ProductEntity>): WooProductCreate {
     stock_status,
     categories: [{ id: WOO_PRODUCT_CATEGORY_BUTIKK_ID }],
     name: createFullProductName(data),
-    description: createFullProductDescription(data),
-    regular_price: data.regularPrice as string,
+    short_description: createFullProductDescription(data),
+    regular_price: data.regularPrice || '',
+    weight: WOO_PRODUCT_WEIGHT_DEFAULT,
+    shipping_class: WOO_PRODUCT_SHIPPING_CLASS_DEFAULT,
   };
+}
+
+function toUpdateWooProductData(
+  data: Partial<ProductEntity>
+): WooProductUpdate {
+  return {
+    stock_status: toWooStockStatus(data.stockStatus as ProductStockStatus),
+    name: createFullProductName(data),
+    short_description: createFullProductDescription(data),
+    regular_price: data.regularPrice || '',
+  };
+}
+
+function toWooStockStatus(stockStatus: ProductStockStatus): string {
+  switch (stockStatus) {
+    case ProductStockStatus.ON_BACKORDER:
+      return WOO_PRODUCT_STOCK_STATUS_ONBACKORDER;
+    case ProductStockStatus.IN_STOCK:
+      return WOO_PRODUCT_STOCK_STATUS_INSTOCK;
+    case ProductStockStatus.OUT_OF_STOCK:
+      return WOO_PRODUCT_STOCK_STATUS_OUTOFSTOCK;
+    default:
+      return WOO_PRODUCT_STOCK_STATUS_OUTOFSTOCK;
+  }
 }

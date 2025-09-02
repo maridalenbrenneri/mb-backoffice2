@@ -118,16 +118,18 @@ export const createAction = async (values: any) => {
 
 export const renderStockStatus = (
   status: ProductStockStatus = ProductStockStatus.ON_BACKORDER,
-  isDisabled = false
+  isDisabled = false,
+  onChange?: (value: ProductStockStatus) => void
 ) => {
   return (
     <FormControl sx={{ m: 1 }}>
-      <InputLabel id={`product-stock-status`}>Stock status</InputLabel>
+      <InputLabel id={`product-stock-status`}>Stock status*</InputLabel>
       <Select
         disabled={isDisabled}
         labelId={`product-stock-status`}
         name={`stockStatus`}
-        defaultValue={status}
+        value={status}
+        onChange={(e) => onChange?.(e.target.value as ProductStockStatus)}
         sx={{ minWidth: 250 }}
         size="small"
       >
@@ -139,6 +141,42 @@ export const renderStockStatus = (
           {' '}
           Out of stock
         </MenuItem>
+      </Select>
+    </FormControl>
+  );
+};
+
+export const renderCountries = (
+  country: string = 'Colombia',
+  onChange?: (value: string) => void
+) => {
+  return (
+    <FormControl sx={{ m: 1 }}>
+      <InputLabel id={`product-country`}>Country*</InputLabel>
+      <Select
+        labelId={`product-country`}
+        name={`country`}
+        value={country}
+        onChange={(e) => onChange?.(e.target.value as string)}
+        // displayEmpty
+        sx={{ minWidth: 250 }}
+        size="small"
+      >
+        <MenuItem value={'Colombia'}>Colombia</MenuItem>
+        <MenuItem value={'Costa Rica'}>Costa Rica</MenuItem>
+        <MenuItem value={'Ecuador'}>Ecuador</MenuItem>
+        <MenuItem value={'El Salvador'}>El Salvador</MenuItem>
+        <MenuItem value={'Etiopa'}>Etiopa</MenuItem>
+        <MenuItem value={'Guatemala'}>Guatemala</MenuItem>
+        <MenuItem value={'Honduras'}>Honduras</MenuItem>
+        <MenuItem value={'Indonesia'}>Indonesia</MenuItem>
+        <MenuItem value={'Kenya'}>Kenya</MenuItem>
+        <MenuItem value={'Nicaragua'}>Nicaragua</MenuItem>
+        <MenuItem value={'Peru'}>Peru</MenuItem>
+        <MenuItem value={'Rwanda'}>Rwanda</MenuItem>
+        <MenuItem value={'Tanzania'}>Tanzania</MenuItem>
+        <MenuItem value={'Uganda'}>Uganda</MenuItem>
+        <MenuItem value={'Venezuela'}>Venezuela</MenuItem>
       </Select>
     </FormControl>
   );

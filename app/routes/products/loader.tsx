@@ -1,9 +1,10 @@
 import { json } from '@remix-run/node';
 import { getCoffeeProducts } from '~/services/product.service';
 import { ProductStatus, ProductStockStatus } from '~/services/entities';
+import { In } from 'typeorm';
 
-const defaultStatus = '_all'; // ProductStatus.PUBLISHED;
-const defaultStockStatus = '_all'; // ProductStockStatus.IN_STOCK;
+export const defaultStatus = '_in_webshop';
+export const defaultStockStatus = '_backorder_in_stock';
 
 export type LoaderData = {
   products: Awaited<ReturnType<typeof getCoffeeProducts>>;
@@ -16,11 +17,27 @@ function buildFilter(search: URLSearchParams) {
   };
 
   const getStatusFilter = search.get('status') || defaultStatus;
-  const getStockStatusFilter = search.get('stockStatus') || defaultStockStatus;
+  if (getStatusFilter === '_not_published') {
+    filter.where.status = In([ProductStatus.PRIVATE, ProductStatus.DRAFT]);
+  } else if (getStatusFilter === '_in_webshop') {
+    filter.where.status = In([
+      ProductStatus.PRIVATE,
+      ProductStatus.DRAFT,
+      ProductStatus.PUBLISHED,
+    ]);
+  } else {
+    filter.where.status = getStatusFilter;
+  }
 
-  if (getStatusFilter !== '_all') filter.where.status = getStatusFilter;
-  if (getStockStatusFilter !== '_all')
+  const getStockStatusFilter = search.get('stockStatus') || defaultStockStatus;
+  if (getStockStatusFilter === '_backorder_in_stock') {
+    filter.where.stockStatus = In([
+      ProductStockStatus.ON_BACKORDER,
+      ProductStockStatus.IN_STOCK,
+    ]);
+  } else if (getStockStatusFilter !== '_all') {
     filter.where.stockStatus = getStockStatusFilter;
+  }
 
   return filter;
 }

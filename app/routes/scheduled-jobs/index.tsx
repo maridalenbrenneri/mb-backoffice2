@@ -123,6 +123,7 @@ export default function JobResultPage() {
                       name="_action"
                       value="woo-import-orders"
                       disabled={isRunningImportWooOrders}
+                      sx={{ whiteSpace: 'nowrap' }}
                     >
                       {isRunningImportWooOrders ? 'Running...' : 'Run now'}
                     </Button>
@@ -156,10 +157,11 @@ export default function JobResultPage() {
                       name="_action"
                       value="woo-import-subscriptions"
                       disabled={isRunningImportWooSubscriptions}
+                      sx={{ whiteSpace: 'nowrap' }}
                     >
                       {isRunningImportWooSubscriptions
                         ? 'Running...'
-                        : 'Run now '}
+                        : 'Run now'}
                     </Button>
                   </FormControl>
                 </fetcher.Form>
@@ -190,6 +192,7 @@ export default function JobResultPage() {
                       name="_action"
                       value="woo-product-sync-status"
                       disabled={isRunningSyncWooProductStatus}
+                      sx={{ whiteSpace: 'nowrap' }}
                     >
                       {isRunningSyncWooProductStatus ? 'Running...' : 'Run now'}
                     </Button>
@@ -219,6 +222,7 @@ export default function JobResultPage() {
                       name="_action"
                       value="woo-product-cleanup"
                       disabled={isRunningWooProductCleanup}
+                      sx={{ whiteSpace: 'nowrap' }}
                     >
                       {isRunningWooProductCleanup ? 'Running...' : 'Run now'}
                     </Button>
@@ -254,6 +258,7 @@ export default function JobResultPage() {
                       name="_action"
                       value="update-status-on-gift-subscriptions"
                       disabled={isRunningUpdateStatusOnGiftSubscriptions}
+                      sx={{ whiteSpace: 'nowrap' }}
                     >
                       {isRunningUpdateStatusOnGiftSubscriptions
                         ? 'Running...'
@@ -287,6 +292,7 @@ export default function JobResultPage() {
                       name="_action"
                       value="create-renewal-orders"
                       disabled={isRunningCreateRenewalOrders}
+                      sx={{ whiteSpace: 'nowrap' }}
                     >
                       {isRunningCreateRenewalOrders ? 'Running...' : 'Run now'}
                     </Button>
