@@ -1,4 +1,4 @@
-import { Form, useActionData, useNavigation } from '@remix-run/react';
+import { Form, useActionData, useNavigation, Link } from '@remix-run/react';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -11,7 +11,12 @@ import {
   TextField,
 } from '@mui/material';
 
-import { createAction, CreateActionData, renderStockStatus } from './_shared';
+import {
+  createAction,
+  CreateActionData,
+  renderCountries,
+  renderStockStatus,
+} from './_shared';
 import { ActionFunction } from '@remix-run/node';
 import { WOO_PRODUCT_REGULAR_PRICE_DEFAULT } from '~/settings';
 
@@ -40,16 +45,7 @@ export default function NewProduct() {
       <Typography variant="h2">Create New Product</Typography>
       <Form method="post">
         <div>
-          <FormControl>
-            <TextField
-              name="country"
-              label="Country"
-              variant="outlined"
-              size="small"
-              defaultValue={''}
-              error={data?.validationErrors?.country ? true : false}
-            />
-          </FormControl>
+          {renderCountries()}
 
           <FormControl>
             <TextField
@@ -189,6 +185,11 @@ export default function NewProduct() {
             <Button type="submit" disabled={isCreating} variant="contained">
               {isCreating ? 'Creating...' : 'Create Product'}
             </Button>
+          </FormControl>
+          <FormControl sx={{ m: 1 }}>
+            <Link to="/products">
+              <Button variant="outlined">Cancel</Button>
+            </Link>
           </FormControl>
         </div>
       </Form>

@@ -42,9 +42,7 @@ import SetProductStockRemainingDialog from './set-product-stock-remaining';
 import StockDisplay from '~/components/StockDisplay';
 import StockStatusDisplay from '~/components/StockStatusDisplay';
 import SetProductLabelsPrintedDialog from './set-product-labels-printed';
-
-const defaultStatus = '_all'; // ProductStatus.PUBLISHED;
-const defaultStockStatus = '_all'; // ProductStockStatus.IN_STOCK;
+import { defaultStatus, defaultStockStatus } from './loader';
 
 export const loader = async ({ request }: { request: Request }) => {
   return await productLoader(request);
@@ -71,9 +69,6 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState<ProductEntity | null>(
     null
   );
-
-  const [isSetProductCodeDialogOpen, setIsSetProductCodeDialogOpen] =
-    useState(false);
 
   const [
     isSetProductStockStatusDialogOpen,
@@ -118,16 +113,6 @@ export default function Products() {
       status,
       stockStatus: e.target.value,
     });
-  };
-
-  const openSetProductCodeDialog = (product: ProductEntity) => {
-    setSelectedProduct(product);
-    setIsSetProductCodeDialogOpen(true);
-  };
-
-  const onCloseSetProductCodeDialog = () => {
-    setSelectedProduct(null);
-    setIsSetProductCodeDialogOpen(false);
   };
 
   const openSetProductStockStatusDialog = (product: ProductEntity) => {
@@ -192,7 +177,7 @@ export default function Products() {
 
       <Form method="get">
         <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`product-status`}>In webshop</InputLabel>
+          <InputLabel id={`product-status`}>Webshop status</InputLabel>
           <Select
             labelId={`product-status`}
             name={`status`}
@@ -201,8 +186,12 @@ export default function Products() {
             sx={{ minWidth: 250 }}
             size="small"
           >
-            <MenuItem value={'_all'}>All</MenuItem>
-            <MenuItem value={ProductStatus.PUBLISHED}>YES</MenuItem>
+            <MenuItem value={'_in_webshop'}>All</MenuItem>
+            <MenuItem value={ProductStatus.PUBLISHED}>Published</MenuItem>
+            <MenuItem value={'_not_published'}>Hidden</MenuItem>
+            <MenuItem value={ProductStatus.DELETED}>
+              <em>Deleted</em>
+            </MenuItem>
           </Select>
         </FormControl>
 
@@ -217,6 +206,9 @@ export default function Products() {
             size="small"
           >
             <MenuItem value={'_all'}>All</MenuItem>
+            <MenuItem value={'_backorder_in_stock'}>
+              On backorder & In stock
+            </MenuItem>
             <MenuItem value={ProductStockStatus.ON_BACKORDER}>
               On backorder
             </MenuItem>
@@ -281,7 +273,7 @@ export default function Products() {
                     </span>
                   ) : product.status === ProductStatus.PRIVATE ||
                     product.status === ProductStatus.DRAFT ? (
-                    <small>No</small>
+                    <small>Hidden</small>
                   ) : (
                     <small>{product.status}</small>
                   )}

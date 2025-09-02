@@ -1,10 +1,9 @@
-import { InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import { json, LoaderFunction, ActionFunction } from '@remix-run/node';
 import {
   useActionData,
   useLoaderData,
   useNavigation,
-  useSubmit,
   Form,
   Link,
 } from '@remix-run/react';
@@ -12,7 +11,12 @@ import { useEffect, useState, useRef } from 'react';
 import invariant from 'tiny-invariant';
 import { ProductEntity } from '~/services/entities';
 import { getProductById } from '~/services/product.service';
-import { updateAction, CreateActionData, renderStockStatus } from './_shared';
+import {
+  updateAction,
+  CreateActionData,
+  renderStockStatus,
+  renderCountries,
+} from './_shared';
 import Box from '@mui/material/Box';
 import {
   Button,
@@ -64,10 +68,8 @@ export default function UpdateProduct() {
   const [hasChanges, setHasChanges] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const isUpdating = Boolean(navigation.state === 'submitting');
-
-  // Create initial form values object
-  const initialFormValues = {
+  // Add state for form values to track changes
+  const [formValues, setFormValues] = useState({
     country: loadedProduct.country || '',
     name: loadedProduct.name,
     productCode: loadedProduct.productCode || '',
@@ -83,69 +85,52 @@ export default function UpdateProduct() {
     regularPrice:
       loadedProduct.regularPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
     description: loadedProduct.description || '',
-  };
+  });
+
+  const isUpdating = Boolean(navigation.state === 'submitting');
+
+  // Create initial form values object
+  const [initialFormValues, setInitialFormValues] = useState({
+    country: loadedProduct.country || '',
+    name: loadedProduct.name,
+    productCode: loadedProduct.productCode || '',
+    stockStatus: loadedProduct.stockStatus,
+    stockInitial: loadedProduct.stockInitial || 0,
+    stockRemaining: loadedProduct.stockRemaining || 0,
+    infoLink: loadedProduct.infoLink || '',
+    labelsPrinted: loadedProduct.labelsPrinted,
+    internalNote: loadedProduct.internalNote || '',
+    beanType: loadedProduct.beanType || '',
+    processType: loadedProduct.processType || 'dry-processed',
+    cuppingScore: loadedProduct.cuppingScore || 0,
+    regularPrice:
+      loadedProduct.regularPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
+    description: loadedProduct.description || '',
+  });
 
   // Check for form changes
   const checkFormChanges = () => {
-    if (!formRef.current) return;
-
-    const formData = new FormData(formRef.current);
-    const currentValues = {
-      country: formData.get('country') as string,
-      name: formData.get('name') as string,
-      productCode: formData.get('productCode') as string,
-      stockStatus: formData.get('stockStatus') as string,
-      stockInitial: Number(formData.get('stockInitial')) || 0,
-      stockRemaining: Number(formData.get('stockRemaining')) || 0,
-      infoLink: formData.get('infoLink') as string,
-      labelsPrinted: formData.has('labelsPrinted'),
-      internalNote: formData.get('internalNote') as string,
-      beanType: formData.get('beanType') as string,
-      processType: formData.get('processType') as string,
-      cuppingScore: Number(formData.get('cuppingScore')) || 0,
-      regularPrice: formData.get('regularPrice') as string,
-      description: formData.get('description') as string,
-    };
-
     const hasFormChanges = Object.keys(initialFormValues).some(
       (key) =>
         initialFormValues[key as keyof typeof initialFormValues] !==
-        currentValues[key as keyof typeof currentValues]
+        formValues[key as keyof typeof formValues]
     );
 
     setHasChanges(hasFormChanges);
   };
 
-  // Add event listeners to form inputs
+  // Update form values and check for changes
+  const handleFormChange = (field: keyof typeof formValues, value: any) => {
+    setFormValues((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Check for changes whenever formValues changes
   useEffect(() => {
-    const form = formRef.current;
-    if (!form) return;
-
-    const handleInputChange = () => {
-      checkFormChanges();
-    };
-
-    // Add listeners to all form inputs
-    const inputs = form.querySelectorAll('input, textarea, select');
-    inputs.forEach((input) => {
-      input.addEventListener('input', handleInputChange);
-      input.addEventListener('change', handleInputChange);
-      // Add specific listener for checkboxes
-      if ((input as HTMLInputElement).type === 'checkbox') {
-        input.addEventListener('click', handleInputChange);
-      }
-    });
-
-    return () => {
-      inputs.forEach((input) => {
-        input.removeEventListener('input', handleInputChange);
-        input.removeEventListener('change', handleInputChange);
-        if ((input as HTMLInputElement).type === 'checkbox') {
-          input.removeEventListener('click', handleInputChange);
-        }
-      });
-    };
-  }, []);
+    checkFormChanges();
+  }, [formValues]);
 
   useEffect(() => {
     if (data?.didUpdate === true) {
@@ -153,11 +138,13 @@ export default function UpdateProduct() {
       setOpenErrorSnack(false);
       // Reset changes after successful update
       setHasChanges(false);
+      // Update initial values to current form values
+      setInitialFormValues(formValues);
     } else if (data?.didUpdate === false) {
       setOpenErrorSnack(true);
       setOpenSnack(false);
     }
-  }, [data]);
+  }, [data, formValues]);
 
   return (
     <Box
@@ -189,6 +176,15 @@ export default function UpdateProduct() {
       <Typography variant="h2">
         Product: <small>{loadedProduct.name}</small>
       </Typography>
+      <div style={{ margin: '10px' }}>
+        <small>Woo product id:{'  '}</small>
+        <a href={loadedProduct.wooProductUrl || ''} target="_blank">
+          {loadedProduct.wooProductId}
+        </a>
+        <br />
+        <small>Product status: </small> {loadedProduct.status}
+      </div>
+
       <Form method="post" ref={formRef}>
         <input type="hidden" name="id" value={loadedProduct.id} />
         <input
@@ -196,27 +192,25 @@ export default function UpdateProduct() {
           name="wooProductId"
           value={loadedProduct.wooProductId || ''}
         />
+        <input
+          type="hidden"
+          name="stockStatus"
+          value={formValues.stockStatus}
+        />
 
         <div>
-          <FormControl>
-            <TextField
-              name="country"
-              label="Country"
-              variant="outlined"
-              size="small"
-              defaultValue={loadedProduct.country || ''}
-              error={data?.validationErrors?.country ? true : false}
-              helperText={data?.validationErrors?.country}
-            />
-          </FormControl>
+          {renderCountries(formValues.country, (value) =>
+            handleFormChange('country', value)
+          )}
 
           <FormControl>
             <TextField
               name="name"
-              label="Name"
+              label="Name*"
               variant="outlined"
               size="small"
-              defaultValue={loadedProduct.name}
+              value={formValues.name}
+              onChange={(e) => handleFormChange('name', e.target.value)}
               error={data?.validationErrors?.name ? true : false}
               helperText={data?.validationErrors?.name}
             />
@@ -228,7 +222,8 @@ export default function UpdateProduct() {
               label="Product code"
               variant="outlined"
               size="small"
-              defaultValue={loadedProduct.productCode || ''}
+              value={formValues.productCode}
+              onChange={(e) => handleFormChange('productCode', e.target.value)}
               error={data?.validationErrors?.productCode ? true : false}
               helperText={data?.validationErrors?.productCode}
               sx={{
@@ -244,19 +239,21 @@ export default function UpdateProduct() {
           <FormControl>
             <TextField
               name="beanType"
-              label="Bean type"
+              label="Bean type*"
               variant="outlined"
               size="small"
-              defaultValue={loadedProduct.beanType || ''}
+              value={formValues.beanType}
+              onChange={(e) => handleFormChange('beanType', e.target.value)}
             />
           </FormControl>
 
           <FormControl sx={{ m: 1 }}>
-            <InputLabel id={`product-process-type`}>Process</InputLabel>
+            <InputLabel id={`product-process-type`}>Process*</InputLabel>
             <Select
               labelId={`product-process-type`}
               name={`processType`}
-              defaultValue={loadedProduct.processType || 'dry-processed'}
+              value={formValues.processType}
+              onChange={(e) => handleFormChange('processType', e.target.value)}
               sx={{ minWidth: 250 }}
               size="small"
             >
@@ -268,23 +265,31 @@ export default function UpdateProduct() {
           <FormControl>
             <TextField
               name="cuppingScore"
-              label="Cupping score"
+              label="Cupping score*"
               variant="outlined"
               size="small"
-              defaultValue={loadedProduct.cuppingScore || 0}
+              value={formValues.cuppingScore}
+              onChange={(e) =>
+                handleFormChange('cuppingScore', Number(e.target.value))
+              }
             />
           </FormControl>
         </div>
 
         <div>
-          {renderStockStatus(loadedProduct.stockStatus)}
+          {renderStockStatus(formValues.stockStatus, false, (value) =>
+            handleFormChange('stockStatus', value)
+          )}
 
           <FormControl>
             <TextField
               name="stockInitial"
               label="Stock initial (kg)"
               variant="outlined"
-              defaultValue={loadedProduct.stockInitial || 0}
+              value={formValues.stockInitial}
+              onChange={(e) =>
+                handleFormChange('stockInitial', Number(e.target.value))
+              }
               error={data?.validationErrors?.stockInitial ? true : false}
               helperText={data?.validationErrors?.stockInitial}
               size="small"
@@ -296,7 +301,10 @@ export default function UpdateProduct() {
               name="stockRemaining"
               label="Current stock (kg)"
               variant="outlined"
-              defaultValue={loadedProduct.stockRemaining || 0}
+              value={formValues.stockRemaining}
+              onChange={(e) =>
+                handleFormChange('stockRemaining', Number(e.target.value))
+              }
               size="small"
             />
           </FormControl>
@@ -306,12 +314,11 @@ export default function UpdateProduct() {
           <FormControl>
             <TextField
               name="regularPrice"
-              label="Regular price"
+              label="Regular price*"
               variant="outlined"
               size="small"
-              defaultValue={
-                loadedProduct.regularPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT
-              }
+              value={formValues.regularPrice}
+              onChange={(e) => handleFormChange('regularPrice', e.target.value)}
             />
           </FormControl>
         </div>
@@ -320,12 +327,13 @@ export default function UpdateProduct() {
           <FormControl>
             <TextField
               name="description"
-              label="Description"
+              label="Description*"
               variant="outlined"
               size="small"
               multiline
               rows={2}
-              defaultValue={loadedProduct.description || ''}
+              value={formValues.description}
+              onChange={(e) => handleFormChange('description', e.target.value)}
               sx={{ width: '190%' }}
             />
           </FormControl>
@@ -338,7 +346,8 @@ export default function UpdateProduct() {
               label="Info link"
               variant="outlined"
               size="small"
-              defaultValue={loadedProduct.infoLink || ''}
+              value={formValues.infoLink}
+              onChange={(e) => handleFormChange('infoLink', e.target.value)}
               sx={{ width: '190%' }}
             />
           </FormControl>
@@ -350,7 +359,10 @@ export default function UpdateProduct() {
               control={
                 <Checkbox
                   name="labelsPrinted"
-                  defaultChecked={loadedProduct.labelsPrinted}
+                  checked={formValues.labelsPrinted}
+                  onChange={(e) =>
+                    handleFormChange('labelsPrinted', e.target.checked)
+                  }
                 />
               }
               label="Labels printed"
@@ -367,7 +379,8 @@ export default function UpdateProduct() {
               size="small"
               multiline
               rows={2}
-              defaultValue={loadedProduct.internalNote || ''}
+              value={formValues.internalNote}
+              onChange={(e) => handleFormChange('internalNote', e.target.value)}
               sx={{ width: '190%' }}
             />
           </FormControl>
@@ -386,8 +399,12 @@ export default function UpdateProduct() {
         </div>
         <div>
           <Alert severity="info">
-            <em>Name</em>, <em>description</em> and <em>stock status</em> will
-            be updated in Woo webshop when product is updated here.
+            Changes on fields marked with a * will trigger update in Woo
+            webshop.
+            <p>
+              Country is added to the name in Woo (don't add it to the name
+              here)
+            </p>
             <p>
               Only <em>visibility (status)</em> and <em>stock status</em> will
               be synced back to Backoffice if product is edited in Woo admin.
@@ -395,10 +412,18 @@ export default function UpdateProduct() {
           </Alert>
         </div>
       </Form>
+
       <hr></hr>
-      <Link to="/products">Back to Products</Link>
+
+      <Link style={{ margin: '10px' }} to="/products">
+        Back to Products
+      </Link>
+
       <hr></hr>
-      <Typography variant="h5">Björn's debug stuff</Typography>
+
+      <Typography variant="h5" sx={{ marginTop: '25px' }}>
+        Björn's debug stuff
+      </Typography>
       <div>{JSON.stringify(loadedProduct, null, 2)}</div>
     </Box>
   );
