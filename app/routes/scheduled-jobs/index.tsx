@@ -100,6 +100,20 @@ export default function JobResultPage() {
 
   if (!jobResult) return null;
 
+  const doSubmit = (data: any) => {
+    submit(data, { replace: true });
+  };
+
+  const handleSelectName = (e: any) => {
+    setNameFilter(e.target.value);
+    doSubmit({
+      name: e.target.value,
+    });
+  };
+
+  // Get unique job names for the filter options
+  const uniqueJobNames = jobInfos.map((j) => j.name);
+
   const isRunningSyncWooProductStatus =
     fetcher.state === 'submitting' &&
     fetcher.formData?.get('_action') === 'woo-product-sync-status';
