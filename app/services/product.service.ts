@@ -68,6 +68,13 @@ export async function getCoffeeProducts(filter?: any) {
   return await getAllProducts(filter);
 }
 
+export async function getPublishedProducts(filter?: any) {
+  filter = filter || {};
+  filter.where = filter.where || {};
+  filter.where.status = ProductStatus.PUBLISHED;
+  return await getAllProducts(filter);
+}
+
 export async function getProductById(id: number) {
   const repo = await getRepo();
   return repo.findOne({ where: { id } });
@@ -280,9 +287,13 @@ function toUpdateWooProductData(
 ): WooProductUpdate {
   return {
     stock_status: toWooStockStatus(data.stockStatus as ProductStockStatus),
-    name: createFullProductName(data),
-    short_description: createFullProductDescription(data),
-    regular_price: data.regularPrice || '',
+    name: data.name !== undefined ? createFullProductName(data) : undefined,
+    short_description:
+      data.description !== undefined
+        ? createFullProductDescription(data)
+        : undefined,
+    regular_price:
+      data.regularPrice !== undefined ? data.regularPrice || '' : undefined,
   };
 }
 

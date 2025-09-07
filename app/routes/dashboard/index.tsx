@@ -13,7 +13,10 @@ import {
 import { SubscriptionStatus, OrderStatus } from '~/services/entities/enums';
 import { getSubscriptions } from '~/services/subscription.service';
 import { getLastJobResult } from '~/services/job-result.service';
-import { getCoffeeProducts } from '~/services/product.service';
+import {
+  getCoffeeProducts,
+  getPublishedProducts,
+} from '~/services/product.service';
 
 import {
   DeliveryEntity,
@@ -32,6 +35,7 @@ import RoastOverviewBox from '~/components/RoastOverviewBox';
 import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
 import StaffSubscriptions from '~/components/StaffSubscriptions';
+import PublishedProductsBox from '~/components/PublishedProductsBox';
 
 type LoaderData = {
   wooProductImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
@@ -45,6 +49,7 @@ type LoaderData = {
   allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
   currentCoffees: Awaited<ReturnType<typeof getCoffeeProducts>>;
+  publishedProducts: Awaited<ReturnType<typeof getPublishedProducts>>;
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
@@ -115,6 +120,18 @@ export const loader = async () => {
     take: 10,
   });
 
+  const publishedProducts = await getPublishedProducts({
+    where: { category: 'coffee' },
+    select: {
+      id: true,
+      name: true,
+      productCode: true,
+      country: true,
+      stockStatus: true,
+    },
+    take: 50,
+  });
+
   const cargonizerProfile = await getCargonizerProfile();
 
   return Response.json({
@@ -127,6 +144,7 @@ export const loader = async () => {
     allActiveSubscriptions,
     currentDeliveries,
     currentCoffees,
+    publishedProducts,
     cargonizerProfile,
   });
 };
@@ -142,6 +160,7 @@ export default function Dashboard() {
     allActiveSubscriptions,
     currentDeliveries,
     currentCoffees,
+    publishedProducts,
     cargonizerProfile,
   } = useLoaderData() as unknown as LoaderData;
 
@@ -283,19 +302,25 @@ export default function Dashboard() {
       )}
 
       <Box sx={{ minWidth: 120, my: 4 }}>
-        <Typography variant="h2">Roast overview</Typography>
+        <Typography variant="h3">Roast overview</Typography>
         <RoastOverviewBox
           subscriptions={allActiveSubscriptions}
           deliveries={deliveries || []}
           coffees={coffees || []}
         />
       </Box>
+
       <Box sx={{ minWidth: 120, my: 4 }}>
-        <Typography variant="h2">Subscription overview</Typography>
+        <Typography variant="h3">Published coffees</Typography>
+        <PublishedProductsBox products={publishedProducts} />
+      </Box>
+
+      <Box sx={{ minWidth: 120, my: 4 }}>
+        <Typography variant="h3">Subscription overview</Typography>
         <SubscriptionStatsBox stats={aboStats} />
       </Box>
 
-      <Typography variant="h2">Other stuff</Typography>
+      <Typography variant="h3">Other stuff</Typography>
       <Grid container spacing={2}>
         <Grid item md={7} xl={5}>
           <Paper sx={{ p: 1 }}>

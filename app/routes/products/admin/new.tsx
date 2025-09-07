@@ -1,8 +1,10 @@
 import { Form, useActionData, useNavigation, Link } from '@remix-run/react';
+import { useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import {
+  Alert,
   Button,
   FormControl,
   InputLabel,
@@ -17,6 +19,7 @@ import {
   renderCountries,
   renderStockStatus,
 } from './_shared';
+import { ProductStockStatus } from '~/services/entities';
 import { ActionFunction } from '@remix-run/node';
 import { WOO_PRODUCT_REGULAR_PRICE_DEFAULT } from '~/settings';
 
@@ -35,6 +38,29 @@ export default function NewProduct() {
 
   const isCreating = Boolean(navigation.state === 'submitting');
 
+  // Form state management
+  const [formValues, setFormValues] = useState({
+    country: 'Colombia',
+    stockStatus: ProductStockStatus.ON_BACKORDER,
+    cuppingScore: '0',
+    processType: 'washed',
+  });
+
+  const handleFormChange = (field: string, value: string | number) => {
+    setFormValues((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleCuppingScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow digits and one decimal point
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      handleFormChange('cuppingScore', value);
+    }
+  };
+
   return (
     <Box
       m={2}
@@ -45,7 +71,9 @@ export default function NewProduct() {
       <Typography variant="h2">Create New Product</Typography>
       <Form method="post">
         <div>
-          {renderCountries()}
+          {renderCountries(formValues.country, (value) =>
+            handleFormChange('country', value)
+          )}
 
           <FormControl>
             <TextField
@@ -91,7 +119,8 @@ export default function NewProduct() {
             <Select
               labelId={`product-process-type`}
               name={`processType`}
-              defaultValue={'washed'}
+              value={formValues.processType}
+              onChange={(e) => handleFormChange('processType', e.target.value)}
               sx={{ minWidth: 250 }}
               size="small"
             >
@@ -106,13 +135,16 @@ export default function NewProduct() {
               label="Cupping score"
               variant="outlined"
               size="small"
-              defaultValue={0}
+              value={formValues.cuppingScore}
+              onChange={handleCuppingScoreChange}
             />
           </FormControl>
         </div>
 
         <div>
-          {renderStockStatus()}
+          {renderStockStatus(formValues.stockStatus, false, (value) =>
+            handleFormChange('stockStatus', value)
+          )}
 
           <FormControl>
             <TextField
@@ -146,7 +178,7 @@ export default function NewProduct() {
               variant="outlined"
               size="small"
               multiline
-              rows={2}
+              rows={4}
               defaultValue={''}
               sx={{ width: '190%' }}
             />
@@ -191,6 +223,20 @@ export default function NewProduct() {
               <Button variant="outlined">Cancel</Button>
             </Link>
           </FormControl>
+        </div>
+
+        <div>
+          <Alert severity="info">
+            The product will be created with draft status in Woo.
+            <p>
+              Country is added to the name in Woo (don't add it to the name
+              here)
+            </p>
+            <p>
+              Bean type, process and score are added to the product description
+              in Woo.
+            </p>
+          </Alert>
         </div>
       </Form>
     </Box>

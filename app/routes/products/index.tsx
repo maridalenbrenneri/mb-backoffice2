@@ -188,7 +188,7 @@ export default function Products() {
           >
             <MenuItem value={'_in_webshop'}>All</MenuItem>
             <MenuItem value={ProductStatus.PUBLISHED}>Published</MenuItem>
-            <MenuItem value={'_not_published'}>Hidden</MenuItem>
+            <MenuItem value={'_not_published'}>Not published</MenuItem>
             <MenuItem value={ProductStatus.DELETED}>
               <em>Deleted</em>
             </MenuItem>
@@ -233,8 +233,7 @@ export default function Products() {
               <TableCell>Current stock</TableCell>
               <TableCell>Labels printed</TableCell>
               <TableCell>Info link</TableCell>
-              <TableCell>Woo product id</TableCell>
-              <TableCell>Created</TableCell>
+              <TableCell>Woo id</TableCell>
               <TableCell>Updated</TableCell>
             </TableRow>
           </TableHead>
@@ -273,7 +272,7 @@ export default function Products() {
                     </span>
                   ) : product.status === ProductStatus.PRIVATE ||
                     product.status === ProductStatus.DRAFT ? (
-                    <small>Hidden</small>
+                    <small>Not published</small>
                   ) : (
                     <small>{product.status}</small>
                   )}
@@ -332,9 +331,6 @@ export default function Products() {
                   >
                     {product.wooProductId}
                   </a>
-                </TableCell>
-                <TableCell>
-                  <small>{toPrettyDateTime(product.createdAt, false)}</small>
                 </TableCell>
                 <TableCell>
                   <small>{toPrettyDateTime(product.updatedAt, false)}</small>
