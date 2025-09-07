@@ -4,6 +4,7 @@ import {
   useActionData,
   useLoaderData,
   useNavigation,
+  useRevalidator,
   Form,
   Link,
 } from '@remix-run/react';
@@ -28,6 +29,7 @@ import {
   Snackbar,
 } from '@mui/material';
 import { WOO_PRODUCT_REGULAR_PRICE_DEFAULT } from '~/settings';
+import { toPrettyDateTime } from '~/utils/dates';
 
 type LoaderData = {
   loadedProduct: ProductEntity;
@@ -62,6 +64,7 @@ export const action: ActionFunction = async ({ request }) => {
 export default function UpdateProduct() {
   const data = useActionData<CreateActionData>();
   const navigation = useNavigation();
+  const revalidator = useRevalidator();
   const { loadedProduct } = useLoaderData() as unknown as LoaderData;
   const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [openErrorSnack, setOpenErrorSnack] = useState<boolean>(false);
@@ -80,8 +83,8 @@ export default function UpdateProduct() {
     labelsPrinted: loadedProduct.labelsPrinted,
     internalNote: loadedProduct.internalNote || '',
     beanType: loadedProduct.beanType || '',
-    processType: loadedProduct.processType || 'dry-processed',
-    cuppingScore: loadedProduct.cuppingScore || 0,
+    processType: loadedProduct.processType || 'washed',
+    cuppingScore: String(loadedProduct.cuppingScore || 0),
     regularPrice:
       loadedProduct.regularPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
     description: loadedProduct.description || '',
@@ -101,8 +104,8 @@ export default function UpdateProduct() {
     labelsPrinted: loadedProduct.labelsPrinted,
     internalNote: loadedProduct.internalNote || '',
     beanType: loadedProduct.beanType || '',
-    processType: loadedProduct.processType || 'dry-processed',
-    cuppingScore: loadedProduct.cuppingScore || 0,
+    processType: loadedProduct.processType || 'washed',
+    cuppingScore: String(loadedProduct.cuppingScore || 0),
     regularPrice:
       loadedProduct.regularPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
     description: loadedProduct.description || '',
@@ -127,6 +130,14 @@ export default function UpdateProduct() {
     }));
   };
 
+  const handleCuppingScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow digits and one decimal point
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      handleFormChange('cuppingScore', value);
+    }
+  };
+
   // Check for changes whenever formValues changes
   useEffect(() => {
     checkFormChanges();
@@ -140,11 +151,37 @@ export default function UpdateProduct() {
       setHasChanges(false);
       // Update initial values to current form values
       setInitialFormValues(formValues);
+      // Revalidate the loader data to fetch fresh data from the database
+      revalidator.revalidate();
     } else if (data?.didUpdate === false) {
       setOpenErrorSnack(true);
       setOpenSnack(false);
     }
-  }, [data, formValues]);
+  }, [data, formValues, revalidator]);
+
+  // Update form values when loadedProduct changes (after revalidation)
+  useEffect(() => {
+    const updatedFormValues = {
+      country: loadedProduct.country || '',
+      name: loadedProduct.name,
+      productCode: loadedProduct.productCode || '',
+      stockStatus: loadedProduct.stockStatus,
+      stockInitial: loadedProduct.stockInitial || 0,
+      stockRemaining: loadedProduct.stockRemaining || 0,
+      infoLink: loadedProduct.infoLink || '',
+      labelsPrinted: loadedProduct.labelsPrinted,
+      internalNote: loadedProduct.internalNote || '',
+      beanType: loadedProduct.beanType || '',
+      processType: loadedProduct.processType || 'washed',
+      cuppingScore: String(loadedProduct.cuppingScore || 0),
+      regularPrice:
+        loadedProduct.regularPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
+      description: loadedProduct.description || '',
+    };
+
+    setFormValues(updatedFormValues);
+    setInitialFormValues(updatedFormValues);
+  }, [loadedProduct]);
 
   return (
     <Box
@@ -173,16 +210,18 @@ export default function UpdateProduct() {
         </Alert>
       </Snackbar>
 
-      <Typography variant="h2">
-        Product: <small>{loadedProduct.name}</small>
-      </Typography>
+      <Typography variant="h2">{loadedProduct.name}</Typography>
       <div style={{ margin: '10px' }}>
-        <small>Woo product id:{'  '}</small>
+        <small>Woo id:{'  '}</small>
         <a href={loadedProduct.wooProductUrl || ''} target="_blank">
           {loadedProduct.wooProductId}
         </a>
         <br />
         <small>Product status: </small> {loadedProduct.status}
+        <br />
+        <small>Created: </small> {toPrettyDateTime(loadedProduct.createdAt)}
+        <br />
+        <small>Updated: </small> {toPrettyDateTime(loadedProduct.updatedAt)}
       </div>
 
       <Form method="post" ref={formRef}>
@@ -269,9 +308,7 @@ export default function UpdateProduct() {
               variant="outlined"
               size="small"
               value={formValues.cuppingScore}
-              onChange={(e) =>
-                handleFormChange('cuppingScore', Number(e.target.value))
-              }
+              onChange={handleCuppingScoreChange}
             />
           </FormControl>
         </div>
@@ -331,7 +368,7 @@ export default function UpdateProduct() {
               variant="outlined"
               size="small"
               multiline
-              rows={2}
+              rows={4}
               value={formValues.description}
               onChange={(e) => handleFormChange('description', e.target.value)}
               sx={{ width: '190%' }}
@@ -404,6 +441,10 @@ export default function UpdateProduct() {
             <p>
               Country is added to the name in Woo (don't add it to the name
               here)
+            </p>
+            <p>
+              Bean type, process and score are added to the product description
+              in Woo.
             </p>
             <p>
               Only <em>visibility (status)</em> and <em>stock status</em> will

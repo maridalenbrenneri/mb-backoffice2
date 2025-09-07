@@ -39,13 +39,13 @@ const updateStockRemaining = async (values: any) => {
   if (result.kind !== 'success') {
     return json({
       didUpdate: false,
-      updateMessage: `Failed to update product stock remaining: ${result.error}`,
+      updateMessage: `Failed to update product current stock: ${result.error}`,
     });
   }
 
   return json({
     didUpdate: true,
-    updateMessage: 'Product stock remaining was updated',
+    updateMessage: 'Product current stock was updated',
   });
 };
 

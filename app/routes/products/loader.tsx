@@ -51,6 +51,23 @@ export const productLoader = async (request: any) => {
   console.log(filter);
 
   const products = await getCoffeeProducts(filter);
+
+  products.sort((a, b) => {
+    const aIsInStockAndPublished =
+      a.stockStatus === ProductStockStatus.IN_STOCK &&
+      a.status === ProductStatus.PUBLISHED;
+    const bIsInStockAndPublished =
+      b.stockStatus === ProductStockStatus.IN_STOCK &&
+      b.status === ProductStatus.PUBLISHED;
+
+    // If one is IN_STOCK and PUBLISHED and the other isn't, prioritize the IN_STOCK and PUBLISHED one
+    if (aIsInStockAndPublished && !bIsInStockAndPublished) return -1;
+    if (!aIsInStockAndPublished && bIsInStockAndPublished) return 1;
+
+    // Otherwise, use default sort (alphabetical by name)
+    return a.name.localeCompare(b.name);
+  });
+
   return json<LoaderData>({
     products,
   });
