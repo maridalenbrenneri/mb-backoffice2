@@ -40,7 +40,7 @@ export async function fetchOrders(
 ): Promise<WooOrder[]> {
   let orders: Array<WooOrder> = [];
 
-  let days = fetchAll ? 90 : WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS;
+  let days = fetchAll ? 30 : WOO_IMPORT_ORDERS_FROM_TODAY_MINUS_DAYS;
 
   const updatedAfter = DateTime.now()
     .startOf('day')

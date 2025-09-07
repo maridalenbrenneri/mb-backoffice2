@@ -20,11 +20,18 @@ export async function getLastJobResult(name: string) {
   });
 }
 
-export async function getJobResults() {
+export async function getJobResults(nameFilter?: string) {
   const repo = await getRepo();
+  const whereCondition: any = {};
+
+  if (nameFilter && nameFilter !== '_all') {
+    whereCondition.name = nameFilter;
+  }
+
   return repo.find({
+    where: whereCondition,
     order: { createdAt: 'desc' },
-    take: 300,
+    take: 500,
   });
 }
 
