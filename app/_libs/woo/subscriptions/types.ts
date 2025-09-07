@@ -13,7 +13,7 @@ export const WooSubscriptionData = z.object({
   status: z.string(),
   created_via: z.string(),
 
-  next_payment_date: z.string(),
+  next_payment_date_gmt: z.string(),
 
   date_created: z.string(),
   date_modified: z.string(),

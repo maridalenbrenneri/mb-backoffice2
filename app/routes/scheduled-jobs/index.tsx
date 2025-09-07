@@ -1,5 +1,10 @@
 import { json } from '@remix-run/node';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  useFetcher,
+  useLoaderData,
+  useSearchParams,
+  useSubmit,
+} from '@remix-run/react';
 import JSONPretty from 'react-json-pretty';
 import { useEffect, useState } from 'react';
 
@@ -11,18 +16,70 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { Box, Button, FormControl } from '@mui/material';
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
 
 import { getJobResults } from '~/services/job-result.service';
 import { toPrettyDateTime } from '~/utils/dates';
 import { JobResultEntity } from '~/services/entities';
 
+const jobInfos = [
+  {
+    name: 'woo-import-orders',
+    description:
+      'Import of orders from Woo updated in last 1 day. Fetches all orders. Status changes are synced with Backoffice, but no other changes are updated after first import. Runs every 30 minutes between 06:00 and 23:00.',
+  },
+  {
+    name: 'woo-import-orders-all',
+    description: '',
+  },
+  {
+    name: 'woo-import-subscriptions',
+    description:
+      'Import of subscriptions from Woo updated in last 1 day. Runs every hour between 06:00 and 23:00. Fetches all subscriptions monthly.',
+  },
+  {
+    name: 'woo-import-subscriptions-all',
+    description: '',
+  },
+  {
+    name: 'woo-product-sync-status',
+    description:
+      'Sync product status and stock status from Woo to Backoffice (if changes done in Woo admin). Runs every hour',
+  },
+  {
+    name: 'woo-product-cleanup',
+    description:
+      "Sets status 'deleted' on any products that are deleted in Woo. Runs once a week.",
+  },
+  {
+    name: 'update-status-on-gift-subscriptions',
+    description:
+      'Resolves and updates status on any gift subscription that has expired or should be started . Runs once a day at 04:00',
+  },
+  {
+    name: 'create-renewal-orders',
+    description:
+      'Creates renewal orders for active gift and B2B subscriptions. Runs every Thursday at 05:00.',
+  },
+];
+
 type LoaderData = {
   results: Awaited<ReturnType<typeof getJobResults>>;
 };
 
-export const loader = async () => {
-  const results = await getJobResults();
+export const loader = async ({ request }: { request: Request }) => {
+  const url = new URL(request.url);
+  const search = new URLSearchParams(url.search);
+  const nameFilter = search.get('name') || '_all';
+
+  const results = await getJobResults(nameFilter);
   return json<LoaderData>({
     results,
   });
@@ -31,14 +88,31 @@ export const loader = async () => {
 export default function JobResultPage() {
   const { results } = useLoaderData() as unknown as LoaderData;
   const fetcher = useFetcher();
+  const [params] = useSearchParams();
+  const submit = useSubmit();
 
   const [jobResult, setJobResult] = useState<JobResultEntity[]>();
+  const [nameFilter, setNameFilter] = useState(params.get('name') || '_all');
 
   useEffect(() => {
     setJobResult(results);
   }, [jobResult, results]);
 
   if (!jobResult) return null;
+
+  const doSubmit = (data: any) => {
+    submit(data, { replace: true });
+  };
+
+  const handleSelectName = (e: any) => {
+    setNameFilter(e.target.value);
+    doSubmit({
+      name: e.target.value,
+    });
+  };
+
+  // Get unique job names for the filter options
+  const uniqueJobNames = jobInfos.map((j) => j.name);
 
   const isRunningImportWooProducts =
     fetcher.state === 'submitting' &&
@@ -259,6 +333,27 @@ export default function JobResultPage() {
       <Typography variant="h2" sx={{ m: 2 }}>
         Job history
       </Typography>
+
+      <Box sx={{ m: 2 }}>
+        <FormControl sx={{ m: 1 }}>
+          <InputLabel id="job-name-filter">Job name</InputLabel>
+          <Select
+            labelId="job-name-filter"
+            name="name"
+            value={nameFilter}
+            onChange={handleSelectName}
+            sx={{ minWidth: 250 }}
+            size="small"
+          >
+            <MenuItem value="_all">All</MenuItem>
+            {uniqueJobNames.map((jobName) => (
+              <MenuItem key={jobName} value={jobName}>
+                {jobName}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
 
       <Box sx={{ my: 2 }}>
         <TableContainer component={Paper}>

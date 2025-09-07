@@ -238,6 +238,10 @@ export default function UpdateSubscription() {
       data: subscription.wooCustomerId,
     },
     {
+      label: 'Woo next payment date',
+      data: toPrettyDateTime(subscription.wooNextPaymentDate, true),
+    },
+    {
       label: 'Woo created at',
       data: toPrettyDateTime(subscription.wooCreatedAt, true),
     },

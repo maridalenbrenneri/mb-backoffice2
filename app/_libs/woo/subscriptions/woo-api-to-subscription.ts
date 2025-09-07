@@ -132,8 +132,8 @@ export const wooApiToUpsertSubscriptionData = (
     wooCustomerName: `${subscription.billing.first_name} ${subscription.billing.last_name} `,
     wooCreatedAt: new Date(subscription.date_created),
     wooUpdatedAt: new Date(subscription.date_modified),
-    wooNextPaymentDate: subscription.next_payment_date
-      ? new Date(subscription.next_payment_date)
+    wooNextPaymentDate: subscription.next_payment_date_gmt
+      ? new Date(subscription.next_payment_date_gmt)
       : null,
     type: SubscriptionType.PRIVATE,
     status,

@@ -12,9 +12,10 @@ import {
 import wooApiToGiftSubscriptions from './woo-api-to-giftsubscriptions';
 import { WOO_NO_SHIPPING_COUPON } from '../../../settings';
 import { type WooOrderLineItem, type WooOrder } from './types';
+import { OrderEntity } from '~/services/entities';
 
 export type OrderInfo = {
-  order: Order;
+  order: OrderEntity;
   items: any[];
   gifts: any[];
   wooCreatedVia: string;
