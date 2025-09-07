@@ -26,7 +26,10 @@ import {
   MenuItem,
   Select,
   Snackbar,
+  Tooltip,
 } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WarningIcon from '@mui/icons-material/Warning';
 
 import {
   ProductStatus,
@@ -145,6 +148,17 @@ export default function Products() {
     setIsSetProductLabelsPrintedDialogOpen(false);
   };
 
+  const hasAllRequiredFields = (product: ProductEntity): boolean => {
+    return !!(
+      product.country &&
+      product.name &&
+      product.beanType &&
+      product.processType &&
+      product.cuppingScore &&
+      product.description
+    );
+  };
+
   return (
     <main>
       <Snackbar
@@ -257,25 +271,58 @@ export default function Products() {
                 </TableCell>
 
                 <TableCell>
-                  {product.status === ProductStatus.PUBLISHED ? (
-                    <span
-                      style={{
-                        backgroundColor: '#2e7d32',
-                        color: '#fff',
-                        padding: '2px 6px',
-                        borderRadius: 3,
-                        fontSize: 10,
-                        display: 'inline-block',
-                      }}
-                    >
-                      YES
-                    </span>
-                  ) : product.status === ProductStatus.PRIVATE ||
-                    product.status === ProductStatus.DRAFT ? (
-                    <small>Not published</small>
-                  ) : (
-                    <small>{product.status}</small>
-                  )}
+                  <div>
+                    {product.status === ProductStatus.PUBLISHED ? (
+                      <span
+                        style={{
+                          backgroundColor: '#2e7d32',
+                          color: '#fff',
+                          padding: '2px 6px',
+                          borderRadius: 3,
+                          fontSize: 10,
+                          display: 'inline-block',
+                        }}
+                      >
+                        YES
+                      </span>
+                    ) : product.status === ProductStatus.PRIVATE ||
+                      product.status === ProductStatus.DRAFT ? (
+                      <div>
+                        <small>Not published</small>
+                        <Tooltip
+                          title={
+                            hasAllRequiredFields(product)
+                              ? 'Valid for publication'
+                              : 'Missing fields, product is not ready to be published. Country, name, bean type, process type, cupping score and description are required.'
+                          }
+                        >
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'baseline',
+                              verticalAlign: 'middle',
+                            }}
+                          >
+                            {hasAllRequiredFields(product) ? (
+                              <CheckCircleIcon
+                                color="success"
+                                fontSize="small"
+                                sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
+                              />
+                            ) : (
+                              <WarningIcon
+                                color="warning"
+                                fontSize="small"
+                                sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
+                              />
+                            )}
+                          </span>
+                        </Tooltip>
+                      </div>
+                    ) : (
+                      <small>{product.status}</small>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <Button
