@@ -10,7 +10,7 @@ import {
 } from '@remix-run/react';
 import { useEffect, useState, useRef } from 'react';
 import invariant from 'tiny-invariant';
-import { ProductEntity } from '~/services/entities';
+import { ProductEntity, ProductStatus } from '~/services/entities';
 import { getProductById } from '~/services/product.service';
 import {
   updateAction,
@@ -423,17 +423,30 @@ export default function UpdateProduct() {
           </FormControl>
         </div>
 
-        <div>
-          <FormControl sx={{ m: 1 }}>
-            <Button
-              type="submit"
-              disabled={isUpdating || !hasChanges}
-              variant="contained"
-            >
-              {isUpdating ? 'Updating...' : 'Update Product'}
-            </Button>
-          </FormControl>
-        </div>
+        {loadedProduct.status === ProductStatus.DELETED ? (
+          <div
+            style={{
+              fontStyle: 'italic',
+              marginTop: '20px',
+              marginBottom: '20px',
+            }}
+          >
+            This product is deleted and cannot be updated.
+          </div>
+        ) : (
+          <div>
+            <FormControl sx={{ m: 1 }}>
+              <Button
+                type="submit"
+                disabled={isUpdating || !hasChanges}
+                variant="contained"
+              >
+                {isUpdating ? 'Updating...' : 'Update Product'}
+              </Button>
+            </FormControl>
+          </div>
+        )}
+
         <div>
           <Alert severity="info">
             Changes on fields marked with a * will trigger update in Woo
