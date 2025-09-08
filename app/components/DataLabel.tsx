@@ -42,7 +42,7 @@ export default function DataLabel(props: {
           <span>{data.data}</span>
           <Button
             sx={{
-              fontSize: 14,
+              fontSize: 11,
               p: 0.25,
               marginLeft: 1,
             }}
@@ -58,34 +58,52 @@ export default function DataLabel(props: {
     const dataString =
       data.data === undefined || data.data === null ? '' : data.data;
 
-    return <Typography sx={{ fontSize: 14 }}>{dataString}</Typography>;
+    return <Typography sx={{ fontSize: 11 }}>{dataString}</Typography>;
   };
 
   return (
-    <TableContainer>
-      <Table size="small">
-        <TableBody>
-          {dataFields.map((data: any, index: number) => (
-            <TableRow
-              key={index}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+    <Table
+      size="small"
+      sx={{
+        width: 'fit-content',
+        tableLayout: 'auto',
+      }}
+    >
+      <TableBody>
+        {dataFields.map((data: any, index: number) => (
+          <TableRow
+            key={index}
+            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+          >
+            <TableCell
+              align="left"
+              sx={{
+                width: 'auto',
+                maxWidth: 'fit-content',
+                whiteSpace: 'nowrap',
+              }}
             >
-              <TableCell align="left">
-                <Typography
-                  sx={{
-                    color: colors.COLOR_GREY0,
-                    fontSize: 12,
-                    marginRight: 2,
-                  }}
-                >
-                  {data.label}
-                </Typography>
-              </TableCell>
-              <TableCell>{renderData(data)}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+              <Typography
+                sx={{
+                  color: colors.COLOR_GREY0,
+                  fontSize: 10,
+                }}
+              >
+                {data.label}
+              </Typography>
+            </TableCell>
+            <TableCell
+              sx={{
+                width: 'auto',
+                maxWidth: 'fit-content',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <div style={{ marginLeft: '10px' }}>{renderData(data)}</div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

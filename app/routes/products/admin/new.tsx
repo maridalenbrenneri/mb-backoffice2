@@ -162,7 +162,7 @@ export default function NewProduct() {
           <FormControl>
             <TextField
               name="regularPrice"
-              label="Regular price"
+              label="Price, webshop"
               variant="outlined"
               size="small"
               defaultValue={WOO_PRODUCT_REGULAR_PRICE_DEFAULT}

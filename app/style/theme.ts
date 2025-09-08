@@ -103,13 +103,10 @@ export const theme = createTheme({
       },
     },
     MuiSnackbar: {
-      // DOES NOT APPLY, HOW TO CUSTOMIZE SNACKBAR?
       styleOverrides: {
         root: {
-          '& .MuiSnackbarContent-root': {
-            background: 'orange',
-            fontSize: 18,
-          },
+          border: '1px solid lightgray',
+          borderRadius: '5px',
         },
       },
     },
