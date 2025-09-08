@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Paper,
   Table,
@@ -7,12 +6,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
-  Box,
   Chip,
 } from '@mui/material';
 import { ProductEntity, ProductStockStatus } from '~/services/entities';
 import { Link } from '@remix-run/react';
+import StockDisplay from './StockDisplay';
 
 interface PublishedProductsBoxProps {
   products: ProductEntity[];
@@ -57,6 +55,7 @@ export default function PublishedProductsBox({
               <TableCell>Name</TableCell>
               <TableCell>Code</TableCell>
               <TableCell>Stock Status</TableCell>
+              <TableCell>Current stock</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -72,10 +71,13 @@ export default function PublishedProductsBox({
                     size="small"
                   />
                 </TableCell>
+                <TableCell>
+                  <StockDisplay stockRemaining={product.stockRemaining || 0} />
+                </TableCell>
               </TableRow>
             ))}
             <TableRow>
-              <TableCell colSpan={4}>
+              <TableCell colSpan={5}>
                 <small>
                   <Link to="/products">Edit/View all coffees</Link>
                 </small>

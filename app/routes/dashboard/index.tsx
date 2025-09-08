@@ -128,6 +128,7 @@ export const loader = async () => {
       productCode: true,
       country: true,
       stockStatus: true,
+      stockRemaining: true,
     },
     take: 50,
   });
