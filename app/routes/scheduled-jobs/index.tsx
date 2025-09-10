@@ -234,13 +234,13 @@ export default function JobResultPage() {
               </TableCell>
               <TableCell>
                 <small>
-                  {toPrettyDateTime(importWooOrders?.createdAt, true)}
+                  {toPrettyDateTime(importWooOrdersFull?.createdAt, true)}
                 </small>
               </TableCell>
               <TableCell>
                 <fetcher.Form
                   method="post"
-                  action="/api/woo-import-orders-full"
+                  action="/api/woo-import-orders?full=true"
                 >
                   <FormControl sx={{ m: 1 }}>
                     <Button
@@ -303,13 +303,16 @@ export default function JobResultPage() {
               </TableCell>
               <TableCell>
                 <small>
-                  {toPrettyDateTime(importWooSubscriptions?.createdAt, true)}
+                  {toPrettyDateTime(
+                    importWooSubscriptionsFull?.createdAt,
+                    true
+                  )}
                 </small>
               </TableCell>
               <TableCell>
                 <fetcher.Form
                   method="post"
-                  action="/api/woo-import-subscriptions-full"
+                  action="/api/woo-import-subscriptions?full=true"
                 >
                   <FormControl sx={{ m: 1 }}>
                     <Button
