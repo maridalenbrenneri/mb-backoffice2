@@ -29,11 +29,11 @@ import { getJobResults } from '~/services/job-result.service';
 import { toPrettyDateTime } from '~/utils/dates';
 import { JobResultEntity } from '~/services/entities';
 
+// TODO: Use this to make UI more dynamic (lot's of duplicated code now)
 const jobInfos = [
   {
     name: 'woo-import-orders',
-    description:
-      'Import of orders from Woo updated in last 1 day. Fetches all orders. Status changes are synced with Backoffice, but no other changes are updated after first import. Runs every 30 minutes between 06:00 and 23:00.',
+    description: '',
   },
   {
     name: 'woo-import-orders-all',
@@ -41,8 +41,7 @@ const jobInfos = [
   },
   {
     name: 'woo-import-subscriptions',
-    description:
-      'Import of subscriptions from Woo updated in last 1 day. Runs every hour between 06:00 and 23:00. Fetches all subscriptions monthly.',
+    description: '',
   },
   {
     name: 'woo-import-subscriptions-all',
@@ -50,23 +49,19 @@ const jobInfos = [
   },
   {
     name: 'woo-product-sync-status',
-    description:
-      'Sync product status and stock status from Woo to Backoffice (if changes done in Woo admin). Runs every hour',
+    description: '',
   },
   {
     name: 'woo-product-cleanup',
-    description:
-      "Sets status 'deleted' on any products that are deleted in Woo. Runs once a week.",
+    description: '',
   },
   {
     name: 'update-status-on-gift-subscriptions',
-    description:
-      'Resolves and updates status on any gift subscription that has expired or should be started . Runs once a day at 04:00',
+    description: '',
   },
   {
     name: 'create-renewal-orders',
-    description:
-      'Creates renewal orders for active gift and B2B subscriptions. Runs every Thursday at 05:00.',
+    description: '',
   },
 ];
 
@@ -114,6 +109,8 @@ export default function JobResultPage() {
   // Get unique job names for the filter options
   const uniqueJobNames = jobInfos.map((j) => j.name);
 
+  // Is running
+
   const isRunningSyncWooProductStatus =
     fetcher.state === 'submitting' &&
     fetcher.formData?.get('_action') === 'woo-product-sync-status';
@@ -126,9 +123,17 @@ export default function JobResultPage() {
     fetcher.state === 'submitting' &&
     fetcher.formData?.get('_action') === 'woo-import-orders';
 
+  const isRunningImportWooOrdersFull =
+    fetcher.state === 'submitting' &&
+    fetcher.formData?.get('_action') === 'woo-import-orders-full';
+
   const isRunningImportWooSubscriptions =
     fetcher.state === 'submitting' &&
     fetcher.formData?.get('_action') === 'woo-import-subscriptions';
+
+  const isRunningImportWooSubscriptionsFull =
+    fetcher.state === 'submitting' &&
+    fetcher.formData?.get('_action') === 'woo-import-subscriptions-full';
 
   const isRunningUpdateStatusOnGiftSubscriptions =
     fetcher.state === 'submitting' &&
@@ -137,6 +142,8 @@ export default function JobResultPage() {
   const isRunningCreateRenewalOrders =
     fetcher.state === 'submitting' &&
     fetcher.formData?.get('_action') === 'create-renewal-orders';
+
+  // Results
 
   const syncWooProductStatus = jobResult.find(
     (r) => r.name === 'woo-product-sync-status'
@@ -147,12 +154,23 @@ export default function JobResultPage() {
   );
 
   const importWooOrders = jobResult.find((r) => r.name === 'woo-import-orders');
+
+  const importWooOrdersFull = jobResult.find(
+    (r) => r.name === 'woo-import-orders-full'
+  );
+
   const importWooSubscriptions = results.find(
     (r) => r.name === 'woo-import-subscriptions'
   );
+
+  const importWooSubscriptionsFull = jobResult.find(
+    (r) => r.name === 'woo-import-subscriptions-full'
+  );
+
   const updateStatusOnGiftSubscriptions = jobResult.find(
     (r) => r.name === 'update-status-on-gift-subscriptions'
   );
+
   const createRenewalOrders = jobResult.find(
     (r) => r.name === 'create-renewal-orders'
   );
@@ -209,6 +227,39 @@ export default function JobResultPage() {
             <TableRow
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
+              <TableCell>woo-import-orders-full</TableCell>
+              <TableCell>
+                Import of orders from Woo updated in the last 3o days. Runs
+                weekly.
+              </TableCell>
+              <TableCell>
+                <small>
+                  {toPrettyDateTime(importWooOrders?.createdAt, true)}
+                </small>
+              </TableCell>
+              <TableCell>
+                <fetcher.Form
+                  method="post"
+                  action="/api/woo-import-orders-full"
+                >
+                  <FormControl sx={{ m: 1 }}>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="woo-import-orders-full"
+                      disabled={isRunningImportWooOrdersFull}
+                      sx={{ whiteSpace: 'nowrap' }}
+                    >
+                      {isRunningImportWooOrdersFull ? 'Running...' : 'Run now'}
+                    </Button>
+                  </FormControl>
+                </fetcher.Form>
+              </TableCell>
+            </TableRow>
+
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
               <TableCell>woo-import-subscriptions</TableCell>
               <TableCell>
                 Import of subscriptions from Woo updated in last 1 day. Runs
@@ -234,6 +285,41 @@ export default function JobResultPage() {
                       sx={{ whiteSpace: 'nowrap' }}
                     >
                       {isRunningImportWooSubscriptions
+                        ? 'Running...'
+                        : 'Run now'}
+                    </Button>
+                  </FormControl>
+                </fetcher.Form>
+              </TableCell>
+            </TableRow>
+
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell>woo-import-subscriptions-full</TableCell>
+              <TableCell>
+                Import of subscriptions from Woo updated in the last 30 days.
+                Runs weekly
+              </TableCell>
+              <TableCell>
+                <small>
+                  {toPrettyDateTime(importWooSubscriptions?.createdAt, true)}
+                </small>
+              </TableCell>
+              <TableCell>
+                <fetcher.Form
+                  method="post"
+                  action="/api/woo-import-subscriptions-full"
+                >
+                  <FormControl sx={{ m: 1 }}>
+                    <Button
+                      type="submit"
+                      name="_action"
+                      value="woo-import-subscriptions-full"
+                      disabled={isRunningImportWooSubscriptionsFull}
+                      sx={{ whiteSpace: 'nowrap' }}
+                    >
+                      {isRunningImportWooSubscriptionsFull
                         ? 'Running...'
                         : 'Run now'}
                     </Button>
@@ -281,7 +367,7 @@ export default function JobResultPage() {
               <TableCell>woo-product-cleanup</TableCell>
               <TableCell>
                 Sets status 'deleted' on any products that are deleted in Woo.
-                Runs once a week.
+                Runs weekly.
               </TableCell>
               <TableCell>
                 <small>

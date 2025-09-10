@@ -11,7 +11,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   const url = new URL(request.url);
 
-  let all = url.searchParams.get('full') === 'true';
+  let full = url.searchParams.get('full') === 'true';
 
   const name = full
     ? 'woo-import-subscriptions-full'
@@ -22,7 +22,7 @@ export const action: ActionFunction = async ({ request }) => {
   console.time('woo-import-subscriptions');
 
   try {
-    let result = await woo.importWooSubscriptions(all);
+    let result = await woo.importWooSubscriptions(full);
 
     await createJobResult({
       jobStartedAt,
