@@ -54,6 +54,7 @@ export const updateAction = async (values: any) => {
     coffee_processType: values.processType as string | null,
     coffee_cuppingScore: +values.cuppingScore,
     retailPrice: values.regularPrice as string | null,
+    purchasePrice: +values.purchasePrice as number | null,
     description: values.description as string | null,
     wooProductId: +values.wooProductId,
   };

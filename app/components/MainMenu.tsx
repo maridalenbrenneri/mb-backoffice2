@@ -79,7 +79,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <CoffeeIcon />
-                <ListItemText primary="Products" />
+                <ListItemText primary="Coffees & Inventory" />
               </ListItemButton>
 
               <Divider />

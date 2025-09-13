@@ -63,7 +63,7 @@ export default function SetProductCodeDialog(props: {
             </Grid>
             <Grid item xs={6} style={{ textAlign: 'left' }}>
               <Button
-                variant="contained"
+                variant="outlined"
                 onClick={onClose}
                 sx={{ m: 2, marginTop: 4 }}
               >

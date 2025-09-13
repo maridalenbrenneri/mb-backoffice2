@@ -24,8 +24,6 @@ import { ActionFunction } from '@remix-run/node';
 import { WOO_PRODUCT_REGULAR_PRICE_DEFAULT } from '~/settings';
 
 export const action: ActionFunction = async ({ request }) => {
-  console.log('AM I HERE IN NEW');
-
   const formData = await request.formData();
   const { ...values } = Object.fromEntries(formData);
 
@@ -68,7 +66,7 @@ export default function NewProduct() {
         '& .MuiTextField-root': { m: 1, minWidth: 250 },
       }}
     >
-      <Typography variant="h2">Create New Product</Typography>
+      <Typography variant="h2">Add new coffee</Typography>
       <Form method="post">
         <div>
           {renderCountries(formValues.country, (value) =>
@@ -215,7 +213,7 @@ export default function NewProduct() {
         <div>
           <FormControl sx={{ m: 1 }}>
             <Button type="submit" disabled={isCreating} variant="contained">
-              {isCreating ? 'Creating...' : 'Create Product'}
+              {isCreating ? 'Creating...' : 'Create coffee'}
             </Button>
           </FormControl>
           <FormControl sx={{ m: 1 }}>
@@ -227,14 +225,14 @@ export default function NewProduct() {
 
         <div>
           <Alert severity="info">
-            The product will be created with draft status in Woo.
+            The coffee product will be created with draft status in Woo.
             <p>
               Country is added to the name in Woo (don't add it to the name
               here)
             </p>
             <p>
-              Bean type, process and score are added to the product description
-              in Woo.
+              Bean type, process and score are added to the coffee product
+              description in Woo.
             </p>
           </Alert>
         </div>

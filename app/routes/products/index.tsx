@@ -26,10 +26,14 @@ import {
   MenuItem,
   Select,
   Snackbar,
+  Tab,
+  Tabs,
   Tooltip,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import EditIcon from '@mui/icons-material/Edit';
 
 import {
   ProductStatus,
@@ -72,6 +76,7 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState<ProductEntity | null>(
     null
   );
+  const [tabValue, setTabValue] = useState(0);
 
   const [
     isSetProductStockStatusDialogOpen,
@@ -100,6 +105,10 @@ export default function Products() {
 
   const doSubmit = (data: any) => {
     submit(data, { replace: true });
+  };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
   };
 
   const handleSelectStatus = (e: any) => {
@@ -181,212 +190,289 @@ export default function Products() {
         </Alert>
       </Snackbar>
 
-      <Typography variant="h1">Products</Typography>
-
-      <Box sx={{ m: 1, p: 2 }}>
-        <Button href="/products/admin/new" variant="contained">
-          Create a new product
-        </Button>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={tabValue} onChange={handleTabChange}>
+          <Tab label="Coffees" />
+          <Tab label="Inventory" />
+        </Tabs>
       </Box>
 
-      <Form method="get">
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`product-status`}>Webshop status</InputLabel>
-          <Select
-            labelId={`product-status`}
-            name={`status`}
-            defaultValue={status}
-            onChange={handleSelectStatus}
-            sx={{ minWidth: 250 }}
-            size="small"
-          >
-            <MenuItem value={'_in_webshop'}>All</MenuItem>
-            <MenuItem value={ProductStatus.PUBLISHED}>Published</MenuItem>
-            <MenuItem value={'_not_published'}>Not published</MenuItem>
-            <MenuItem value={ProductStatus.DELETED}>
-              <em>Deleted</em>
-            </MenuItem>
-          </Select>
-        </FormControl>
+      {tabValue === 0 && (
+        <Box>
+          <Box sx={{ m: 1, p: 2 }}>
+            <Button href="/products/admin/new" variant="contained">
+              Add new coffee
+            </Button>
+          </Box>
 
-        <FormControl sx={{ m: 1 }}>
-          <InputLabel id={`product-stock-status`}>Stock status</InputLabel>
-          <Select
-            labelId={`product-stock-status`}
-            name={`stockStatus`}
-            defaultValue={stockStatus}
-            onChange={handleSelectStockStatus}
-            sx={{ minWidth: 250 }}
-            size="small"
-          >
-            <MenuItem value={'_all'}>All</MenuItem>
-            <MenuItem value={'_backorder_in_stock'}>
-              On backorder & In stock
-            </MenuItem>
-            <MenuItem value={ProductStockStatus.ON_BACKORDER}>
-              On backorder
-            </MenuItem>
-            <MenuItem value={ProductStockStatus.IN_STOCK}>In stock</MenuItem>
-            <MenuItem value={ProductStockStatus.OUT_OF_STOCK}>
-              Out of stock
-            </MenuItem>
-          </Select>
-        </FormControl>
-      </Form>
-
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Id</TableCell>
-              <TableCell>Country</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Code</TableCell>
-              <TableCell>In webshop</TableCell>
-              <TableCell>Stock status</TableCell>
-              <TableCell>Current stock</TableCell>
-              <TableCell>Labels printed</TableCell>
-              <TableCell>Info link</TableCell>
-              <TableCell>Woo id</TableCell>
-              <TableCell>Updated</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {products.map((product: ProductEntity) => (
-              <TableRow
-                key={product.id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+          <Form method="get">
+            <FormControl sx={{ m: 1 }}>
+              <InputLabel id={`product-status`}>Webshop status</InputLabel>
+              <Select
+                labelId={`product-status`}
+                name={`status`}
+                defaultValue={status}
+                onChange={handleSelectStatus}
+                sx={{ minWidth: 250 }}
+                size="small"
               >
-                <TableCell>
-                  <Link to={`admin/${product.id}`}>{product.id}</Link>
-                </TableCell>
-                <TableCell>{product.coffee_country || ''}</TableCell>
-                <TableCell>{product.name}</TableCell>
-                <TableCell>
-                  {product.productCode ? (
-                    <span>{product.productCode} </span>
-                  ) : (
-                    <small style={{ fontStyle: 'italic' }}>n/a</small>
-                  )}
-                </TableCell>
+                <MenuItem value={'_in_webshop'}>All</MenuItem>
+                <MenuItem value={ProductStatus.PUBLISHED}>Published</MenuItem>
+                <MenuItem value={'_not_published'}>Not published</MenuItem>
+                <MenuItem value={ProductStatus.DELETED}>
+                  <em>Deleted</em>
+                </MenuItem>
+              </Select>
+            </FormControl>
 
-                <TableCell>
-                  <div>
-                    {product.status === ProductStatus.PUBLISHED ? (
-                      <span
-                        style={{
-                          backgroundColor: '#2e7d32',
-                          color: '#fff',
-                          padding: '2px 6px',
-                          borderRadius: 3,
-                          fontSize: 10,
-                          display: 'inline-block',
-                        }}
-                      >
-                        YES
-                      </span>
-                    ) : product.status === ProductStatus.PRIVATE ||
-                      product.status === ProductStatus.DRAFT ? (
-                      <div>
-                        <small>Not published</small>
-                        <Tooltip
-                          title={
-                            hasAllRequiredFields(product)
-                              ? 'Valid for publication'
-                              : 'Missing fields, product is not ready to be published. Country, name, bean type, process type, cupping score and description are required.'
-                          }
+            <FormControl sx={{ m: 1 }}>
+              <InputLabel id={`product-stock-status`}>Stock status</InputLabel>
+              <Select
+                labelId={`product-stock-status`}
+                name={`stockStatus`}
+                defaultValue={stockStatus}
+                onChange={handleSelectStockStatus}
+                sx={{ minWidth: 250 }}
+                size="small"
+              >
+                <MenuItem value={'_all'}>All</MenuItem>
+                <MenuItem value={'_backorder_in_stock'}>
+                  On backorder & In stock
+                </MenuItem>
+                <MenuItem value={ProductStockStatus.ON_BACKORDER}>
+                  On backorder
+                </MenuItem>
+                <MenuItem value={ProductStockStatus.IN_STOCK}>
+                  In stock
+                </MenuItem>
+                <MenuItem value={ProductStockStatus.OUT_OF_STOCK}>
+                  Out of stock
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Form>
+
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Id</TableCell>
+                  <TableCell>Country</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Code</TableCell>
+                  <TableCell>In webshop</TableCell>
+                  <TableCell>Stock status</TableCell>
+                  <TableCell>Current stock</TableCell>
+                  <TableCell>Labels printed</TableCell>
+                  <TableCell>Info link</TableCell>
+                  <TableCell>Woo id</TableCell>
+                  <TableCell>Updated</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {products.map((product: ProductEntity) => (
+                  <TableRow
+                    key={product.id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell>
+                      <Tooltip title="Edit coffee">
+                        <Link
+                          to={`admin/${product.id}`}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            textDecoration: 'underline',
+                            color: '#1976d2',
+                          }}
                         >
+                          {product.id}
+                          <EditIcon fontSize="small" sx={{ opacity: 0.6 }} />
+                        </Link>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell>{product.coffee_country || ''}</TableCell>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>
+                      {product.productCode ? (
+                        <span>{product.productCode} </span>
+                      ) : (
+                        <small style={{ fontStyle: 'italic' }}>n/a</small>
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      <div>
+                        {product.status === ProductStatus.PUBLISHED ? (
                           <span
                             style={{
-                              display: 'inline-flex',
-                              alignItems: 'baseline',
-                              verticalAlign: 'middle',
+                              backgroundColor: '#2e7d32',
+                              color: '#fff',
+                              padding: '2px 6px',
+                              borderRadius: 3,
+                              fontSize: 10,
+                              display: 'inline-block',
                             }}
                           >
-                            {hasAllRequiredFields(product) ? (
-                              <CheckCircleIcon
-                                color="success"
-                                fontSize="small"
-                                sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
-                              />
-                            ) : (
-                              <WarningIcon
-                                color="warning"
-                                fontSize="small"
-                                sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
-                              />
-                            )}
+                            YES
                           </span>
-                        </Tooltip>
+                        ) : product.status === ProductStatus.PRIVATE ||
+                          product.status === ProductStatus.DRAFT ? (
+                          <div>
+                            <small>Not published</small>
+                            <Tooltip
+                              title={
+                                hasAllRequiredFields(product)
+                                  ? 'Valid for publication'
+                                  : 'Missing fields, product is not ready to be published. Country, name, bean type, process type, cupping score and description are required.'
+                              }
+                            >
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'baseline',
+                                  verticalAlign: 'middle',
+                                }}
+                              >
+                                {hasAllRequiredFields(product) ? (
+                                  <CheckCircleIcon
+                                    color="success"
+                                    fontSize="small"
+                                    sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
+                                  />
+                                ) : (
+                                  <WarningIcon
+                                    color="warning"
+                                    fontSize="small"
+                                    sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
+                                  />
+                                )}
+                              </span>
+                            </Tooltip>
+                          </div>
+                        ) : (
+                          <small>{product.status}</small>
+                        )}
                       </div>
-                    ) : (
-                      <small>{product.status}</small>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    sx={{
-                      textTransform: 'none',
-                      color: 'black',
-                    }}
-                    onClick={() => openSetProductStockStatusDialog(product)}
-                    variant="text"
-                  >
-                    <StockStatusDisplay stockStatus={product.stockStatus} />
-                  </Button>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    sx={{
-                      textTransform: 'none',
-                    }}
-                    onClick={() => openSetProductStockRemainingDialog(product)}
-                    variant="text"
-                  >
-                    <StockDisplay
-                      stockRemaining={product.stockRemaining || 0}
-                    />
-                  </Button>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    sx={{
-                      textTransform: 'none',
-                      color: 'black',
-                    }}
-                    onClick={() => openSetProductLabelsPrintedDialog(product)}
-                    variant="text"
-                  >
-                    {product.coffee_labelsPrinted ? 'Yes' : 'No'}
-                  </Button>
-                </TableCell>
-                <TableCell>
-                  {product.infoLink ? (
-                    <a href={product.infoLink} target="_blank" rel="noreferrer">
-                      {'link'}
-                    </a>
-                  ) : (
-                    'n/a'
-                  )}
-                </TableCell>
-                <TableCell>
-                  <a
-                    href={product.wooProductUrl || ''}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {product.wooProductId}
-                  </a>
-                </TableCell>
-                <TableCell>
-                  <small>{toPrettyDateTime(product.updatedAt, false)}</small>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        sx={{
+                          textTransform: 'none',
+                          color: 'black',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer',
+                          },
+                          borderRadius: 1,
+                          padding: '4px 8px',
+                          minWidth: 'auto',
+                        }}
+                        onClick={() => openSetProductStockStatusDialog(product)}
+                        variant="text"
+                      >
+                        <StockStatusDisplay stockStatus={product.stockStatus} />
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        sx={{
+                          textTransform: 'none',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer',
+                          },
+                          borderRadius: 1,
+                          padding: '4px 8px',
+                          minWidth: 'auto',
+                        }}
+                        onClick={() =>
+                          openSetProductStockRemainingDialog(product)
+                        }
+                        variant="text"
+                      >
+                        <StockDisplay
+                          stockRemaining={product.stockRemaining || 0}
+                        />
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        sx={{
+                          textTransform: 'none',
+                          color: 'black',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer',
+                          },
+                          borderRadius: 1,
+                          padding: '4px 8px',
+                          minWidth: 'auto',
+                        }}
+                        onClick={() =>
+                          openSetProductLabelsPrintedDialog(product)
+                        }
+                        variant="text"
+                      >
+                        {product.coffee_labelsPrinted ? 'Yes' : 'No'}
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      {product.infoLink ? (
+                        <a
+                          href={product.infoLink}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {'link'}
+                        </a>
+                      ) : (
+                        'n/a'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="View product in Woo">
+                        <a
+                          href={product.wooProductUrl || ''}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            textDecoration: 'underline',
+                            color: '#1976d2',
+                          }}
+                        >
+                          {product.wooProductId}
+                          <OpenInNewIcon
+                            fontSize="small"
+                            sx={{ opacity: 0.6 }}
+                          />
+                        </a>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell>
+                      <small>
+                        {toPrettyDateTime(product.updatedAt, false)}
+                      </small>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
+
+      {tabValue === 1 && (
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h6" color="text.secondary">
+            Inventory coming soon...
+          </Typography>
+        </Box>
+      )}
 
       <SetProductStockStatusDialog
         product={selectedProduct}

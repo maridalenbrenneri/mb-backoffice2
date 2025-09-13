@@ -118,16 +118,28 @@ export default function UpdateProduct() {
     cuppingScore: String(loadedProduct.coffee_cuppingScore || 0),
     regularPrice:
       loadedProduct.retailPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
+    purchasePrice: loadedProduct.purchasePrice || 0,
     description: loadedProduct.description || '',
   });
 
   // Check for form changes
   const checkFormChanges = () => {
-    const hasFormChanges = Object.keys(initialFormValues).some(
-      (key) =>
-        initialFormValues[key as keyof typeof initialFormValues] !==
-        formValues[key as keyof typeof formValues]
-    );
+    const hasFormChanges = Object.keys(initialFormValues).some((key) => {
+      const initialValue =
+        initialFormValues[key as keyof typeof initialFormValues];
+      const currentValue = formValues[key as keyof typeof formValues];
+
+      // Special handling for numeric values to ensure proper comparison
+      if (
+        key === 'purchasePrice' ||
+        key === 'stockInitial' ||
+        key === 'stockRemaining'
+      ) {
+        return Number(initialValue) !== Number(currentValue);
+      }
+
+      return initialValue !== currentValue;
+    });
 
     setHasChanges(hasFormChanges);
   };
@@ -146,6 +158,31 @@ export default function UpdateProduct() {
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
       handleFormChange('cuppingScore', value);
     }
+  };
+
+  const handlePurchasePriceChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    let value = e.target.value;
+
+    // Remove any non-numeric characters except decimal point
+    value = value.replace(/[^0-9.]/g, '');
+
+    // Prevent multiple decimal points
+    const decimalCount = (value.match(/\./g) || []).length;
+    if (decimalCount > 1) {
+      return;
+    }
+
+    // Only allow up to two decimal places
+    if (value.includes('.')) {
+      const parts = value.split('.');
+      if (parts[1] && parts[1].length > 2) {
+        return;
+      }
+    }
+
+    handleFormChange('purchasePrice', value);
   };
 
   // Check for changes whenever formValues changes
@@ -429,12 +466,19 @@ export default function UpdateProduct() {
                 name="purchasePrice"
                 label="Purchase price, kg (USD)"
                 variant="outlined"
-                disabled={true}
                 value={formValues.purchasePrice}
-                onChange={(e) =>
-                  handleFormChange('purchasePrice', Number(e.target.value))
-                }
+                onChange={handlePurchasePriceChange}
                 size="small"
+                InputProps={{
+                  startAdornment: (
+                    <span style={{ marginRight: 8, color: '#666' }}>$</span>
+                  ),
+                }}
+                placeholder="0.00"
+                inputProps={{
+                  inputMode: 'decimal',
+                  pattern: '[0-9]*\\.?[0-9]{0,2}',
+                }}
               />
             </FormControl>
 
@@ -540,10 +584,10 @@ export default function UpdateProduct() {
 
       <Seperator />
 
-      {/* <Typography variant="h5" sx={{ marginTop: '25px' }}>
+      <Typography variant="h5" sx={{ marginTop: '25px' }}>
         Björn's debug stuff
       </Typography>
-      <div>{JSON.stringify(loadedProduct, null, 2)}</div> */}
+      <div>{JSON.stringify(loadedProduct, null, 2)}</div>
     </Box>
   );
 }
