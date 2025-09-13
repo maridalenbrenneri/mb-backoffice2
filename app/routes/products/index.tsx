@@ -150,11 +150,11 @@ export default function Products() {
 
   const hasAllRequiredFields = (product: ProductEntity): boolean => {
     return !!(
-      product.country &&
+      product.coffee_country &&
       product.name &&
-      product.beanType &&
-      product.processType &&
-      product.cuppingScore &&
+      product.coffee_beanType &&
+      product.coffee_processType &&
+      product.coffee_cuppingScore &&
       product.description
     );
   };
@@ -260,7 +260,7 @@ export default function Products() {
                 <TableCell>
                   <Link to={`admin/${product.id}`}>{product.id}</Link>
                 </TableCell>
-                <TableCell>{product.country || ''}</TableCell>
+                <TableCell>{product.coffee_country || ''}</TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>
                   {product.productCode ? (
@@ -358,7 +358,7 @@ export default function Products() {
                     onClick={() => openSetProductLabelsPrintedDialog(product)}
                     variant="text"
                   >
-                    {product.labelsPrinted ? 'Yes' : 'No'}
+                    {product.coffee_labelsPrinted ? 'Yes' : 'No'}
                   </Button>
                 </TableCell>
                 <TableCell>

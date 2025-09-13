@@ -82,20 +82,21 @@ export default function UpdateProduct() {
 
   // Add state for form values to track changes
   const [formValues, setFormValues] = useState({
-    country: loadedProduct.country || '',
+    country: loadedProduct.coffee_country || '',
     name: loadedProduct.name,
     productCode: loadedProduct.productCode || '',
     stockStatus: loadedProduct.stockStatus,
     stockInitial: loadedProduct.stockInitial || 0,
     stockRemaining: loadedProduct.stockRemaining || 0,
     infoLink: loadedProduct.infoLink || '',
-    labelsPrinted: loadedProduct.labelsPrinted,
+    labelsPrinted: loadedProduct.coffee_labelsPrinted,
     internalNote: loadedProduct.internalNote || '',
-    beanType: loadedProduct.beanType || '',
-    processType: loadedProduct.processType || 'washed',
-    cuppingScore: String(loadedProduct.cuppingScore || 0),
+    beanType: loadedProduct.coffee_beanType || '',
+    processType: loadedProduct.coffee_processType || 'washed',
+    cuppingScore: String(loadedProduct.coffee_cuppingScore || 0),
     regularPrice:
-      loadedProduct.regularPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
+      loadedProduct.retailPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
+    purchasePrice: loadedProduct.purchasePrice || 0,
     description: loadedProduct.description || '',
   });
 
@@ -103,20 +104,20 @@ export default function UpdateProduct() {
 
   // Create initial form values object
   const [initialFormValues, setInitialFormValues] = useState({
-    country: loadedProduct.country || '',
+    country: loadedProduct.coffee_country || '',
     name: loadedProduct.name,
     productCode: loadedProduct.productCode || '',
     stockStatus: loadedProduct.stockStatus,
     stockInitial: loadedProduct.stockInitial || 0,
     stockRemaining: loadedProduct.stockRemaining || 0,
     infoLink: loadedProduct.infoLink || '',
-    labelsPrinted: loadedProduct.labelsPrinted,
+    labelsPrinted: loadedProduct.coffee_labelsPrinted,
     internalNote: loadedProduct.internalNote || '',
-    beanType: loadedProduct.beanType || '',
-    processType: loadedProduct.processType || 'washed',
-    cuppingScore: String(loadedProduct.cuppingScore || 0),
+    beanType: loadedProduct.coffee_beanType || '',
+    processType: loadedProduct.coffee_processType || 'washed',
+    cuppingScore: String(loadedProduct.coffee_cuppingScore || 0),
     regularPrice:
-      loadedProduct.regularPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
+      loadedProduct.retailPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
     description: loadedProduct.description || '',
   });
 
@@ -171,20 +172,21 @@ export default function UpdateProduct() {
   // Update form values when loadedProduct changes (after revalidation)
   useEffect(() => {
     const updatedFormValues = {
-      country: loadedProduct.country || '',
+      country: loadedProduct.coffee_country || '',
       name: loadedProduct.name,
       productCode: loadedProduct.productCode || '',
       stockStatus: loadedProduct.stockStatus,
       stockInitial: loadedProduct.stockInitial || 0,
       stockRemaining: loadedProduct.stockRemaining || 0,
       infoLink: loadedProduct.infoLink || '',
-      labelsPrinted: loadedProduct.labelsPrinted,
+      labelsPrinted: loadedProduct.coffee_labelsPrinted,
       internalNote: loadedProduct.internalNote || '',
-      beanType: loadedProduct.beanType || '',
-      processType: loadedProduct.processType || 'washed',
-      cuppingScore: String(loadedProduct.cuppingScore || 0),
+      beanType: loadedProduct.coffee_beanType || '',
+      processType: loadedProduct.coffee_processType || 'washed',
+      cuppingScore: String(loadedProduct.coffee_cuppingScore || 0),
       regularPrice:
-        loadedProduct.regularPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
+        loadedProduct.retailPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
+      purchasePrice: loadedProduct.purchasePrice || 0,
       description: loadedProduct.description || '',
     };
 
@@ -425,13 +427,13 @@ export default function UpdateProduct() {
             <FormControl>
               <TextField
                 name="purchasePrice"
-                label="Purchase price"
+                label="Purchase price, kg (USD)"
                 variant="outlined"
                 disabled={true}
-                // value={formValues.purchasePrice}
-                // onChange={(e) =>
-                //   handleFormChange('purchasePrice', Number(e.target.value))
-                // }
+                value={formValues.purchasePrice}
+                onChange={(e) =>
+                  handleFormChange('purchasePrice', Number(e.target.value))
+                }
                 size="small"
               />
             </FormControl>

@@ -37,7 +37,7 @@ export default function SetProductLabelsPrintedDialog(props: {
                 <Select
                   labelId={`product-set-labels-printed`}
                   name={`labelsPrinted`}
-                  defaultValue={product?.labelsPrinted}
+                  defaultValue={product?.coffee_labelsPrinted}
                   sx={{ minWidth: 200, marginBottom: 2 }}
                   size="small"
                 >

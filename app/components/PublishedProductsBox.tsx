@@ -61,7 +61,7 @@ export default function PublishedProductsBox({
           <TableBody>
             {products.map((product) => (
               <TableRow key={product.id}>
-                <TableCell>{product.country || '-'}</TableCell>
+                <TableCell>{product.coffee_country || '-'}</TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>{product.productCode || '-'}</TableCell>
                 <TableCell>

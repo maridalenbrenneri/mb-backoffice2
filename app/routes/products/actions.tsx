@@ -51,7 +51,7 @@ const updateStockRemaining = async (values: any) => {
 
 const updateLabelsPrinted = async (values: any) => {
   const result = await updateProduct(+values.id, {
-    labelsPrinted: values.labelsPrinted,
+    coffee_labelsPrinted: values.labelsPrinted,
   });
 
   if (result.kind !== 'success') {

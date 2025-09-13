@@ -126,7 +126,7 @@ export const loader = async () => {
       id: true,
       name: true,
       productCode: true,
-      country: true,
+      coffee_country: true,
       stockStatus: true,
       stockRemaining: true,
     },

@@ -126,17 +126,18 @@ export async function updateProduct(id: number, data: Partial<ProductEntity>) {
   const doUpdateInWoo =
     existingProduct.wooProductId &&
     ((data.name !== undefined && existingProduct.name != data.name) ||
-      (data.country !== undefined && existingProduct.country != data.country) ||
+      (data.coffee_country !== undefined &&
+        existingProduct.coffee_country != data.coffee_country) ||
       (data.description !== undefined &&
         existingProduct.description != data.description) ||
-      (data.beanType !== undefined &&
-        existingProduct.beanType != data.beanType) ||
-      (data.processType !== undefined &&
-        existingProduct.processType != data.processType) ||
-      (data.cuppingScore !== undefined &&
-        existingProduct.cuppingScore != data.cuppingScore) ||
-      (data.regularPrice !== undefined &&
-        existingProduct.regularPrice != data.regularPrice) ||
+      (data.coffee_beanType !== undefined &&
+        existingProduct.coffee_beanType != data.coffee_beanType) ||
+      (data.coffee_processType !== undefined &&
+        existingProduct.coffee_processType != data.coffee_processType) ||
+      (data.coffee_cuppingScore !== undefined &&
+        existingProduct.coffee_cuppingScore != data.coffee_cuppingScore) ||
+      (data.retailPrice !== undefined &&
+        existingProduct.retailPrice != data.retailPrice) ||
       (data.stockStatus !== undefined &&
         existingProduct.stockStatus != data.stockStatus));
 
@@ -276,7 +277,7 @@ function toCreateWooProductData(
     categories: [{ id: WOO_PRODUCT_CATEGORY_BUTIKK_ID }],
     name: createFullProductName(data),
     short_description: createFullProductDescription(data),
-    regular_price: data.regularPrice || '',
+    regular_price: data.retailPrice || '',
     weight: WOO_PRODUCT_WEIGHT_DEFAULT,
     shipping_class: WOO_PRODUCT_SHIPPING_CLASS_DEFAULT,
   };
@@ -293,7 +294,7 @@ function toUpdateWooProductData(
         ? createFullProductDescription(data)
         : undefined,
     regular_price:
-      data.regularPrice !== undefined ? data.regularPrice || '' : undefined,
+      data.retailPrice !== undefined ? data.retailPrice || '' : undefined,
   };
 }
 
