@@ -283,8 +283,7 @@ export default function Products() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
-                            textDecoration: 'underline',
-                            color: '#1976d2',
+                            color: '#0000EE',
                           }}
                         >
                           {product.id}
@@ -442,7 +441,7 @@ export default function Products() {
                             alignItems: 'center',
                             gap: '4px',
                             textDecoration: 'underline',
-                            color: '#1976d2',
+                            color: '##0000EE',
                           }}
                         >
                           {product.wooProductId}

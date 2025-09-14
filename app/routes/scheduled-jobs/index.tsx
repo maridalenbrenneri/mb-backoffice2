@@ -36,7 +36,7 @@ const jobInfos = [
     description: '',
   },
   {
-    name: 'woo-import-orders-all',
+    name: 'woo-import-orders-full',
     description: '',
   },
   {
@@ -44,7 +44,7 @@ const jobInfos = [
     description: '',
   },
   {
-    name: 'woo-import-subscriptions-all',
+    name: 'woo-import-subscriptions-full',
     description: '',
   },
   {
@@ -159,7 +159,7 @@ export default function JobResultPage() {
     (r) => r.name === 'woo-import-orders-full'
   );
 
-  const importWooSubscriptions = results.find(
+  const importWooSubscriptions = jobResult.find(
     (r) => r.name === 'woo-import-subscriptions'
   );
 

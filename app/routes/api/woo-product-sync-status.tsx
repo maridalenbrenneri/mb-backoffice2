@@ -9,7 +9,7 @@ export const action: ActionFunction = async ({ request }) => {
   if (request.method !== 'POST')
     return json({ message: 'Method not allowed' }, 405);
 
-  const name = 'woo-products-sync-status';
+  const name = 'woo-product-sync-status';
   const jobStartedAt = DateTime.now().toJSDate();
 
   try {

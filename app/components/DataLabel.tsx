@@ -5,11 +5,11 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableRow,
   Typography,
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { colors } from '~/style/colors';
 export default function DataLabel(props: {
@@ -28,8 +28,20 @@ export default function DataLabel(props: {
     if (data.dataLinkUrl) {
       if (data.dataLinkUrl.startsWith('http')) {
         return (
-          <a href={data.dataLinkUrl} target="_blank" rel="noreferrer">
+          <a
+            href={data.dataLinkUrl || ''}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              textDecoration: 'underline',
+              color: '##0000EE',
+            }}
+          >
             {data.data}
+            <OpenInNewIcon fontSize="small" sx={{ opacity: 0.6 }} />
           </a>
         );
       }
