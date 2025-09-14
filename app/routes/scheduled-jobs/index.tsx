@@ -1,5 +1,6 @@
 import { json } from '@remix-run/node';
 import {
+  Link,
   useFetcher,
   useLoaderData,
   useSearchParams,
@@ -28,6 +29,7 @@ import {
 import { getJobResults } from '~/services/job-result.service';
 import { toPrettyDateTime } from '~/utils/dates';
 import { JobResultEntity } from '~/services/entities';
+import Seperator from '~/components/Seperator';
 
 // TODO: Use this to make UI more dynamic (lot's of duplicated code now)
 const jobInfos = [
@@ -463,6 +465,24 @@ export default function JobResultPage() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Seperator />
+
+      <Link
+        to="https://console.cloud.google.com/cloudscheduler?project=maridalen-brenneri"
+        target="_blank"
+        rel="noreferrer"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px',
+          textDecoration: 'underline',
+          color: '##0000EE',
+        }}
+      >
+        View Schedule in Google Cloud
+      </Link>
+      <Seperator />
 
       <Typography variant="h2" sx={{ m: 2 }}>
         Job history
