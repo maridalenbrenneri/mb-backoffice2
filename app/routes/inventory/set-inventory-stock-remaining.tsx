@@ -6,14 +6,14 @@ import {
   Grid,
   TextField,
 } from '@mui/material';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 import type { ProductEntity } from '~/services/entities';
 import { Form } from '@remix-run/react';
 
 import { modalStyle } from '~/style/theme';
 
-export default function SetProductStockRemainingDialog(props: {
+export default function SetInventoryStockRemainingDialog(props: {
   product: ProductEntity | null;
   open: boolean;
   onClose: () => void;

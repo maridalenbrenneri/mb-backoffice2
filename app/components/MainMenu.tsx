@@ -15,6 +15,7 @@ import {
   ListItemButton,
   ListItemText,
 } from '@mui/material';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LocalPostOfficeIcon from '@mui/icons-material/LocalPostOffice';
 import CoffeeIcon from '@mui/icons-material/Coffee';
@@ -79,7 +80,16 @@ export default function MainMenu(props: { loggedIn: boolean }) {
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <CoffeeIcon />
-                <ListItemText primary="Coffees & Inventory" />
+                <ListItemText primary="Coffees" />
+              </ListItemButton>
+
+              <ListItemButton
+                component={Link}
+                to={'/inventory'}
+                onClick={() => setIsDrawerOpen(false)}
+              >
+                <InventoryIcon />
+                <ListItemText primary="Inventory" />
               </ListItemButton>
 
               <Divider />

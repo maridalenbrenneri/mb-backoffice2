@@ -192,8 +192,8 @@ export default function Products() {
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label="Coffees" />
-          <Tab label="Inventory" />
+          <Tab label="List View" />
+          <Tab label="Group View" />
         </Tabs>
       </Box>
 
@@ -468,7 +468,7 @@ export default function Products() {
       {tabValue === 1 && (
         <Box sx={{ p: 3 }}>
           <Typography variant="h6" color="text.secondary">
-            Inventory coming soon...
+            Coming soon...
           </Typography>
         </Box>
       )}

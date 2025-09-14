@@ -61,6 +61,13 @@ async function getAllProducts(filter?: any) {
   return repo.find({ where, order, take, select });
 }
 
+export async function getInventoryProducts(filter?: any) {
+  filter = filter || {};
+  filter.where = filter.where || {};
+  filter.where.category = 'inventory';
+  return await getAllProducts(filter);
+}
+
 export async function getCoffeeProducts(filter?: any) {
   filter = filter || {};
   filter.where = filter.where || {};

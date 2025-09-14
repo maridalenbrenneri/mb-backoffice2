@@ -1,24 +1,23 @@
-import { Edit } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
 
 interface StockDisplayProps {
   stockRemaining: number;
+  stockRemainingWarning?: number;
+  unit?: string;
 }
 
-export default function StockDisplay({ stockRemaining }: StockDisplayProps) {
-  const getBackgroundColor = (stock: number) => {
-    if (stock > 17) return '#2e7d32'; // Green
+export default function StockDisplay({
+  stockRemaining,
+  stockRemainingWarning = 17,
+  unit = 'kg',
+}: StockDisplayProps) {
+  let getBackgroundColor = (stock: number) => {
+    if (stock > stockRemainingWarning) return '#2e7d32'; // Green
     if (stock >= 1) return '#f57c00'; // Orange
-    return 'transparent'; // No color for 0
+    return 'red';
   };
 
-  const getTextColor = (stock: number) => {
-    if (stock > 1) return '#ffffff'; // White text on colored boxes
-    return '#000000'; // Black text on transparent
-  };
-
-  const backgroundColor = getBackgroundColor(stockRemaining);
-  const textColor = getTextColor(stockRemaining);
+  let backgroundColor = getBackgroundColor(stockRemaining);
 
   return (
     <Box
@@ -36,10 +35,10 @@ export default function StockDisplay({ stockRemaining }: StockDisplayProps) {
         sx={{
           fontWeight: 'medium',
           fontSize: '8',
-          color: textColor,
+          color: '#ffffff',
         }}
       >
-        {stockRemaining ? `${stockRemaining}kg` : '-'}
+        {stockRemaining ? `${stockRemaining}${unit}` : '-'}
       </Typography>
     </Box>
   );
