@@ -579,7 +579,7 @@ export default function UpdateProduct() {
       <Seperator />
 
       <Link style={{ margin: '10px' }} to="/products">
-        Back to Products
+        Back to Coffee List
       </Link>
 
       <Seperator />
