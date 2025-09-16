@@ -13,8 +13,14 @@ export function createFullProductDescription(product: Partial<ProductEntity>) {
   return `
     ${product.description} 
     
-    Bønnetype: ${product.coffee_beanType || ''}
-    Prosess: ${getProcessTypeDisplayName(product.coffee_processType || '')}
+    ${product.coffee_beanType ? `Bønnetype: ${product.coffee_beanType}` : ''}
+    ${
+      product.coffee_processType
+        ? `Prosess: ${getProcessTypeDisplayName(
+            product.coffee_processType || ''
+          )}`
+        : ''
+    }
     Cuppingscore: ${product.coffee_cuppingScore || ''}
     
     ${DESCRIPTION_FOOTER}`;
@@ -31,4 +37,42 @@ export function getProcessTypeDisplayName(processType: string) {
     default:
       return processType;
   }
+}
+
+export function validateCoffeForPublication(product: ProductEntity) {
+  let errors: string[] = [];
+  let warnings: string[] = [];
+
+  if (!product.coffee_country) {
+    errors.push('Country');
+  }
+
+  if (!product.name) {
+    errors.push('Name');
+  }
+
+  if (!product.coffee_processType) {
+    errors.push('Process type');
+  }
+
+  if (!product.coffee_cuppingScore) {
+    errors.push('Cupping score');
+  }
+
+  if (!product.description?.trim().length) {
+    errors.push('Description');
+  }
+
+  if (!product.coffee_beanType) {
+    warnings.push('Bean type');
+  }
+
+  if (product.description && product.description.length < 50) {
+    warnings.push('Description is very short');
+  }
+
+  return {
+    errors,
+    warnings,
+  };
 }

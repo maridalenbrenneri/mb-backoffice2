@@ -32,6 +32,7 @@ import {
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
+import ErrorIcon from '@mui/icons-material/Error';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -50,6 +51,7 @@ import StockDisplay from '~/components/StockDisplay';
 import StockStatusDisplay from '~/components/StockStatusDisplay';
 import SetProductLabelsPrintedDialog from './set-product-labels-printed';
 import { defaultStatus, defaultStockStatus } from './loader';
+import { validateCoffeForPublication } from '~/utils/product-utils';
 
 export const loader = async ({ request }: { request: Request }) => {
   return await productLoader(request);
@@ -157,14 +159,65 @@ export default function Products() {
     setIsSetProductLabelsPrintedDialogOpen(false);
   };
 
-  const hasAllRequiredFields = (product: ProductEntity): boolean => {
-    return !!(
-      product.coffee_country &&
-      product.name &&
-      product.coffee_beanType &&
-      product.coffee_processType &&
-      product.coffee_cuppingScore &&
-      product.description
+  const getValidation = (product: ProductEntity) => {
+    let result = validateCoffeForPublication(product);
+
+    if (result.errors.length) {
+      return {
+        kind: 'error',
+        message: 'Required fields not set: ' + result.errors.join(', ') + '\n',
+      };
+    }
+
+    if (result.warnings.length) {
+      return {
+        kind: 'warning',
+        message: 'Valid with warnings: ' + result.warnings.join(', ') + '\n',
+      };
+    }
+
+    return {
+      kind: 'success',
+      message: 'All fields are set, ready to be published!',
+    };
+  };
+
+  const renderValidationTooltip = (product: ProductEntity) => {
+    let validation = getValidation(product);
+    return (
+      <Tooltip title={validation.message}>
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'baseline',
+            verticalAlign: 'middle',
+          }}
+        >
+          {getValidation(product).kind === 'success' && (
+            <CheckCircleIcon
+              color="success"
+              fontSize="small"
+              sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
+            />
+          )}
+
+          {validation.kind === 'warning' && (
+            <WarningIcon
+              color="warning"
+              fontSize="small"
+              sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
+            />
+          )}
+
+          {validation.kind === 'error' && (
+            <ErrorIcon
+              color="error"
+              fontSize="small"
+              sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
+            />
+          )}
+        </span>
+      </Tooltip>
     );
   };
 
@@ -320,35 +373,7 @@ export default function Products() {
                           product.status === ProductStatus.DRAFT ? (
                           <div>
                             <small>Not published</small>
-                            <Tooltip
-                              title={
-                                hasAllRequiredFields(product)
-                                  ? 'Valid for publication'
-                                  : 'Missing fields, product is not ready to be published. Country, name, bean type, process type, cupping score and description are required.'
-                              }
-                            >
-                              <span
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'baseline',
-                                  verticalAlign: 'middle',
-                                }}
-                              >
-                                {hasAllRequiredFields(product) ? (
-                                  <CheckCircleIcon
-                                    color="success"
-                                    fontSize="small"
-                                    sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
-                                  />
-                                ) : (
-                                  <WarningIcon
-                                    color="warning"
-                                    fontSize="small"
-                                    sx={{ marginLeft: 0.5, marginBottom: 0.5 }}
-                                  />
-                                )}
-                              </span>
-                            </Tooltip>
+                            {renderValidationTooltip(product)}
                           </div>
                         ) : (
                           <small>{product.status}</small>
@@ -423,11 +448,22 @@ export default function Products() {
                           href={product.infoLink}
                           target="_blank"
                           rel="noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            textDecoration: 'underline',
+                            color: '##0000EE',
+                          }}
                         >
                           {'link'}
+                          <OpenInNewIcon
+                            fontSize="small"
+                            sx={{ opacity: 0.6 }}
+                          />
                         </a>
                       ) : (
-                        'n/a'
+                        <i>not set</i>
                       )}
                     </TableCell>
                     <TableCell>
