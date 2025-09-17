@@ -41,9 +41,16 @@ export default function StockStatusDisplay({
 
   if (stockStatus === ProductStockStatus.OUT_OF_STOCK) {
     return (
-      <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
-        {getStockStatusLabel(stockStatus)}
-      </Typography>
+      <Box
+        sx={{
+          display: 'inline-block',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+          {getStockStatusLabel(stockStatus)}
+        </Typography>
+      </Box>
     );
   }
 

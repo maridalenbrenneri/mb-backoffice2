@@ -1,13 +1,18 @@
 import { json } from '@remix-run/node';
 import { getCoffeeProducts } from '~/services/product.service';
 import { ProductStatus, ProductStockStatus } from '~/services/entities';
-import { In } from 'typeorm';
+import { In, Not } from 'typeorm';
 
 export const defaultStatus = '_in_webshop';
 export const defaultStockStatus = '_backorder_in_stock';
 
-export type LoaderData = {
+export type LoaderDataAll = {
   products: Awaited<ReturnType<typeof getCoffeeProducts>>;
+};
+
+export type LoaderData = {
+  publishedProducts: Awaited<ReturnType<typeof getCoffeeProducts>>;
+  notYetPublishedProducts: Awaited<ReturnType<typeof getCoffeeProducts>>;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -45,30 +50,48 @@ function buildFilter(search: URLSearchParams) {
 export const productLoader = async (request: any) => {
   const url = new URL(request.url);
   const search = new URLSearchParams(url.search);
+  const stockStatusFilter = search.get('stockStatus');
 
-  const filter = buildFilter(search);
+  // Build where clause for stock status filtering
+  let stockStatusWhere: any = {};
+  if (!stockStatusFilter || stockStatusFilter === '_exclude_out_of_stock') {
+    stockStatusWhere.stockStatus = Not(ProductStockStatus.OUT_OF_STOCK);
+  } else if (stockStatusFilter && stockStatusFilter !== '_all') {
+    stockStatusWhere.stockStatus = stockStatusFilter as ProductStockStatus;
+  }
 
-  console.log(filter);
+  let publishedProducts = await getCoffeeProducts({
+    where: {
+      status: ProductStatus.PUBLISHED,
+    },
+    orderBy: { updatedAt: 'desc' },
+  });
 
-  const products = await getCoffeeProducts(filter);
-
-  products.sort((a, b) => {
-    const aIsInStockAndPublished =
-      a.stockStatus === ProductStockStatus.IN_STOCK &&
-      a.status === ProductStatus.PUBLISHED;
-    const bIsInStockAndPublished =
-      b.stockStatus === ProductStockStatus.IN_STOCK &&
-      b.status === ProductStatus.PUBLISHED;
-
-    // If one is IN_STOCK and PUBLISHED and the other isn't, prioritize the IN_STOCK and PUBLISHED one
-    if (aIsInStockAndPublished && !bIsInStockAndPublished) return -1;
-    if (!aIsInStockAndPublished && bIsInStockAndPublished) return 1;
-
-    // Otherwise, use default sort (alphabetical by name)
-    return a.name.localeCompare(b.name);
+  let notYetPublishedProducts = await getCoffeeProducts({
+    where: {
+      status: In([ProductStatus.PRIVATE, ProductStatus.DRAFT]),
+      ...stockStatusWhere,
+    },
+    orderBy: { sortOrder: 'desc' },
   });
 
   return json<LoaderData>({
+    publishedProducts,
+    notYetPublishedProducts,
+  });
+};
+
+export const productLoaderAllCoffees = async (request: any) => {
+  const url = new URL(request.url);
+  const search = new URLSearchParams(url.search);
+
+  const filter = buildFilter(search);
+
+  filter.orderBy = { updatedAt: 'desc' };
+
+  let products = await getCoffeeProducts(filter);
+
+  return json<LoaderDataAll>({
     products,
   });
 };

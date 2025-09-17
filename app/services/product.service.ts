@@ -118,6 +118,21 @@ export async function createProduct(data: Partial<ProductEntity>) {
   return { kind: 'success', productId };
 }
 
+export async function updateProductSortOrder(ids: number[]) {
+  const repo = await getRepo();
+
+  const products = await repo.find({
+    where: { id: In(ids) },
+    order: { sortOrder: 'desc' },
+  });
+
+  for (const product of products) {
+    product.sortOrder = ids.length - ids.indexOf(product.id);
+  }
+
+  return await repo.save(products);
+}
+
 export async function updateProduct(id: number, data: Partial<ProductEntity>) {
   const repo = await getRepo();
   const existingProduct = await repo.findOne({ where: { id } });

@@ -2,7 +2,10 @@ import { json } from '@remix-run/node';
 
 import { nullIfEmptyOrWhitespace } from '~/utils/strings';
 import { ProductStockStatus } from '~/services/entities/enums';
-import { updateProduct } from '~/services/product.service';
+import {
+  updateProduct,
+  updateProductSortOrder,
+} from '~/services/product.service';
 
 const updateStockStatus = async (values: any) => {
   let stockStatus = nullIfEmptyOrWhitespace(values.stockStatus);
@@ -49,6 +52,19 @@ const updateStockRemaining = async (values: any) => {
   });
 };
 
+const updateSortOrder = async (values: any) => {
+  let ids = JSON.parse(values.ids);
+
+  console.log('updateSortOrder action', ids);
+
+  await updateProductSortOrder(ids);
+
+  return json({
+    didUpdate: true,
+    updateMessage: 'Coffees were reordered',
+  });
+};
+
 const updateLabelsPrinted = async (values: any) => {
   const result = await updateProduct(+values.id, {
     coffee_labelsPrinted: values.labelsPrinted,
@@ -77,6 +93,8 @@ export const productActionHandler = async (request: any) => {
     return await updateStockRemaining(values);
   } else if (_action === 'set-product-labels-printed') {
     return await updateLabelsPrinted(values);
+  } else if (_action === 'set-sort-order') {
+    return await updateSortOrder(values);
   }
 
   return null;

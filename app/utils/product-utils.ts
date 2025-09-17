@@ -39,7 +39,30 @@ export function getProcessTypeDisplayName(processType: string) {
   }
 }
 
-export function validateCoffeForPublication(product: ProductEntity) {
+export function getValidationForCoffee(product: ProductEntity) {
+  let result = validateCoffeForPublication(product);
+
+  if (result.errors.length) {
+    return {
+      kind: 'error',
+      message: 'Required fields not set: ' + result.errors.join(', ') + '\n',
+    };
+  }
+
+  if (result.warnings.length) {
+    return {
+      kind: 'warning',
+      message: 'Valid with warnings: ' + result.warnings.join(', ') + '\n',
+    };
+  }
+
+  return {
+    kind: 'success',
+    message: 'All fields are set, ready to be published!',
+  };
+}
+
+function validateCoffeForPublication(product: ProductEntity) {
   let errors: string[] = [];
   let warnings: string[] = [];
 
