@@ -39,6 +39,7 @@ import { WOO_PRODUCT_REGULAR_PRICE_DEFAULT } from '~/settings';
 import { toPrettyDateTime } from '~/utils/dates';
 import Seperator from '~/components/Seperator';
 import DataLabel from '~/components/DataLabel';
+import ExternalLink from '~/components/ExternalLink';
 
 type LoaderData = {
   loadedProduct: ProductEntity;
@@ -410,6 +411,38 @@ export default function UpdateProduct() {
             </FormControl>
           </div>
 
+          <div>
+            <FormControl sx={{ marginLeft: 2, marginTop: 1 }}>
+              <div>Product has {loadedProduct.images.length} images</div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                  alignItems: 'center',
+                }}
+              >
+                {loadedProduct.images.map((image) => (
+                  <div key={image.wooMediaId}>
+                    <img src={image.src} width={75} />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <small>
+                  Adding or removing images must be done in{' '}
+                  <ExternalLink
+                    href={`${loadedProduct.wooProductUrl}`}
+                    text="Woo Admin"
+                  />
+                  <br />
+                  <b>Note:</b> It may take up to an hour before images added in
+                  Woo are visible here.
+                </small>
+              </div>
+            </FormControl>
+          </div>
+
           <div style={{ marginTop: '20px' }}>
             <FormControl>
               <TextField
@@ -421,8 +454,6 @@ export default function UpdateProduct() {
                 onChange={(e) =>
                   handleFormChange('productCode', e.target.value)
                 }
-                error={data?.validationErrors?.productCode ? true : false}
-                helperText={data?.validationErrors?.productCode}
                 sx={{
                   '& .MuiInputBase-input': {
                     textTransform: 'uppercase',
@@ -440,8 +471,6 @@ export default function UpdateProduct() {
                 onChange={(e) =>
                   handleFormChange('stockInitial', Number(e.target.value))
                 }
-                error={data?.validationErrors?.stockInitial ? true : false}
-                helperText={data?.validationErrors?.stockInitial}
                 size="small"
               />
             </FormControl>
@@ -556,7 +585,7 @@ export default function UpdateProduct() {
           )}
 
           <div>
-            <Alert severity="success" icon={false}>
+            <Alert severity="success" icon={false} sx={{ fontSize: '85%' }}>
               Changes on fields marked with a * will trigger update in Woo
               webshop.
               <p>
@@ -568,8 +597,9 @@ export default function UpdateProduct() {
                 description in Woo.
               </p>
               <p>
-                Only <em>visibility (status)</em> and <em>stock status</em> will
-                be synced back to Backoffice if product is edited in Woo admin.
+                Only <em>visibility (status)</em>, <em>stock status</em> and{' '}
+                <em>images</em> will be synced back to Backoffice if product is
+                edited in Woo admin.
               </p>
             </Alert>
           </div>
@@ -584,10 +614,10 @@ export default function UpdateProduct() {
 
       <Seperator />
 
-      <Typography variant="h5" sx={{ marginTop: '25px' }}>
+      {/* <Typography variant="h5" sx={{ marginTop: '25px' }}>
         Björn's debug stuff
       </Typography>
-      <div>{JSON.stringify(loadedProduct, null, 2)}</div>
+      <div>{JSON.stringify(loadedProduct, null, 2)}</div> */}
     </Box>
   );
 }

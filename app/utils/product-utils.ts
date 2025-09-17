@@ -71,6 +71,14 @@ export function validateCoffeForPublication(product: ProductEntity) {
     warnings.push('Description is very short');
   }
 
+  if (!product.images?.length) {
+    warnings.push('No images');
+  }
+
+  if (product.images?.length === 1) {
+    warnings.push('Only one image');
+  }
+
   return {
     errors,
     warnings,

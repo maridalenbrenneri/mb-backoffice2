@@ -4,7 +4,6 @@ import {
   ProductStatus,
   ProductStockStatus,
 } from '~/services/entities';
-import { isUnsignedInt } from '~/utils/numbers';
 import { createProduct, updateProduct } from '~/services/product.service';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
@@ -12,9 +11,8 @@ export type CreateActionData = {
   validationErrors?:
     | {
         name: null | string;
-        productCode: null | string;
         country: null | string;
-        stockInitial: null | string;
+        stockStatus: null | string;
       }
     | undefined;
   didUpdate?: boolean | undefined;
@@ -24,11 +22,8 @@ export type CreateActionData = {
 const validate = (values: any) => {
   return {
     country: values.country ? null : 'Country is required',
-    name: values.name ? null : 'Name is required',
-    productCode: values.productCode ? null : 'Product code is required',
-    stockInitial: isUnsignedInt(values.stockInitial)
-      ? null
-      : 'Must be a number greater or equal to zero',
+    name: values.name?.trim().length ? null : 'Name is required',
+    stockStatus: values.stockStatus ? null : 'Stock status is required',
   };
 };
 
@@ -95,15 +90,11 @@ export const createAction = async (values: any) => {
     coffee_country: values.country as string | null,
     name: values.name as string,
     stockStatus: values.stockStatus as ProductStockStatus,
-    stockInitial: +values.stockInitial,
-    stockRemaining: +values.stockInitial,
-    infoLink: values.infoLink as string | null,
-    internalNote: values.internalNote as string | null,
-    coffee_beanType: values.beanType as string | null,
-    coffee_processType: values.processType as string | null,
-    coffee_cuppingScore: +values.cuppingScore,
-    retailPrice: values.regularPrice as string | null,
-    description: values.description as string | null,
+
+    description: '',
+    stockInitial: 0,
+    stockRemaining: 0,
+    coffee_processType: 'washed',
   };
 
   let result = await createProduct(data);
@@ -114,6 +105,7 @@ export const createAction = async (values: any) => {
       updateMessage: 'Failed to create product',
     });
   }
+
   return redirect(`/products`);
 };
 

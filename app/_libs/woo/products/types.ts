@@ -5,6 +5,12 @@ export const WooProductData = z.object({
   name: z.string(),
   status: z.string(),
   stock_status: z.string(),
+  images: z.array(
+    z.object({
+      id: z.number(),
+      src: z.string(),
+    })
+  ),
   date_created: z.string().nullable(),
   date_modified: z.string(),
   permalink: z.string(),
@@ -26,6 +32,7 @@ export const WooProductCreateData = z.object({
   regular_price: z.string().optional(),
   weight: z.string().optional(),
   shipping_class: z.string().optional(),
+  images: z.array(z.object({ id: z.number() })).optional(),
   categories: z.array(z.object({ id: z.number() })),
 });
 

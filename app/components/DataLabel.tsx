@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ExternalLink from './ExternalLink';
 
 import { colors } from '~/style/colors';
 export default function DataLabel(props: {
@@ -27,23 +27,7 @@ export default function DataLabel(props: {
   const renderData = (data: any) => {
     if (data.dataLinkUrl) {
       if (data.dataLinkUrl.startsWith('http')) {
-        return (
-          <a
-            href={data.dataLinkUrl || ''}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              textDecoration: 'underline',
-              color: '##0000EE',
-            }}
-          >
-            {data.data}
-            <OpenInNewIcon fontSize="small" sx={{ opacity: 0.6 }} />
-          </a>
-        );
+        return <ExternalLink href={data.dataLinkUrl} text={data.data} />;
       }
       return <Link to={data.dataLinkUrl}>{data.data}</Link>;
     }

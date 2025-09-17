@@ -7,6 +7,7 @@ import {
   TAKE_DEFAULT_ROWS,
   TAKE_MAX_ROWS,
   WOO_PRODUCT_CATEGORY_BUTIKK_ID,
+  WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
   WOO_PRODUCT_SHIPPING_CLASS_DEFAULT,
   WOO_PRODUCT_WEIGHT_DEFAULT,
 } from '~/settings';
@@ -28,6 +29,7 @@ import {
   createFullProductName,
 } from '~/utils/product-utils';
 import { In } from 'typeorm';
+import { DefaultCoffeeImages } from '~/settings';
 
 // WOO IMPORT
 export type WooApiUpdateProductData = Pick<
@@ -94,8 +96,6 @@ export async function getProductById(id: number) {
 export async function createProduct(data: Partial<ProductEntity>) {
   data = cleanProductData(data);
   let wooData = toCreateWooProductData(data);
-
-  console.debug('updateProduct: doUpdateInWoo', wooData);
 
   // Create product in Woo
   let wooResult = await woo.productCreate(wooData);
@@ -182,6 +182,7 @@ export type WooSyncProductWithDataFromWooInput = {
   wooProductId: number;
   status: string;
   stockStatus: string;
+  images: { wooMediaId: number; src: string }[];
   wooUpdatedAt: Date;
   wooProductUrl: string;
 };
@@ -225,9 +226,10 @@ export async function woo_syncProductWithDataFromWoo(
     id: existing.id,
     status: data.status,
     stockStatus: data.stockStatus,
+    images: data.images,
     wooUpdatedAt: data.wooUpdatedAt,
     wooProductUrl: data.wooProductUrl,
-  } as any);
+  } as Partial<ProductEntity>);
 
   if (toSave) {
     await repo.save(toSave);
@@ -284,7 +286,9 @@ function toCreateWooProductData(
     categories: [{ id: WOO_PRODUCT_CATEGORY_BUTIKK_ID }],
     name: createFullProductName(data),
     short_description: createFullProductDescription(data),
-    regular_price: data.retailPrice || '',
+    // TODO: Images is work-in-progress, not sure we shold ever set it in Backoffice
+    // images: createDefaultWooProductImage(data),
+    regular_price: data.retailPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
     weight: WOO_PRODUCT_WEIGHT_DEFAULT,
     shipping_class: WOO_PRODUCT_SHIPPING_CLASS_DEFAULT,
   };
@@ -316,4 +320,20 @@ function toWooStockStatus(stockStatus: ProductStockStatus): string {
     default:
       return WOO_PRODUCT_STOCK_STATUS_OUTOFSTOCK;
   }
+}
+
+function createDefaultWooProductImage(data: Partial<ProductEntity>) {
+  let wooMediaId = DefaultCoffeeImages.find(
+    (image) => image.country === data.coffee_country
+  )?.wooMediaId;
+
+  if (!wooMediaId) {
+    return [];
+  }
+
+  return [
+    {
+      id: wooMediaId,
+    },
+  ];
 }

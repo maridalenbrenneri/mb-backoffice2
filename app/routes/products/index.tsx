@@ -33,7 +33,6 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
 import ErrorIcon from '@mui/icons-material/Error';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import EditIcon from '@mui/icons-material/Edit';
 
 import {
@@ -52,6 +51,7 @@ import StockStatusDisplay from '~/components/StockStatusDisplay';
 import SetProductLabelsPrintedDialog from './set-product-labels-printed';
 import { defaultStatus, defaultStockStatus } from './loader';
 import { validateCoffeForPublication } from '~/utils/product-utils';
+import ExternalLink from '~/components/ExternalLink';
 
 export const loader = async ({ request }: { request: Request }) => {
   return await productLoader(request);
@@ -444,48 +444,17 @@ export default function Products() {
                     </TableCell>
                     <TableCell>
                       {product.infoLink ? (
-                        <a
-                          href={product.infoLink}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            textDecoration: 'underline',
-                            color: '##0000EE',
-                          }}
-                        >
-                          {'link'}
-                          <OpenInNewIcon
-                            fontSize="small"
-                            sx={{ opacity: 0.6 }}
-                          />
-                        </a>
+                        <ExternalLink href={product.infoLink} text={'link'} />
                       ) : (
                         <i>not set</i>
                       )}
                     </TableCell>
                     <TableCell>
                       <Tooltip title="View product in Woo">
-                        <a
+                        <ExternalLink
                           href={product.wooProductUrl || ''}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            textDecoration: 'underline',
-                            color: '##0000EE',
-                          }}
-                        >
-                          {product.wooProductId}
-                          <OpenInNewIcon
-                            fontSize="small"
-                            sx={{ opacity: 0.6 }}
-                          />
-                        </a>
+                          text={product.wooProductId}
+                        />
                       </Tooltip>
                     </TableCell>
                     <TableCell>

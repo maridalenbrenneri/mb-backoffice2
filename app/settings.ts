@@ -64,3 +64,12 @@ export const STAFF_SUBSCRIPTIONS = [
   194466, // Audun
   7473, // Björn
 ];
+
+// TODO: Images is work-in-progress, not sure we shold ever set it in Backoffice
+// curl "https://maridalenbrenneri.no/wp-json/wp/v2/media?per_page=100&media_type=image"
+export const DefaultCoffeeImages = [
+  {
+    country: 'Kenya',
+    wooMediaId: 52974,
+  },
+];

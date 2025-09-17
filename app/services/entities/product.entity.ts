@@ -10,19 +10,6 @@ import { ProductStatus, ProductStockStatus } from './enums';
 import { DeliveryEntity } from './delivery.entity';
 import { OrderItemEntity } from './order-item.entity';
 
-// TODO: MIGRATE THESE IN THE DATABASE
-// NEW columns
-// sortOrder
-// purchasePriceCurrency
-// stockRemainingWarning
-
-// RENAMED columns
-// beanType -> coffee_beanType
-// processType -> coffee_processType
-// cuppingScore -> coffee_cuppingScore
-// labelsPrinted -> coffee_labelsPrinted
-// country -> coffee_country
-
 @Entity({ name: 'Product' })
 export class ProductEntity {
   @PrimaryGeneratedColumn({ type: 'integer' })
@@ -49,6 +36,9 @@ export class ProductEntity {
 
   @Column({ type: 'text' })
   name!: string;
+
+  @Column('jsonb')
+  images!: { wooMediaId: number; src: string }[];
 
   @Column({ type: 'integer', nullable: true })
   stockInitial!: number | null;

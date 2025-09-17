@@ -32,6 +32,10 @@ export default async function wooApiToProductEntity(
     wooProductId: wooProduct.id,
     status: mapProductStatus(wooProduct.status),
     stockStatus: mapProductStockStatus(wooProduct.stock_status),
+    images: wooProduct.images.map((image) => ({
+      wooMediaId: image.id,
+      src: image.src,
+    })),
     wooUpdatedAt: new Date(wooProduct.date_modified),
     wooProductUrl: wooProduct.permalink,
   };
