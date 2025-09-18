@@ -22,6 +22,7 @@ import {
   Box,
   Button,
   Checkbox,
+  FormControl,
   FormControlLabel,
   Snackbar,
   Tooltip,
@@ -66,7 +67,8 @@ export default function Products() {
     useLoaderData() as unknown as LoaderData;
 
   const submit = useSubmit();
-  const fetcher = useFetcher();
+  const fetcherSync = useFetcher();
+  const fetcherCleanup = useFetcher();
   const [params] = useSearchParams();
 
   const [openSnack, setOpenSnack] = useState<boolean>(false);
@@ -155,6 +157,10 @@ export default function Products() {
     setSelectedProduct(null);
     setIsSetProductLabelsPrintedDialogOpen(false);
   };
+
+  const isRunningSyncFromWoo =
+    fetcherSync.state === 'submitting' &&
+    fetcherSync.formData?.get('_action') === 'woo-product-sync';
 
   const renderValidationTooltip = (product: ProductEntity) => {
     let validation = getValidationForCoffee(product);
@@ -470,10 +476,50 @@ export default function Products() {
       </Snackbar>
 
       <Box sx={{ marginTop: 2 }}>
-        <Box sx={{ m: 1, display: 'flex', justifyContent: 'flex-end' }}>
+        <Box
+          sx={{
+            m: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
           <Button href="/products/admin/new" variant="contained">
             Add new coffee
           </Button>
+
+          <fetcherSync.Form
+            method="post"
+            action="/api/woo-product-sync-status"
+            onSubmit={() => {
+              const formData = new FormData();
+              formData.append('_action', 'woo-product-cleanup');
+              fetcherCleanup.submit(formData, {
+                method: 'post',
+                action: '/api/woo-product-cleanup',
+              });
+            }}
+          >
+            <FormControl sx={{ m: 0 }}>
+              <Tooltip
+                title={`
+                  Sync status, stock status, images and any deleted products if changes have been made in Woo admin.
+                  (This happens automatically on a regular basis.)
+                `}
+              >
+                <Button
+                  type="submit"
+                  name="_action"
+                  value="woo-product-sync"
+                  disabled={isRunningSyncFromWoo}
+                  sx={{ whiteSpace: 'nowrap' }}
+                >
+                  {isRunningSyncFromWoo ? 'Running sync...' : 'Sync from Woo'}
+                </Button>
+              </Tooltip>
+            </FormControl>
+          </fetcherSync.Form>
         </Box>
 
         <Seperator />
@@ -501,7 +547,7 @@ export default function Products() {
               const formData = new FormData();
               formData.append('_action', 'set-sort-order');
               formData.append('ids', JSON.stringify(ids));
-              fetcher.submit(formData, { method: 'post' });
+              fetcherSync.submit(formData, { method: 'post' });
             }}
           />
         </Box>

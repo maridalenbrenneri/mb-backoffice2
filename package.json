@@ -3,7 +3,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "remix build",
-    "dev": "remix dev",
+    "dev": "PORT=4001 remix dev",
     "start": "remix-serve build/index.js",
     "test": "jest",
     "deps:update": "npx npm-check-updates --interactive --format group"
