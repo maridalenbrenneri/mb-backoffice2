@@ -47,7 +47,7 @@ async function getRepo() {
   return ds.getRepository(ProductEntity);
 }
 
-async function getAllProducts(filter?: any) {
+async function getProducts(filter?: any) {
   filter = filter || {};
 
   // emulate defaults
@@ -58,8 +58,9 @@ async function getAllProducts(filter?: any) {
   const repo = await getRepo();
   const where = filter.where || {};
   const order = filter.orderBy || { updatedAt: 'desc' };
-  const take = filter.take;
   const select = filter.select;
+  const take = filter.take || TAKE_DEFAULT_ROWS;
+
   return repo.find({ where, order, take, select });
 }
 
@@ -67,25 +68,44 @@ export async function getInventoryProducts(filter?: any) {
   filter = filter || {};
   filter.where = filter.where || {};
   filter.where.category = 'inventory';
-  return await getAllProducts(filter);
+
+  return await getProducts(filter);
 }
 
-export async function getCoffeeProducts(filter?: any) {
+export async function getAllCoffeeProducts(filter?: any) {
   filter = filter || {};
   filter.where = filter.where || {};
   filter.where.category = 'coffee';
-  return await getAllProducts(filter);
+
+  return await getProducts(filter);
 }
 
-export async function getPublishedProducts(filter?: any) {
+export async function getPublishedCoffeeProducts(filter?: any) {
   filter = filter || {};
   filter.where = filter.where || {};
+  filter.where.category = 'coffee';
   filter.where.status = ProductStatus.PUBLISHED;
-  return await getAllProducts(filter);
+
+  return await getProducts(filter);
+}
+
+export async function getNotYetPublishedCoffeeProducts(filter?: any) {
+  filter = filter || {};
+  filter.where = filter.where || {};
+  filter.where.category = 'coffee';
+  filter.where.status = In([ProductStatus.PRIVATE, ProductStatus.DRAFT]);
+  filter.where.stockStatus = In([
+    ProductStockStatus.ON_BACKORDER,
+    ProductStockStatus.IN_STOCK,
+  ]);
+  filter.orderBy = { sortOrder: 'desc' };
+
+  return await getProducts(filter);
 }
 
 export async function getProductById(id: number) {
   const repo = await getRepo();
+
   return repo.findOne({ where: { id } });
 }
 

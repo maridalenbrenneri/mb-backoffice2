@@ -11,6 +11,7 @@ import {
 import { ProductEntity, ProductStockStatus } from '~/services/entities';
 import { Link } from '@remix-run/react';
 import StockDisplay from './StockDisplay';
+import ProductWebshopStatus from './ProductWebshopStatus';
 
 interface PublishedProductsBoxProps {
   products: ProductEntity[];
@@ -54,6 +55,7 @@ export default function PublishedProductsBox({
               <TableCell>Country</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Code</TableCell>
+              <TableCell>In webshop</TableCell>
               <TableCell>Stock Status</TableCell>
               <TableCell>Current stock</TableCell>
             </TableRow>
@@ -64,6 +66,9 @@ export default function PublishedProductsBox({
                 <TableCell>{product.coffee_country || '-'}</TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>{product.productCode || '-'}</TableCell>
+                <TableCell>
+                  <ProductWebshopStatus product={product} />
+                </TableCell>
                 <TableCell>
                   <Chip
                     label={getStockStatusLabel(product.stockStatus)}
@@ -76,10 +81,14 @@ export default function PublishedProductsBox({
                 </TableCell>
               </TableRow>
             ))}
-            <TableRow>
-              <TableCell colSpan={5}>
+            <TableRow
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell colSpan={6} align="right">
                 <small>
-                  <Link to="/products">Edit/View all coffees</Link>
+                  <Link to="/products" style={{ marginRight: 10 }}>
+                    Edit coffees
+                  </Link>
                 </small>
               </TableCell>
             </TableRow>

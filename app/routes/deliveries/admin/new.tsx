@@ -19,16 +19,16 @@ import type { DeliveryDate } from '~/utils/dates';
 import { toPrettyDateTextLong } from '~/utils/dates';
 import { getNextDeliveryDates } from '~/utils/dates';
 import { ProductEntity, ProductStatus } from '~/services/entities';
-import { getCoffeeProducts } from '~/services/product.service';
+import { getAllCoffeeProducts } from '~/services/product.service';
 
 type LoaderData = {
   deliveryDates: Awaited<ReturnType<typeof getNextDeliveryDates>>;
-  products: Awaited<ReturnType<typeof getCoffeeProducts>>;
+  products: Awaited<ReturnType<typeof getAllCoffeeProducts>>;
 };
 
 export const loader = async () => {
   const deliveryDates = getNextDeliveryDates();
-  const products = await getCoffeeProducts({
+  const products = await getAllCoffeeProducts({
     where: {
       status: ProductStatus.PUBLISHED,
     },

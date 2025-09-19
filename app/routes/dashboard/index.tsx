@@ -4,18 +4,19 @@ import { useEffect, useState } from 'react';
 import {
   Alert,
   CircularProgress,
-  Grid,
   Paper,
   Box,
   Typography,
+  Grid2,
 } from '@mui/material';
 
 import { SubscriptionStatus, OrderStatus } from '~/services/entities/enums';
 import { getSubscriptions } from '~/services/subscription.service';
 import { getLastJobResult } from '~/services/job-result.service';
 import {
-  getCoffeeProducts,
-  getPublishedProducts,
+  getAllCoffeeProducts,
+  getNotYetPublishedCoffeeProducts,
+  getPublishedCoffeeProducts,
 } from '~/services/product.service';
 
 import {
@@ -48,8 +49,17 @@ type LoaderData = {
 
   allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
   currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
-  currentCoffees: Awaited<ReturnType<typeof getCoffeeProducts>>;
-  publishedProducts: Awaited<ReturnType<typeof getPublishedProducts>>;
+
+  allCoffeeProductsForRoastOverview: Awaited<
+    ReturnType<typeof getAllCoffeeProducts>
+  >;
+  notYetPublishedCoffeeProducts: Awaited<
+    ReturnType<typeof getNotYetPublishedCoffeeProducts>
+  >;
+  publishedCoffeeProducts: Awaited<
+    ReturnType<typeof getPublishedCoffeeProducts>
+  >;
+
   cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
@@ -111,26 +121,37 @@ export const loader = async () => {
     }
   });
 
-  const currentCoffees = await getCoffeeProducts({
-    where: { category: 'coffee' },
+  const allCoffeeProductsForRoastOverview = await getAllCoffeeProducts({
     select: {
       id: true,
       productCode: true,
     },
+    orderBy: { updatedAt: 'desc' },
     take: 10,
   });
 
-  const publishedProducts = await getPublishedProducts({
-    where: { category: 'coffee' },
+  const notYetPublishedCoffeeProducts = await getNotYetPublishedCoffeeProducts({
     select: {
       id: true,
       name: true,
       productCode: true,
+      status: true,
       coffee_country: true,
       stockStatus: true,
       stockRemaining: true,
     },
-    take: 50,
+  });
+
+  const publishedCoffeeProducts = await getPublishedCoffeeProducts({
+    select: {
+      id: true,
+      name: true,
+      productCode: true,
+      status: true,
+      coffee_country: true,
+      stockStatus: true,
+      stockRemaining: true,
+    },
   });
 
   const cargonizerProfile = await getCargonizerProfile();
@@ -144,8 +165,9 @@ export const loader = async () => {
     createRenewalOrdersResult,
     allActiveSubscriptions,
     currentDeliveries,
-    currentCoffees,
-    publishedProducts,
+    allCoffeeProductsForRoastOverview,
+    notYetPublishedCoffeeProducts,
+    publishedCoffeeProducts,
     cargonizerProfile,
   });
 };
@@ -160,14 +182,18 @@ export default function Dashboard() {
     createRenewalOrdersResult,
     allActiveSubscriptions,
     currentDeliveries,
-    currentCoffees,
-    publishedProducts,
+    allCoffeeProductsForRoastOverview,
+    notYetPublishedCoffeeProducts,
+    publishedCoffeeProducts,
     cargonizerProfile,
   } = useLoaderData() as unknown as LoaderData;
 
   const [subscriptions, setSubscriptions] = useState<SubscriptionEntity[]>();
   const [deliveries, setDeliveries] = useState<DeliveryEntity[]>();
-  const [coffees, setCoffees] = useState<ProductEntity[]>();
+  const [allCoffees, setAllCoffees] = useState<ProductEntity[]>();
+  const [notYetPublishedCoffees, setNotYetPublishedCoffees] =
+    useState<ProductEntity[]>();
+  const [publishedCoffees, setPublishedCoffees] = useState<ProductEntity[]>();
   const [cargonizer, setCargonizer] = useState();
 
   const [orderImportResult, setOrderImportResult] = useState<any>(null);
@@ -196,13 +222,17 @@ export default function Dashboard() {
       loading &&
       allActiveSubscriptions &&
       currentDeliveries &&
-      currentCoffees &&
+      allCoffeeProductsForRoastOverview &&
+      notYetPublishedCoffeeProducts &&
+      publishedCoffeeProducts &&
       cargonizerProfile &&
       wooOrderImportResult
     ) {
       setSubscriptions(allActiveSubscriptions);
       setDeliveries(currentDeliveries);
-      setCoffees(currentCoffees);
+      setAllCoffees(allCoffeeProductsForRoastOverview);
+      setNotYetPublishedCoffees(notYetPublishedCoffeeProducts);
+      setPublishedCoffees(publishedCoffeeProducts);
       setCargonizer(cargonizerProfile);
       setOrderImportResult(resolveOrderImportResult());
       setLoading(false);
@@ -211,7 +241,9 @@ export default function Dashboard() {
     loading,
     allActiveSubscriptions,
     currentDeliveries,
-    currentCoffees,
+    allCoffeeProductsForRoastOverview,
+    notYetPublishedCoffeeProducts,
+    publishedCoffeeProducts,
     cargonizerProfile,
     wooOrderImportResult,
     orderImportResult,
@@ -220,14 +252,14 @@ export default function Dashboard() {
   if (loading) {
     return (
       <main>
-        <Grid container>
-          <Grid item xs={12} style={{ textAlign: 'center' }}>
+        <Grid2 container>
+          <Grid2 size={12} style={{ textAlign: 'center' }}>
             <Box sx={{ m: 10 }}>
               <CircularProgress color="primary" />
               <Typography>Loading dashboard...</Typography>
             </Box>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </main>
     );
   }
@@ -237,7 +269,7 @@ export default function Dashboard() {
   return (
     <main>
       {orderImportResult.ordersWithUnknownProduct && (
-        <Grid item xs={12} style={{ textAlign: 'center' }}>
+        <Grid2 size={12} style={{ textAlign: 'center' }}>
           <Alert
             severity="error"
             sx={{
@@ -249,7 +281,7 @@ export default function Dashboard() {
               },
             }}
           >
-            <Grid item xs={12} style={{ textAlign: 'center' }}>
+            <Grid2 size={12} style={{ textAlign: 'center' }}>
               SOME ORDERS COULDN'T BE IMPORTED FROM WOO
               <p>
                 Most likely because the product (coffee code) doesn't exist in
@@ -260,12 +292,12 @@ export default function Dashboard() {
                 Orders not imported (woo order ids):{' '}
                 {orderImportResult.ordersWithUnknownProduct.join()}
               </p>
-            </Grid>
+            </Grid2>
           </Alert>
-        </Grid>
+        </Grid2>
       )}
       {orderImportResult.hasErrors && (
-        <Grid item xs={12} style={{ textAlign: 'center' }}>
+        <Grid2 size={12} style={{ textAlign: 'center' }}>
           <Alert
             severity="error"
             sx={{
@@ -277,7 +309,7 @@ export default function Dashboard() {
               },
             }}
           >
-            <Grid item xs={12} style={{ textAlign: 'center' }}>
+            <Grid2 size={12} style={{ textAlign: 'center' }}>
               LAST IMPORT OF WOO ORDERS FAILED
               <p>
                 It can be active orders in Woo that haven't been imported to
@@ -297,9 +329,9 @@ export default function Dashboard() {
                 Order import runs every hour, it can also be triggered manually
                 from "Scheduled jobs" page.
               </p>
-            </Grid>
+            </Grid2>
           </Alert>
-        </Grid>
+        </Grid2>
       )}
 
       <Box sx={{ minWidth: 120, my: 4 }}>
@@ -307,14 +339,24 @@ export default function Dashboard() {
         <RoastOverviewBox
           subscriptions={allActiveSubscriptions}
           deliveries={deliveries || []}
-          coffees={coffees || []}
+          coffees={allCoffees || []}
         />
       </Box>
 
-      <Box sx={{ minWidth: 120, my: 4 }}>
-        <Typography variant="h3">Published coffees</Typography>
-        <PublishedProductsBox products={publishedProducts} />
-      </Box>
+      <Grid2 container spacing={2}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
+          <Box sx={{ minWidth: 120, my: 2 }}>
+            <Typography variant="h3">Published coffees</Typography>
+            <PublishedProductsBox products={publishedCoffees || []} />
+          </Box>
+        </Grid2>
+        <Grid2 size={{ xs: 12, md: 6 }}>
+          <Box sx={{ minWidth: 120, my: 2 }}>
+            <Typography variant="h3">Coffees coming soon</Typography>
+            <PublishedProductsBox products={notYetPublishedCoffees || []} />
+          </Box>
+        </Grid2>
+      </Grid2>
 
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h3">Subscription overview</Typography>
@@ -322,8 +364,8 @@ export default function Dashboard() {
       </Box>
 
       <Typography variant="h3">Other stuff</Typography>
-      <Grid container spacing={2}>
-        <Grid item md={7} xl={5}>
+      <Grid2 container spacing={2}>
+        <Grid2 size={{ md: 7, xl: 5 }}>
           <Paper sx={{ p: 1 }}>
             <JobsInfoBox
               products={wooProductSyncStatusResult[0]}
@@ -333,18 +375,18 @@ export default function Dashboard() {
               createRenewalOrders={createRenewalOrdersResult[0]}
             />
           </Paper>
-        </Grid>
-        <Grid item md={5} xl={3}>
+        </Grid2>
+        <Grid2 size={{ md: 5, xl: 3 }}>
           <Paper sx={{ p: 1 }}>
             <CargonizerProfileBox profile={cargonizer} />
           </Paper>
-        </Grid>
-        <Grid item md={5} xl={3}>
+        </Grid2>
+        <Grid2 size={{ md: 5, xl: 3 }}>
           <Paper sx={{ p: 1 }}>
             <StaffSubscriptions />
           </Paper>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </main>
   );
 }

@@ -16,9 +16,9 @@ import {
   Typography,
   Select,
   MenuItem,
-  Grid,
   Snackbar,
   Alert,
+  Grid2,
 } from '@mui/material';
 
 import { getDeliveryById } from '~/services/delivery.service';
@@ -32,8 +32,9 @@ import {
   ProductStockStatus,
 } from '~/services/entities/enums';
 import DataLabel from '~/components/DataLabel';
-import { getCoffeeProducts } from '~/services/product.service';
+import { getAllCoffeeProducts } from '~/services/product.service';
 import { DeliveryEntity, ProductEntity } from '~/services/entities';
+import { In } from 'typeorm';
 
 type LoaderData = {
   loadedDelivery: DeliveryEntity;
@@ -71,9 +72,14 @@ export const loader: LoaderFunction = async ({ params }) => {
 
   invariant(loadedDelivery, `Delivery not found: ${params.id}`);
 
-  const products = await getCoffeeProducts({
+  const products = await getAllCoffeeProducts({
     where: {
-      status: ProductStatus.PUBLISHED,
+      status: In([
+        ProductStatus.PUBLISHED,
+        ProductStatus.PRIVATE,
+        ProductStatus.DRAFT,
+      ]),
+      stockStatus: In([ProductStockStatus.IN_STOCK]),
     },
     take: 8,
   });
@@ -81,8 +87,8 @@ export const loader: LoaderFunction = async ({ params }) => {
 
   // Sort products so IN_STOCK appear first, then by name
   products.sort((a, b) => {
-    const aPriority = a.stockStatus === ProductStockStatus.IN_STOCK ? 0 : 1;
-    const bPriority = b.stockStatus === ProductStockStatus.IN_STOCK ? 0 : 1;
+    const aPriority = a.status === ProductStatus.PUBLISHED ? 0 : 1;
+    const bPriority = b.status === ProductStatus.PUBLISHED ? 0 : 1;
     if (aPriority !== bPriority) return aPriority - bPriority;
     return a.name.localeCompare(b.name);
   });
@@ -136,8 +142,19 @@ export default function UpdateDelivery() {
 
   const renderProduct = (defaultValue: number | '', coffeeNr: number) => {
     return (
-      <FormControl sx={{ m: 1 }}>
-        <InputLabel id={`product-${coffeeNr}-label`}>
+      <FormControl sx={{ marginTop: 2 }}>
+        <InputLabel
+          id={`product-${coffeeNr}-label`}
+          sx={{
+            transform: 'translate(14px, 50%) scale(1)',
+            '&.Mui-focused': {
+              transform: 'translate(14px, -14px) scale(0.9)',
+            },
+            '&.MuiFormLabel-filled': {
+              transform: 'translate(14px, -14px) scale(0.9)',
+            },
+          }}
+        >
           Coffee {coffeeNr}
         </InputLabel>
         <Select
@@ -153,14 +170,19 @@ export default function UpdateDelivery() {
               key={product.id}
               sx={{
                 fontWeight:
-                  product.stockStatus === ProductStockStatus.IN_STOCK
-                    ? 700
-                    : 400,
+                  product.status === ProductStatus.PUBLISHED ? 700 : 400,
               }}
             >
               {product.productCode || 'n/a'} - {product.name}
               {` - `}
-              <small>{product.stockStatus}</small>
+              <small>
+                {product.stockStatus === ProductStockStatus.IN_STOCK
+                  ? 'In stock'
+                  : product.stockStatus}
+                {product.status === ProductStatus.PUBLISHED
+                  ? ' - Published'
+                  : ' - Not published'}
+              </small>
             </MenuItem>
           ))}
         </Select>
@@ -182,15 +204,15 @@ export default function UpdateDelivery() {
 
         <Typography variant="h1">Delivery Day Details</Typography>
 
-        <Grid container>
-          <Grid item>
+        <Grid2 container>
+          <Grid2>
             <Box sx={{ m: 1 }}>
               <DataLabel dataFields={dataFields as any} />
             </Box>
-          </Grid>
-          <Grid item>
+          </Grid2>
+          <Grid2>
             <Box
-              m={2}
+              m={1}
               marginLeft={5}
               sx={{
                 '& .MuiTextField-root': { m: 1, minWidth: 250 },
@@ -215,20 +237,20 @@ export default function UpdateDelivery() {
                 <div>{renderProduct(delivery.product4Id || '', 4)}</div>
 
                 <div>
-                  <FormControl sx={{ m: 1 }}>
+                  <FormControl sx={{ marginTop: 2 }}>
                     <Button
                       type="submit"
                       disabled={isUpdating}
                       variant="contained"
                     >
-                      {isUpdating ? 'Updating...' : 'Update Products'}
+                      {isUpdating ? 'Updating...' : 'Update Coffees'}
                     </Button>
                   </FormControl>
                 </div>
               </Form>
             </Box>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
 
         <Box my={2}>
           <Typography variant="h2">Orders</Typography>

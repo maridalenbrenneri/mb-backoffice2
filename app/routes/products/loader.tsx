@@ -1,5 +1,5 @@
 import { json } from '@remix-run/node';
-import { getCoffeeProducts } from '~/services/product.service';
+import { getAllCoffeeProducts } from '~/services/product.service';
 import { ProductStatus, ProductStockStatus } from '~/services/entities';
 import { In, Not } from 'typeorm';
 
@@ -7,12 +7,12 @@ export const defaultStatus = '_in_webshop';
 export const defaultStockStatus = '_backorder_in_stock';
 
 export type LoaderDataAll = {
-  products: Awaited<ReturnType<typeof getCoffeeProducts>>;
+  products: Awaited<ReturnType<typeof getAllCoffeeProducts>>;
 };
 
 export type LoaderData = {
-  publishedProducts: Awaited<ReturnType<typeof getCoffeeProducts>>;
-  notYetPublishedProducts: Awaited<ReturnType<typeof getCoffeeProducts>>;
+  publishedProducts: Awaited<ReturnType<typeof getAllCoffeeProducts>>;
+  notYetPublishedProducts: Awaited<ReturnType<typeof getAllCoffeeProducts>>;
 };
 
 function buildFilter(search: URLSearchParams) {
@@ -60,14 +60,14 @@ export const productLoader = async (request: any) => {
     stockStatusWhere.stockStatus = stockStatusFilter as ProductStockStatus;
   }
 
-  let publishedProducts = await getCoffeeProducts({
+  let publishedProducts = await getAllCoffeeProducts({
     where: {
       status: ProductStatus.PUBLISHED,
     },
     orderBy: { updatedAt: 'desc' },
   });
 
-  let notYetPublishedProducts = await getCoffeeProducts({
+  let notYetPublishedProducts = await getAllCoffeeProducts({
     where: {
       status: In([ProductStatus.PRIVATE, ProductStatus.DRAFT]),
       ...stockStatusWhere,
@@ -89,7 +89,7 @@ export const productLoaderAllCoffees = async (request: any) => {
 
   filter.orderBy = { updatedAt: 'desc' };
 
-  let products = await getCoffeeProducts(filter);
+  let products = await getAllCoffeeProducts(filter);
 
   return json<LoaderDataAll>({
     products,

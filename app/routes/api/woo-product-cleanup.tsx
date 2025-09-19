@@ -7,7 +7,7 @@ import * as woo from '~/_libs/woo';
 import { ProductStatus } from '~/services/entities';
 import { createJobResult } from '~/services/job-result.service';
 import {
-  getCoffeeProducts,
+  getAllCoffeeProducts,
   setProductsAsDeleted,
 } from '~/services/product.service';
 
@@ -19,7 +19,7 @@ export const action: ActionFunction = async ({ request }) => {
   const jobStartedAt = DateTime.now().toJSDate();
 
   try {
-    let products = await getCoffeeProducts({
+    let products = await getAllCoffeeProducts({
       select: {
         id: true,
         wooProductId: true,

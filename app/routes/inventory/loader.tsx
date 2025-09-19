@@ -1,11 +1,11 @@
 import { json } from '@remix-run/node';
 import {
-  getCoffeeProducts,
+  getAllCoffeeProducts,
   getInventoryProducts,
 } from '~/services/product.service';
 
 export type LoaderData = {
-  products: Awaited<ReturnType<typeof getCoffeeProducts>>;
+  products: Awaited<ReturnType<typeof getAllCoffeeProducts>>;
 };
 
 export const inventoryLoader = async (request: any) => {
