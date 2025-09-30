@@ -72,7 +72,7 @@ export const loader: LoaderFunction = async ({ params }) => {
 
   invariant(loadedDelivery, `Delivery not found: ${params.id}`);
 
-  const products = await getAllCoffeeProducts({
+  let products = await getAllCoffeeProducts({
     where: {
       status: In([
         ProductStatus.PUBLISHED,
@@ -81,17 +81,20 @@ export const loader: LoaderFunction = async ({ params }) => {
       ]),
       stockStatus: In([ProductStockStatus.IN_STOCK]),
     },
-    take: 8,
+    take: 20,
   });
   invariant(products, `Products not found`);
 
-  // Sort products so IN_STOCK appear first, then by name
-  products.sort((a, b) => {
+  // Sort products so PUBLISHED appear first, then by sortOrder (desc)
+  products = products.sort((a, b) => {
     const aPriority = a.status === ProductStatus.PUBLISHED ? 0 : 1;
     const bPriority = b.status === ProductStatus.PUBLISHED ? 0 : 1;
     if (aPriority !== bPriority) return aPriority - bPriority;
-    return a.name.localeCompare(b.name);
+    return (b.sortOrder || 0) - (a.sortOrder || 0);
   });
+
+  // Only need to show 8 products
+  products = products.slice(0, 8);
 
   return json({ loadedDelivery, products });
 };
