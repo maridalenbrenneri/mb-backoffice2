@@ -17,8 +17,17 @@ Prerequisites and setup:
 
 Run app:
 
-- Start database proxy: "flyctl proxy 5432 -a mb-pg"
-- Run: "npm run dev"
+- Start database proxy:
+
+```sh
+flyctl proxy 5432 -a mb-pg
+```
+
+- Run:
+
+```sh
+  npm run dev
+```
 
 ## Tools and frameworks
 
