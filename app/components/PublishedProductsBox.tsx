@@ -33,11 +33,13 @@ const getStockStatusColor = (status: ProductStockStatus) => {
 const getStockStatusLabel = (status: ProductStockStatus) => {
   switch (status) {
     case ProductStockStatus.IN_STOCK:
-      return 'In Stock';
+      return 'In stock';
     case ProductStockStatus.ON_BACKORDER:
-      return 'Backorder';
+      return 'On backorder';
+    case ProductStockStatus.IN_TRANSIT:
+      return 'In transit';
     case ProductStockStatus.OUT_OF_STOCK:
-      return 'Out of Stock';
+      return 'Out of stock';
     default:
       return status;
   }

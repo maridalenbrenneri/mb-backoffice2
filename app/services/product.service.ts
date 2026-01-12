@@ -96,6 +96,7 @@ export async function getNotYetPublishedCoffeeProducts(filter?: any) {
   filter.where.status = In([ProductStatus.PRIVATE, ProductStatus.DRAFT]);
   filter.where.stockStatus = In([
     ProductStockStatus.ON_BACKORDER,
+    ProductStockStatus.IN_TRANSIT,
     ProductStockStatus.IN_STOCK,
   ]);
   filter.orderBy = { sortOrder: 'desc' };
@@ -311,7 +312,8 @@ function toCreateWooProductData(
   data: Partial<ProductEntity>
 ): WooProductCreate {
   let stock_status =
-    data.stockStatus === ProductStockStatus.ON_BACKORDER
+    data.stockStatus === ProductStockStatus.ON_BACKORDER ||
+    data.stockStatus === ProductStockStatus.IN_TRANSIT
       ? WOO_PRODUCT_STOCK_STATUS_ONBACKORDER
       : WOO_PRODUCT_STOCK_STATUS_INSTOCK;
 
@@ -347,6 +349,7 @@ function toUpdateWooProductData(
 function toWooStockStatus(stockStatus: ProductStockStatus): string {
   switch (stockStatus) {
     case ProductStockStatus.ON_BACKORDER:
+    case ProductStockStatus.IN_TRANSIT:
       return WOO_PRODUCT_STOCK_STATUS_ONBACKORDER;
     case ProductStockStatus.IN_STOCK:
       return WOO_PRODUCT_STOCK_STATUS_INSTOCK;

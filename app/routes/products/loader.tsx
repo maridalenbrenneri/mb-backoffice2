@@ -38,6 +38,7 @@ function buildFilter(search: URLSearchParams) {
   if (getStockStatusFilter === '_backorder_in_stock') {
     filter.where.stockStatus = In([
       ProductStockStatus.ON_BACKORDER,
+      ProductStockStatus.IN_TRANSIT,
       ProductStockStatus.IN_STOCK,
     ]);
   } else if (getStockStatusFilter !== '_all') {

@@ -129,6 +129,7 @@ export const renderStockStatus = (
         <MenuItem value={ProductStockStatus.ON_BACKORDER}>
           On backorder
         </MenuItem>
+        <MenuItem value={ProductStockStatus.IN_TRANSIT}>In transit</MenuItem>
         <MenuItem value={ProductStockStatus.IN_STOCK}>In stock</MenuItem>
         <MenuItem value={ProductStockStatus.OUT_OF_STOCK}>
           {' '}
