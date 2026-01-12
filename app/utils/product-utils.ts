@@ -32,6 +32,12 @@ export function getProcessTypeDisplayName(processType: string) {
   switch (processType) {
     case 'washed':
       return 'Vasket';
+    case 'fermented':
+      return 'Fermentert';
+    case 'honey':
+      return 'Honning';
+    case 'natural':
+      return 'Naturlig';
     case 'dry-processed':
       return 'Bærtørket';
     default:

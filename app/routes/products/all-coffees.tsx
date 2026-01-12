@@ -268,10 +268,13 @@ export default function Products() {
             >
               <MenuItem value={'_all'}>All</MenuItem>
               <MenuItem value={'_backorder_in_stock'}>
-                On backorder & In stock
+                On backorder & In transit/stock
               </MenuItem>
               <MenuItem value={ProductStockStatus.ON_BACKORDER}>
                 On backorder
+              </MenuItem>
+              <MenuItem value={ProductStockStatus.IN_TRANSIT}>
+                In transit
               </MenuItem>
               <MenuItem value={ProductStockStatus.IN_STOCK}>In stock</MenuItem>
               <MenuItem value={ProductStockStatus.OUT_OF_STOCK}>

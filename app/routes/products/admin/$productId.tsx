@@ -358,6 +358,9 @@ export default function UpdateProduct() {
                 size="small"
               >
                 <MenuItem value={'dry-processed'}>Dry processed</MenuItem>
+                <MenuItem value={'fermented'}>Fermented</MenuItem>
+                <MenuItem value={'honey'}>Honey</MenuItem>
+                <MenuItem value={'natural'}>Natural</MenuItem>
                 <MenuItem value={'washed'}>Washed</MenuItem>
               </Select>
             </FormControl>

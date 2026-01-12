@@ -11,6 +11,8 @@ const getStockStatusLabel = (status: ProductStockStatus): string => {
       return 'In stock';
     case ProductStockStatus.ON_BACKORDER:
       return 'On backorder';
+    case ProductStockStatus.IN_TRANSIT:
+      return 'In transit';
     case ProductStockStatus.OUT_OF_STOCK:
       return 'Out of stock';
     default:
@@ -25,6 +27,8 @@ export default function StockStatusDisplay({
     switch (status) {
       case ProductStockStatus.IN_STOCK:
         return '#2e7d32'; // Green
+      case ProductStockStatus.IN_TRANSIT:
+        return '#235231'; // Dark Green
       case ProductStockStatus.ON_BACKORDER:
         return '#f57c00'; // Orange
       default:

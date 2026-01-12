@@ -18,6 +18,7 @@ export enum ProductStatus {
 // Product - Woo stock status
 export enum ProductStockStatus {
   ON_BACKORDER = 'ON_BACKORDER',
+  IN_TRANSIT = 'IN_TRANSIT',
   IN_STOCK = 'IN_STOCK',
   OUT_OF_STOCK = 'OUT_OF_STOCK',
 }
