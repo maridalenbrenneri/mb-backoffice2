@@ -8,7 +8,7 @@ export default async function productCreate(data: WooProductCreate) {
 
   const url = `${WOO_API_BASE_URL}products?${process.env.WOO_SECRET_PARAM}`;
 
-  console.debug(`CREATING PRODUCT IN WOO, FROM DATA, ${JSON.stringify(data)}`);
+  console.debug(`CREATING PRODUCT IN WOO, ${JSON.stringify(data)}`);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -21,7 +21,7 @@ export default async function productCreate(data: WooProductCreate) {
   if (response.status !== 201) {
     return {
       kind: 'error',
-      error: `Woo Create Product failed: ${response.statusText}`,
+      error: `Woo Create Product failed: ${response.status} ${response.statusText}`,
     };
   }
 

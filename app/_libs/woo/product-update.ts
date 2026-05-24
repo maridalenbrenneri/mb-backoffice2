@@ -19,7 +19,7 @@ async function doRequest(wooProductId: number, data: any) {
   if (response.status !== 200) {
     return {
       kind: 'error',
-      error: `Woo Update failed: ${response.statusText}`,
+      error: `Woo Update failed: ${response.status} ${response.statusText}`,
     };
   }
 
@@ -42,8 +42,14 @@ export async function productUpdate(
   return await doRequest(wooProductId, data);
 }
 
-export async function productPublish(wooProductId: number) {
+export async function productPublish(wooProductId: number, publish = true) {
   console.debug(`PUBLISHING PRODUCT ${wooProductId} IN WOO`);
 
   return await doRequest(wooProductId, { status: 'publish' });
+}
+
+export async function productUnpublish(wooProductId: number, publish = true) {
+  console.debug(`UNPUBLISHING PRODUCT ${wooProductId} IN WOO`);
+
+  return await doRequest(wooProductId, { status: 'draft' });
 }
