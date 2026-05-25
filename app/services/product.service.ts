@@ -210,6 +210,45 @@ export async function updateProduct(id: number, data: Partial<ProductEntity>) {
   return { kind: 'success', productId: saved.id };
 }
 
+async function getOneProductWithWooId(
+  id: number
+): Promise<
+  { kind: 'success'; product: ProductEntity } | { kind: 'error'; error: string }
+> {
+  const repo = await getRepo();
+  const product = await repo.findOne({ where: { id } });
+
+  if (!product || !product.wooProductId) {
+    console.error('Product not found or has no woo product id', id);
+    return {
+      kind: 'error',
+      error: 'Product not found or has no woo product id',
+    };
+  }
+
+  return {
+    kind: 'success',
+    product,
+  };
+}
+
+export async function publishProduct(id: number, publish: boolean = true) {
+  const result = await getOneProductWithWooId(id);
+  if (result.kind !== 'success') return result;
+
+  return await woo.productPublish(
+    result.product.wooProductId as number,
+    publish
+  );
+}
+
+export async function deleteProduct(id: number) {
+  const result = await getOneProductWithWooId(id);
+  if (result.kind !== 'success') return result;
+
+  return await woo.productDelete(result.product.wooProductId as number);
+}
+
 //
 // Special update to be used when products are synced from Woo => Backoffice
 //
