@@ -13,7 +13,7 @@ export const action: ActionFunction = async ({ request }) => {
   const jobStartedAt = DateTime.now().toJSDate();
 
   try {
-    const result = await woo.syncWooProductStatus();
+    const result = await woo.syncAllWooProducts();
 
     await createJobResult({
       jobStartedAt,

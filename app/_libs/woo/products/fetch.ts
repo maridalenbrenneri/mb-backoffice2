@@ -14,7 +14,7 @@ async function fetchPage(
 
   if (response.status !== 200) {
     throw new Error(
-      `Fetch Woo orders failed. ${response.status} ${response.statusText}`
+      `Fetch Woo products failed. ${response.status} ${response.statusText}`
     );
   }
 
@@ -45,20 +45,47 @@ async function fetchPage(
   };
 }
 
-export async function fetchProducts(): Promise<WooProduct[]> {
-  let orders: Array<WooProduct> = [];
+export async function fetchOne(
+  wooProductId: number
+): Promise<WooProduct | null> {
+  const url = `${WOO_API_BASE_URL}products/${wooProductId}?${process.env.WOO_SECRET_PARAM}`;
 
+  const response = await fetch(url);
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (response.status !== 200) {
+    throw new Error(
+      `Fetch Woo product failed. ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data = await response.json();
+
+  const result = WooProductData.safeParse(data);
+  if (!result.success) {
+    console.warn('Unexpected result from Woo product fetch');
+    return null;
+  }
+
+  return result.data;
+}
+
+export async function fetchProducts(): Promise<WooProduct[]> {
   const updatedAfter = DateTime.now()
     .startOf('day')
     .minus({ days: WOO_IMPORT_PRODUCTS_UPDATED_TODAY_MINUS_DAYS })
     .toISO({ suppressMilliseconds: true, includeOffset: false });
 
+  let products: Array<WooProduct> = [];
   let page: number | null = 1;
   do {
     const result = await fetchPage(page, updatedAfter);
     page = result.nextPage;
-    orders = orders.concat(result.products);
+    products = products.concat(result.products);
   } while (page);
 
-  return orders;
+  return products;
 }

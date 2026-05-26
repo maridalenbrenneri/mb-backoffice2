@@ -43,13 +43,13 @@ export async function productUpdate(
 }
 
 export async function productPublish(wooProductId: number, publish = true) {
-  console.debug(`PUBLISHING PRODUCT ${wooProductId} IN WOO`);
+  console.debug(
+    publish
+      ? `PUBLISHING PRODUCT ${wooProductId} IN WOO`
+      : `UNPUBLISHING PRODUCT ${wooProductId} IN WOO`
+  );
 
-  return await doRequest(wooProductId, { status: 'publish' });
-}
-
-export async function productUnpublish(wooProductId: number, publish = true) {
-  console.debug(`UNPUBLISHING PRODUCT ${wooProductId} IN WOO`);
-
-  return await doRequest(wooProductId, { status: 'draft' });
+  return await doRequest(wooProductId, {
+    status: publish ? 'publish' : 'draft',
+  });
 }

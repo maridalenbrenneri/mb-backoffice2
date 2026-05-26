@@ -15,12 +15,14 @@ import {
   Form,
   Link,
 } from '@remix-run/react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import invariant from 'tiny-invariant';
 import { ProductEntity, ProductStatus } from '~/services/entities';
 import { getProductById } from '~/services/product.service';
 import {
   updateAction,
+  publishAction,
+  unpublishAction,
   CreateActionData,
   renderStockStatus,
   renderCountries,
@@ -34,12 +36,18 @@ import {
   FormControlLabel,
   Alert,
   Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
 } from '@mui/material';
 import { WOO_PRODUCT_REGULAR_PRICE_DEFAULT } from '~/settings';
 import { toPrettyDateTime } from '~/utils/dates';
 import Seperator from '~/components/Seperator';
 import DataLabel from '~/components/DataLabel';
 import ExternalLink from '~/components/ExternalLink';
+import { getValidationForCoffee } from '~/utils/product-utils';
 
 type LoaderData = {
   loadedProduct: ProductEntity;
@@ -66,7 +74,12 @@ export const loader: LoaderFunction = async ({ params }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const { ...values } = Object.fromEntries(formData);
+  const { _action, ...values } = Object.fromEntries(formData);
+
+  if (_action === 'publish')
+    return await publishAction(values as { id: string });
+  if (_action === 'unpublish')
+    return await unpublishAction(values as { id: string });
 
   return await updateAction(values);
 };
@@ -78,6 +91,8 @@ export default function UpdateProduct() {
   const { loadedProduct } = useLoaderData() as unknown as LoaderData;
   const [openSnack, setOpenSnack] = useState<boolean>(false);
   const [openErrorSnack, setOpenErrorSnack] = useState<boolean>(false);
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+  const [unpublishDialogOpen, setUnpublishDialogOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -101,7 +116,34 @@ export default function UpdateProduct() {
     description: loadedProduct.description || '',
   });
 
-  const isUpdating = Boolean(navigation.state === 'submitting');
+  const isSubmitting = navigation.state === 'submitting';
+  const submitAction = navigation.formData?.get('_action');
+  const isUpdating =
+    isSubmitting && (!submitAction || submitAction === 'update');
+  const isPublishing = isSubmitting && submitAction === 'publish';
+  const isUnpublishing = isSubmitting && submitAction === 'unpublish';
+
+  const showPublishButton =
+    loadedProduct.status === ProductStatus.DRAFT ||
+    loadedProduct.status === ProductStatus.PRIVATE;
+  const showUnpublishButton = loadedProduct.status === ProductStatus.PUBLISHED;
+
+  const productForValidation = useMemo(
+    (): ProductEntity => ({
+      ...loadedProduct,
+      coffee_country: formValues.country || null,
+      name: formValues.name,
+      coffee_beanType: formValues.beanType || null,
+      coffee_processType: formValues.processType || null,
+      coffee_cuppingScore: formValues.cuppingScore
+        ? +formValues.cuppingScore
+        : null,
+      description: formValues.description || null,
+    }),
+    [loadedProduct, formValues]
+  );
+
+  const publishValidation = getValidationForCoffee(productForValidation);
 
   // Create initial form values object
   const [initialFormValues, setInitialFormValues] = useState({
@@ -195,6 +237,8 @@ export default function UpdateProduct() {
     if (data?.didUpdate === true) {
       setOpenSnack(true);
       setOpenErrorSnack(false);
+      setPublishDialogOpen(false);
+      setUnpublishDialogOpen(false);
       // Reset changes after successful update
       setHasChanges(false);
       // Update initial values to current form values
@@ -204,6 +248,8 @@ export default function UpdateProduct() {
     } else if (data?.didUpdate === false) {
       setOpenErrorSnack(true);
       setOpenSnack(false);
+      setPublishDialogOpen(false);
+      setUnpublishDialogOpen(false);
     }
   }, [data, formValues, revalidator]);
 
@@ -299,6 +345,70 @@ export default function UpdateProduct() {
         </Grid>
       </div>
 
+      <Dialog
+        open={publishDialogOpen}
+        onClose={() => setPublishDialogOpen(false)}
+      >
+        <DialogTitle>Publish coffee in webshop</DialogTitle>
+        <DialogContent>
+          <Alert
+            severity={
+              publishValidation.kind === 'success'
+                ? 'success'
+                : publishValidation.kind === 'warning'
+                ? 'warning'
+                : 'error'
+            }
+          >
+            {publishValidation.message.trim()}
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setPublishDialogOpen(false)}>Cancel</Button>
+          <Form method="post">
+            <input type="hidden" name="id" value={loadedProduct.id} />
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={
+                isPublishing || hasChanges || publishValidation.kind === 'error'
+              }
+              name="_action"
+              value="publish"
+            >
+              {isPublishing ? 'Publishing...' : 'Publish'}
+            </Button>
+          </Form>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={unpublishDialogOpen}
+        onClose={() => setUnpublishDialogOpen(false)}
+      >
+        <DialogTitle>Unpublish coffee from webshop</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to unpublish?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setUnpublishDialogOpen(false)}>Cancel</Button>
+          <Form method="post">
+            <input type="hidden" name="id" value={loadedProduct.id} />
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isUnpublishing}
+              name="_action"
+              value="unpublish"
+            >
+              {isUnpublishing ? 'Unpublishing...' : 'OK'}
+            </Button>
+          </Form>
+        </DialogActions>
+      </Dialog>
+
       <Paper sx={{ p: 1 }}>
         <Form method="post" ref={formRef}>
           <input type="hidden" name="id" value={loadedProduct.id} />
@@ -357,7 +467,6 @@ export default function UpdateProduct() {
                 sx={{ minWidth: 250 }}
                 size="small"
               >
-                <MenuItem value={'dry-processed'}>Dry processed</MenuItem>
                 <MenuItem value={'fermented'}>Fermented</MenuItem>
                 <MenuItem value={'honey'}>Honey</MenuItem>
                 <MenuItem value={'natural'}>Natural</MenuItem>
@@ -578,12 +687,37 @@ export default function UpdateProduct() {
               <FormControl sx={{ m: 2 }}>
                 <Button
                   type="submit"
+                  name="_action"
+                  value="update"
                   disabled={isUpdating || !hasChanges}
                   variant="contained"
                 >
                   {isUpdating ? 'Updating...' : 'Update Product'}
                 </Button>
               </FormControl>
+              {showPublishButton && (
+                <FormControl sx={{ m: 2 }}>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    disabled={hasChanges}
+                    onClick={() => setPublishDialogOpen(true)}
+                  >
+                    Publish in webshop
+                  </Button>
+                </FormControl>
+              )}
+              {showUnpublishButton && (
+                <FormControl sx={{ m: 2 }}>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={() => setUnpublishDialogOpen(true)}
+                  >
+                    Unpublish from webshop
+                  </Button>
+                </FormControl>
+              )}
             </div>
           )}
 

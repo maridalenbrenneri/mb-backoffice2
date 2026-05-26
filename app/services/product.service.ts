@@ -236,10 +236,16 @@ export async function publishProduct(id: number, publish: boolean = true) {
   const result = await getOneProductWithWooId(id);
   if (result.kind !== 'success') return result;
 
-  return await woo.productPublish(
-    result.product.wooProductId as number,
-    publish
-  );
+  const wooProductId = result.product.wooProductId as number;
+  const wooResult = await woo.productPublish(wooProductId, publish);
+
+  if (wooResult.kind !== 'success') {
+    return wooResult;
+  }
+
+  await woo_syncOneProduct(wooProductId);
+
+  return { kind: 'success' };
 }
 
 export async function deleteProduct(id: number) {
@@ -335,6 +341,16 @@ export async function setProductsAsDeleted(wooProductIds: number[]) {
   }));
 
   await repo.save(updatedProducts);
+}
+
+export async function woo_syncOneProduct(wooProductId: number) {
+  const wooData = await woo.fetchProduct(wooProductId);
+
+  if (!wooData) {
+    return;
+  }
+
+  await woo_syncProductWithDataFromWoo(wooData);
 }
 
 //

@@ -4,7 +4,11 @@ import {
   ProductStatus,
   ProductStockStatus,
 } from '~/services/entities';
-import { createProduct, updateProduct } from '~/services/product.service';
+import {
+  createProduct,
+  publishProduct,
+  updateProduct,
+} from '~/services/product.service';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 export type CreateActionData = {
@@ -67,6 +71,40 @@ export const updateAction = async (values: any) => {
   return json<CreateActionData>({
     didUpdate: true,
     updateMessage: 'Product was updated',
+  });
+};
+
+export const publishAction = async (values: { id: string }) => {
+  const result = await publishProduct(+values.id, true);
+
+  if (result.kind !== 'success') {
+    console.error('Failed to publish product', result.error);
+    return json<CreateActionData>({
+      didUpdate: false,
+      updateMessage: result.error || 'Failed to publish product in webshop',
+    });
+  }
+
+  return json<CreateActionData>({
+    didUpdate: true,
+    updateMessage: 'Coffee was published in webshop',
+  });
+};
+
+export const unpublishAction = async (values: { id: string }) => {
+  const result = await publishProduct(+values.id, false);
+
+  if (result.kind !== 'success') {
+    console.error('Failed to unpublish product', result.error);
+    return json<CreateActionData>({
+      didUpdate: false,
+      updateMessage: result.error || 'Failed to unpublish product from webshop',
+    });
+  }
+
+  return json<CreateActionData>({
+    didUpdate: true,
+    updateMessage: 'Coffee was unpublished from webshop',
   });
 };
 
