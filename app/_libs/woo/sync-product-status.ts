@@ -5,7 +5,7 @@ import { fetchOne, fetchProducts } from './products/fetch';
 import type { WooProduct } from './products/types';
 import wooApiToProductUpsertData from './products/woo-api-to-product';
 
-export async function syncOneWooProduct(wooProductId: number) {
+export async function fetchProduct(wooProductId: number) {
   const wooProduct = await fetchOne(wooProductId);
 
   if (!wooProduct) return null;

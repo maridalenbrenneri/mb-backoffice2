@@ -344,7 +344,7 @@ export async function setProductsAsDeleted(wooProductIds: number[]) {
 }
 
 export async function woo_syncOneProduct(wooProductId: number) {
-  const wooData = await woo.syncOneWooProduct(wooProductId);
+  const wooData = await woo.fetchProduct(wooProductId);
 
   if (!wooData) {
     return;
