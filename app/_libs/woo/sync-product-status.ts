@@ -8,7 +8,10 @@ import wooApiToProductUpsertData from './products/woo-api-to-product';
 export async function fetchProduct(wooProductId: number) {
   const wooProduct = await fetchOne(wooProductId);
 
-  if (!wooProduct) return null;
+  if (!wooProduct) {
+    console.warn(`Fetched failed for Woo product ${wooProductId}`);
+    return null;
+  }
 
   return await wooApiToProductUpsertData(wooProduct);
 }
