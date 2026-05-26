@@ -48,7 +48,7 @@ async function fetchPage(
 export async function fetchOne(
   wooProductId: number
 ): Promise<WooProduct | null> {
-  const url = `${WOO_API_BASE_URL}products/${wooProductId}?&${process.env.WOO_SECRET_PARAM}`;
+  const url = `${WOO_API_BASE_URL}products/${wooProductId}?${process.env.WOO_SECRET_PARAM}`;
 
   const response = await fetch(url);
 
