@@ -1,11 +1,6 @@
-import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 
 import Box from '@mui/material/Box';
@@ -20,7 +15,6 @@ import {
   TextField,
 } from '@mui/material';
 
-import { upsertOrderItemAction } from '../_shared';
 import { getOrderById } from '~/services/order.service';
 import type { ProductEntity } from '~/services/entities';
 import { getAllCoffeeProducts } from '~/services/product.service';
@@ -45,18 +39,11 @@ export const loader: LoaderFunction = async ({ params }) => {
   return json({ coffees, order });
 };
 
-export const action: ActionFunction = async ({ request }) => {
-  const formData = await request.formData();
-  const { ...values } = Object.fromEntries(formData);
-
-  return await upsertOrderItemAction(values);
-};
-
 export default function NewOrderItem() {
   const { coffees, order } = useLoaderData() as unknown as LoaderData;
-  const errors = useActionData() as any;
-  const navigation = useNavigation();
-  const isCreating = Boolean(navigation.state === 'submitting');
+  const fetcher = useFetcher();
+  const errors = fetcher.data as any;
+  const isCreating = fetcher.state !== 'idle';
 
   if (!order || order.wooOrderId) return null;
 
@@ -68,7 +55,7 @@ export default function NewOrderItem() {
         }}
       >
         <Typography variant="h4">Add Order Item</Typography>
-        <Form method="post">
+        <fetcher.Form method="post" action="add-item">
           <input type="hidden" name="orderId" value={order.id} />
           <FormControl sx={{ m: 1 }}>
             <InputLabel id="product-label">Coffee</InputLabel>
@@ -115,7 +102,7 @@ export default function NewOrderItem() {
               </Button>
             </FormControl>
           </div>
-        </Form>
+        </fetcher.Form>
       </Box>
     </Paper>
   );

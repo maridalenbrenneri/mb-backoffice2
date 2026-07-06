@@ -1,4 +1,8 @@
-import { getNextFirstTuesday, getNextThirdTuesday } from './dates';
+import {
+  getDeliveryDateForTuesday,
+  getNextFirstTuesday,
+  getNextThirdTuesday,
+} from './dates';
 import { describe, expect, test } from '@jest/globals';
 import { DateTime } from 'luxon';
 
@@ -54,5 +58,25 @@ describe('getNextThirdTuesday', () => {
     expect(getNextThirdTuesday(date)).toStrictEqual(
       DateTime.fromISO('2023-10-17')
     );
+  });
+});
+
+describe('getDeliveryDateForTuesday', () => {
+  test('keeps the selected Tuesday instead of advancing to the next one', () => {
+    const tuesday = DateTime.fromISO('2023-09-12');
+
+    const result = getDeliveryDateForTuesday(tuesday);
+
+    expect(result.date).toStrictEqual(tuesday.startOf('day'));
+    expect(result.type).toBe('NORMAL');
+  });
+
+  test('classifies first Tuesday of month as MONTHLY', () => {
+    const tuesday = DateTime.fromISO('2023-10-03');
+
+    const result = getDeliveryDateForTuesday(tuesday);
+
+    expect(result.date).toStrictEqual(tuesday.startOf('day'));
+    expect(result.type).toBe('MONTHLY');
   });
 });

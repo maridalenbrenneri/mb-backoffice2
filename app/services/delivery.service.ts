@@ -3,7 +3,7 @@ import { Between } from 'typeorm';
 import { getRepository } from '~/services/repository.utils';
 import { DeliveryEntity } from '~/services/entities';
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '~/settings';
-import { getNextDeliveryDateFrom } from '~/utils/dates';
+import { getNextDeliveryDateFrom, getDeliveryDateForTuesday } from '~/utils/dates';
 
 export type { DeliveryEntity as Delivery };
 
@@ -174,7 +174,9 @@ export async function getNextOrCreateDelivery(
     currentDate.toISO()
   );
 
-  const nextDate = getNextDeliveryDateFrom(currentDate);
+  const nextDate = date
+    ? getDeliveryDateForTuesday(currentDate)
+    : getNextDeliveryDateFrom(currentDate);
 
   const nextDelivery = await upsertDelivery(null, {
     date: nextDate.date.toJSDate(),

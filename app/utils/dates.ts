@@ -86,6 +86,22 @@ export function getNextDeliveryDates(days: number = 5): DeliveryDate[] {
   return result;
 }
 
+export function getDeliveryDateForTuesday(
+  tuesday: DateTime
+): Pick<DeliveryDate, 'date' | 'type'> {
+  const date = tuesday.startOf('day');
+  const firstTuesday = getNextFirstTuesday(date);
+  const thirdTuesday = getNextThirdTuesday(date);
+
+  if (firstTuesday.hasSame(date, 'day')) {
+    return { date: firstTuesday, type: 'MONTHLY' };
+  }
+  if (thirdTuesday.hasSame(date, 'day')) {
+    return { date: thirdTuesday, type: 'MONTHLY_3RD' };
+  }
+  return { date, type: 'NORMAL' };
+}
+
 // RETURNS NEXT DELIVERY DATE AFTER THE DATE SPECIFIED
 export function getNextDeliveryDateFrom(date: DateTime): DeliveryDate {
   const today = DateTime.now().startOf('day');

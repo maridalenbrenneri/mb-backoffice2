@@ -196,7 +196,7 @@ export default function UpdateOrder() {
 
   const handleChangeDeliveryDay = (event: any) => {
     const selectedDeliveryDate = deliveryDates.find(
-      (d) => d.id === (event.target.value as number)
+      (d) => d.id === Number(event.target.value)
     );
 
     if (!selectedDeliveryDate) return;
@@ -205,6 +205,15 @@ export default function UpdateOrder() {
   };
 
   const handleOpenDeliveryDay = () => {
+    const currentDeliveryDate = DateTime.fromISO(
+      order.delivery.date.toString()
+    ).startOf('day');
+    const current = deliveryDates.find((d) =>
+      DateTime.fromISO(d.date.toString())
+        .startOf('day')
+        .hasSame(currentDeliveryDate, 'day')
+    );
+    setDeliveryDate(current ?? deliveryDates[0]);
     setOpenSetNewDelivery(true);
   };
 
@@ -627,8 +636,9 @@ export default function UpdateOrder() {
         </Box>
       </Dialog>
 
-      <Dialog open={openSetNewDelivery}>
+      <Dialog open={openSetNewDelivery && !!deliveryDate}>
         <Box sx={{ ...modalStyle }}>
+          {deliveryDate && (
           <Form method="post">
             <input type="hidden" name="id" value={order.id} />
             <input
@@ -642,7 +652,7 @@ export default function UpdateOrder() {
                   <InputLabel id="date-label">New Delivery day</InputLabel>
                   <Select
                     labelId="date-label"
-                    defaultValue={`${deliveryDates[0].date}`}
+                    value={deliveryDate.id}
                     onChange={handleChangeDeliveryDay}
                     sx={{ minWidth: 200 }}
                   >
@@ -671,6 +681,7 @@ export default function UpdateOrder() {
                     setOpenSetNewDelivery(false);
                   }}
                   sx={{ m: 2, marginTop: 4 }}
+                  type="submit"
                   name="_action"
                   value="set-delivery"
                 >
@@ -679,6 +690,7 @@ export default function UpdateOrder() {
               </Grid>
             </Grid>
           </Form>
+          )}
         </Box>
       </Dialog>
     </Box>
