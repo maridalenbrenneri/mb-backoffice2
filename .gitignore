@@ -3,6 +3,8 @@ node_modules
 /.cache
 /build
 /public/build
+/public/temp-uploads/*
+!/public/temp-uploads/.gitkeep
 .env
 /prisma/data.db
 /prisma/data.db-journal

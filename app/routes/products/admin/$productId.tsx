@@ -46,7 +46,7 @@ import { WOO_PRODUCT_REGULAR_PRICE_DEFAULT } from '~/settings';
 import { toPrettyDateTime } from '~/utils/dates';
 import Seperator from '~/components/Seperator';
 import DataLabel from '~/components/DataLabel';
-import ExternalLink from '~/components/ExternalLink';
+import ProductImageUploader from '~/components/ProductImageUploader';
 import { getValidationForCoffee } from '~/utils/product-utils';
 
 type LoaderData = {
@@ -94,6 +94,7 @@ export default function UpdateProduct() {
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [unpublishDialogOpen, setUnpublishDialogOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
+  const [tempImageUrl, setTempImageUrl] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
 
   // Add state for form values to track changes
@@ -184,7 +185,7 @@ export default function UpdateProduct() {
       return initialValue !== currentValue;
     });
 
-    setHasChanges(hasFormChanges);
+    setHasChanges(hasFormChanges || tempImageUrl !== '');
   };
 
   // Update form values and check for changes
@@ -231,7 +232,7 @@ export default function UpdateProduct() {
   // Check for changes whenever formValues changes
   useEffect(() => {
     checkFormChanges();
-  }, [formValues]);
+  }, [formValues, tempImageUrl]);
 
   useEffect(() => {
     if (data?.didUpdate === true) {
@@ -239,6 +240,7 @@ export default function UpdateProduct() {
       setOpenErrorSnack(false);
       setPublishDialogOpen(false);
       setUnpublishDialogOpen(false);
+      setTempImageUrl('');
       // Reset changes after successful update
       setHasChanges(false);
       // Update initial values to current form values
@@ -422,6 +424,7 @@ export default function UpdateProduct() {
             name="stockStatus"
             value={formValues.stockStatus}
           />
+          <input type="hidden" name="tempImageUrl" value={tempImageUrl} />
 
           <div>
             {renderCountries(formValues.country, (value) =>
@@ -524,35 +527,11 @@ export default function UpdateProduct() {
           </div>
 
           <div>
-            <FormControl sx={{ marginLeft: 2, marginTop: 1 }}>
-              <div>Product has {loadedProduct.images.length} images</div>
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                  alignItems: 'center',
-                }}
-              >
-                {loadedProduct.images.map((image) => (
-                  <div key={image.wooMediaId}>
-                    <img src={image.src} width={75} />
-                  </div>
-                ))}
-              </div>
-              <div>
-                <small>
-                  Adding or removing images must be done in{' '}
-                  <ExternalLink
-                    href={`${loadedProduct.wooProductUrl}`}
-                    text="Woo Admin"
-                  />
-                  <br />
-                  <b>Note:</b> It may take up to an hour before images added in
-                  Woo are visible here.
-                </small>
-              </div>
-            </FormControl>
+            <ProductImageUploader
+              tempImageUrl={tempImageUrl}
+              onTempImageUrlChange={setTempImageUrl}
+              existingImages={loadedProduct.images}
+            />
           </div>
 
           <div style={{ marginTop: '20px' }}>

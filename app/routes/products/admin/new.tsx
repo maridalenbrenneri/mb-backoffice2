@@ -1,5 +1,6 @@
 import { Form, useActionData, useNavigation, Link } from '@remix-run/react';
 import { useState } from 'react';
+import ProductImageUploader from '~/components/ProductImageUploader';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -32,6 +33,7 @@ export default function NewProduct() {
     country: 'Colombia',
     stockStatus: ProductStockStatus.ON_BACKORDER,
   });
+  const [tempImageUrl, setTempImageUrl] = useState('');
 
   const handleFormChange = (field: string, value: string | number) => {
     setFormValues((prev) => ({
@@ -49,6 +51,7 @@ export default function NewProduct() {
     >
       <Typography variant="h2">Add new coffee</Typography>
       <Form method="post">
+        <input type="hidden" name="tempImageUrl" value={tempImageUrl} />
         <div>
           {renderCountries(formValues.country, (value) =>
             handleFormChange('country', value)
@@ -85,6 +88,13 @@ export default function NewProduct() {
               }}
             />
           </FormControl>
+        </div>
+
+        <div>
+          <ProductImageUploader
+            tempImageUrl={tempImageUrl}
+            onTempImageUrlChange={setTempImageUrl}
+          />
         </div>
 
         <div>

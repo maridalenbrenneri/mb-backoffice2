@@ -58,7 +58,12 @@ export const updateAction = async (values: any) => {
     wooProductId: +values.wooProductId,
   };
 
-  const result = await updateProduct(+values.id, data);
+  const tempImageUrl =
+    typeof values.tempImageUrl === 'string' && values.tempImageUrl.trim()
+      ? values.tempImageUrl.trim()
+      : undefined;
+
+  const result = await updateProduct(+values.id, data, { tempImageUrl });
 
   if (result.kind !== 'success') {
     console.error('Failed to update product', result.error);
@@ -135,7 +140,12 @@ export const createAction = async (values: any) => {
     coffee_processType: 'washed',
   };
 
-  let result = await createProduct(data);
+  const tempImageUrl =
+    typeof values.tempImageUrl === 'string' && values.tempImageUrl.trim()
+      ? values.tempImageUrl.trim()
+      : undefined;
+
+  let result = await createProduct(data, { tempImageUrl });
 
   if (result.kind !== 'success') {
     return json<CreateActionData>({

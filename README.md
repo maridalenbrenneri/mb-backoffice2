@@ -54,6 +54,16 @@ fly deploy --local-only
 
 Deploys app to https://mb-backoffice.fly.dev
 
+#### Product image uploads (temp storage)
+
+Product images are uploaded to `public/temp-uploads/` on the app machine and served at
+`{APP_PUBLIC_URL}/temp-uploads/{uuid}.jpg` so WooCommerce can fetch them when creating/updating
+products. Temp files are deleted after a successful Woo sync.
+
+- Set `APP_PUBLIC_URL` (defaults to `https://mb-backoffice.fly.dev` if unset).
+- Run **one Fly machine** for this feature; local disk is not shared across machines.
+- Temp files are lost on deploy/restart before Woo fetches them.
+
 #### Secrets / env vars
 
 ```sh

@@ -1,4 +1,5 @@
 import * as woo from '~/_libs/woo';
+import { deleteTempImageByUrl } from '~/_libs/temp-uploads';
 import type {
   WooProductCreate,
   WooProductUpdate,
@@ -30,6 +31,10 @@ import {
 } from '~/utils/product-utils';
 import { In } from 'typeorm';
 import { DefaultCoffeeImages } from '~/settings';
+
+export type ProductMutationOptions = {
+  tempImageUrl?: string;
+};
 
 // WOO IMPORT
 export type WooApiUpdateProductData = Pick<
@@ -114,9 +119,12 @@ export async function getProductById(id: number) {
 // MUTATIONS
 //
 
-export async function createProduct(data: Partial<ProductEntity>) {
+export async function createProduct(
+  data: Partial<ProductEntity>,
+  options?: ProductMutationOptions
+) {
   data = cleanProductData(data);
-  let wooData = toCreateWooProductData(data);
+  let wooData = toCreateWooProductData(data, options?.tempImageUrl);
 
   // Create product in Woo
   let wooResult = await woo.productCreate(wooData);
@@ -124,6 +132,10 @@ export async function createProduct(data: Partial<ProductEntity>) {
   if (wooResult.kind !== 'success') {
     console.error('createProduct error', wooResult.error);
     return { kind: 'error', error: wooResult.error };
+  }
+
+  if (options?.tempImageUrl) {
+    await deleteTempImageByUrl(options.tempImageUrl);
   }
 
   // Save product in database
@@ -154,7 +166,11 @@ export async function updateProductSortOrder(ids: number[]) {
   return await repo.save(products);
 }
 
-export async function updateProduct(id: number, data: Partial<ProductEntity>) {
+export async function updateProduct(
+  id: number,
+  data: Partial<ProductEntity>,
+  options?: ProductMutationOptions
+) {
   const repo = await getRepo();
   const existingProduct = await repo.findOne({ where: { id } });
 
@@ -168,7 +184,8 @@ export async function updateProduct(id: number, data: Partial<ProductEntity>) {
   // Check if any data that are relevant for Woo is changed
   const doUpdateInWoo =
     existingProduct.wooProductId &&
-    ((data.name !== undefined && existingProduct.name != data.name) ||
+    (Boolean(options?.tempImageUrl) ||
+      (data.name !== undefined && existingProduct.name != data.name) ||
       (data.coffee_country !== undefined &&
         existingProduct.coffee_country != data.coffee_country) ||
       (data.description !== undefined &&
@@ -186,7 +203,7 @@ export async function updateProduct(id: number, data: Partial<ProductEntity>) {
 
   // We only trigger Woo Update if there are Woo-specific data that needs to be updated
   if (doUpdateInWoo) {
-    let wooData = toUpdateWooProductData(data);
+    let wooData = toUpdateWooProductData(data, options?.tempImageUrl);
 
     let wooResult = await woo.productUpdate(
       existingProduct.wooProductId as number,
@@ -196,6 +213,10 @@ export async function updateProduct(id: number, data: Partial<ProductEntity>) {
     if (wooResult.kind !== 'success') {
       console.error('updateProduct error', wooResult.error);
       return { kind: 'error', error: wooResult.error };
+    }
+
+    if (options?.tempImageUrl) {
+      await deleteTempImageByUrl(options.tempImageUrl);
     }
   }
 
@@ -364,7 +385,8 @@ function cleanProductData(data: Partial<ProductEntity>) {
 }
 
 function toCreateWooProductData(
-  data: Partial<ProductEntity>
+  data: Partial<ProductEntity>,
+  tempImageUrl?: string
 ): WooProductCreate {
   let stock_status =
     data.stockStatus === ProductStockStatus.ON_BACKORDER ||
@@ -378,8 +400,9 @@ function toCreateWooProductData(
     categories: [{ id: WOO_PRODUCT_CATEGORY_BUTIKK_ID }],
     name: createFullProductName(data),
     short_description: createFullProductDescription(data),
-    // TODO: Images is work-in-progress, not sure we shold ever set it in Backoffice
-    // images: createDefaultWooProductImage(data),
+    images: tempImageUrl
+      ? [{ src: tempImageUrl, position: 0 }]
+      : undefined,
     regular_price: data.retailPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
     weight: WOO_PRODUCT_WEIGHT_DEFAULT,
     shipping_class: WOO_PRODUCT_SHIPPING_CLASS_DEFAULT,
@@ -387,10 +410,14 @@ function toCreateWooProductData(
 }
 
 function toUpdateWooProductData(
-  data: Partial<ProductEntity>
+  data: Partial<ProductEntity>,
+  tempImageUrl?: string
 ): WooProductUpdate {
   return {
-    stock_status: toWooStockStatus(data.stockStatus as ProductStockStatus),
+    stock_status:
+      data.stockStatus !== undefined
+        ? toWooStockStatus(data.stockStatus as ProductStockStatus)
+        : undefined,
     name: data.name !== undefined ? createFullProductName(data) : undefined,
     short_description:
       data.description !== undefined
@@ -398,6 +425,9 @@ function toUpdateWooProductData(
         : undefined,
     regular_price:
       data.retailPrice !== undefined ? data.retailPrice || '' : undefined,
+    images: tempImageUrl
+      ? [{ src: tempImageUrl, position: 0 }]
+      : undefined,
   };
 }
 

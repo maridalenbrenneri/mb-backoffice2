@@ -197,6 +197,9 @@ export default async function importWooOrders(fetchAll: boolean = false) {
       } else {
         // IF ORDER IS IGNORED IT'S LIKELY ALREADY COMPLETED IN WOO AND NOT PREVIOUSLY IMPORTED
         ignored++;
+        console.warn(
+          `Order ${info.order.wooOrderId} ignored, already completed in Woo`
+        );
       }
     }
   }
