@@ -56,8 +56,8 @@ export function getDataSource() {
     // Connection pool configuration
     extra: {
       // Connection pool settings
-      max: isProduction ? 20 : 10, // Maximum number of connections in the pool
-      min: isProduction ? 5 : 2, // Minimum number of connections in the pool
+      max: isProduction ? 5 : 10, // Maximum number of connections in the pool
+      min: isProduction ? 1 : 2, // Minimum number of connections in the pool
       idle: 10000, // Maximum time (ms) a connection can be idle
       acquire: 60000, // Maximum time (ms) to acquire a connection
       evict: 1000, // How often to run eviction checks (ms)
