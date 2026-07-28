@@ -37,7 +37,15 @@ export default async function syncAllWooProducts() {
 
     if (res.result === 'updated') updated++;
     else if (res.result === 'notChanged') notChanged++;
-    else throw new Error(`Error when writing to database`);
+    else if (res.result === 'notFound') {
+      console.warn(
+        `Woo Product not found, cannot sync, woo id:`,
+        upsertData.wooProductId
+      );
+      ignored++;
+    } else {
+      throw new Error(`Error when writing to database`);
+    }
   }
 
   return {

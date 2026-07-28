@@ -20,8 +20,10 @@ Run app:
 - Start database proxy:
 
 ```sh
-flyctl proxy 5432 -a mb-pg
+fly mpg proxy w76geopdnqloplk4
 ```
+
+Legacy proxy: flyctl proxy 5432 -a mb-pg
 
 - Run:
 
