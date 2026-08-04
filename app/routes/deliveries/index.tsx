@@ -13,17 +13,37 @@ import { Box, Button, TableFooter } from '@mui/material';
 
 import { getDeliveries } from '~/services/delivery.service';
 import { toPrettyDate } from '~/utils/dates';
-import { useEffect, useState } from 'react';
 import { DeliveryEntity, ProductEntity } from '~/services/entities';
 
 type LoaderData = {
   loadedDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
 };
 
-function buildFilter(search: URLSearchParams) {
+function buildFilter(_search: URLSearchParams) {
   const filter: any = {
     where: {},
-    relations: ['product1', 'product2', 'product3', 'product4', 'orders'],
+    relations: ['product1', 'product2', 'product3', 'product4'],
+    select: {
+      id: true,
+      date: true,
+      type: true,
+      product1: {
+        id: true,
+        productCode: true,
+      },
+      product2: {
+        id: true,
+        productCode: true,
+      },
+      product3: {
+        id: true,
+        productCode: true,
+      },
+      product4: {
+        id: true,
+        productCode: true,
+      },
+    },
     orderBy: {
       date: 'desc',
     },
@@ -46,22 +66,14 @@ export const loader = async ({ request }: { request: Request }) => {
 };
 
 function resolveCoffeeLabel(product: ProductEntity | null) {
-  console.log('resolveCoffeeLabel', product?.productCode);
   if (product) return product.productCode || `${product.id} (no code set)`;
 
   return 'not set';
 }
 
 export default function Deliveries() {
-  const { loadedDeliveries } = useLoaderData() as unknown as LoaderData;
-
-  const [deliveries, setDeliveries] = useState<DeliveryEntity[]>();
-
-  useEffect(() => {
-    setDeliveries(loadedDeliveries);
-  }, [loadedDeliveries]);
-
-  if (!deliveries) return null;
+  const { loadedDeliveries: deliveries } =
+    useLoaderData() as unknown as LoaderData;
 
   return (
     <main>
