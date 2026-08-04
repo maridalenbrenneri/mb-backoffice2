@@ -11,12 +11,10 @@ import {
 } from '~/services/entities';
 
 let _dataSource: DataSource | null = null;
+let _initPromise: Promise<DataSource> | null = null;
 
-export function getDataSource() {
-  if (_dataSource && _dataSource.isInitialized) return _dataSource;
-
+function createDataSource() {
   const isProduction = process.env.NODE_ENV === 'production';
-
   const databaseUrl = process.env.DATABASE_URL;
 
   // Determine SSL behavior based on Fly.io topology
@@ -35,7 +33,7 @@ export function getDataSource() {
     }
   }
 
-  _dataSource = new DataSource({
+  return new DataSource({
     type: 'postgres',
     url: databaseUrl,
     entities: [
@@ -53,48 +51,60 @@ export function getDataSource() {
         ? ['query', 'error', 'warn']
         : ['error', 'warn'],
 
-    // Connection pool configuration
+    // pg.Pool options (via TypeORM extra) — aligned with Fly Managed Postgres guidance
+    // https://fly.io/docs/mpg/client-configuration/
     extra: {
-      // Connection pool settings
-      max: isProduction ? 5 : 10, // Maximum number of connections in the pool
-      min: isProduction ? 1 : 2, // Minimum number of connections in the pool
-      idle: 10000, // Maximum time (ms) a connection can be idle
-      acquire: 60000, // Maximum time (ms) to acquire a connection
-      evict: 1000, // How often to run eviction checks (ms)
-
-      // Connection timeout settings
-      connectionTimeoutMillis: 10000, // Time to acquire connection
-      idleTimeoutMillis: 30000, // Time connection can be idle
+      max: isProduction ? 5 : 10,
+      min: isProduction ? 1 : 2,
+      connectionTimeoutMillis: 10_000,
+      idleTimeoutMillis: 300_000, // 5 min — close idle connections before proxy does
+      maxLifetimeSeconds: 600, // 10 min — recycle before Fly proxy drain timeout
     },
 
     ssl: sslOption,
 
-    // Additional TypeORM settings
     cache: {
-      duration: 30000, // 30 seconds cache duration
+      duration: 30000,
     },
   });
+}
 
+export function getDataSource() {
+  if (!_dataSource) {
+    _dataSource = createDataSource();
+  }
   return _dataSource;
 }
 
 export async function ensureDataSourceInitialized() {
   const ds = getDataSource();
-  if (!ds.isInitialized) {
-    await ds.initialize();
+  if (ds.isInitialized) {
+    return ds;
   }
-  return ds;
+
+  if (!_initPromise) {
+    _initPromise = ds.initialize().then(
+      () => ds,
+      (err) => {
+        // Allow a later call to retry after a failed init
+        _initPromise = null;
+        _dataSource = null;
+        throw err;
+      }
+    );
+  }
+
+  return _initPromise;
 }
 
-// Graceful shutdown function
 export async function closeDataSource() {
+  _initPromise = null;
   if (_dataSource && _dataSource.isInitialized) {
     await _dataSource.destroy();
-    _dataSource = null;
   }
+  _dataSource = null;
 }
 
-// Handle process termination
 process.on('SIGINT', async () => {
   await closeDataSource();
   process.exit(0);
