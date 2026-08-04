@@ -1,14 +1,6 @@
 import { useLoaderData } from '@remix-run/react';
-import { useEffect, useState } from 'react';
 
-import {
-  Alert,
-  CircularProgress,
-  Paper,
-  Box,
-  Typography,
-  Grid2,
-} from '@mui/material';
+import { Alert, Paper, Box, Typography, Grid2 } from '@mui/material';
 
 import { SubscriptionStatus, OrderStatus } from '~/services/entities/enums';
 import { getSubscriptions } from '~/services/subscription.service';
@@ -19,31 +11,23 @@ import {
   getPublishedCoffeeProducts,
 } from '~/services/product.service';
 
-import {
-  DeliveryEntity,
-  ProductEntity,
-  SubscriptionEntity,
-} from '~/services/entities';
-
 import { getDeliveries } from '~/services/delivery.service';
 import { resolveAboStats } from '~/services/subscription-stats.service';
 
-import { getCargonizerProfile } from '~/_libs/cargonizer';
+// import { getCargonizerProfile } from '~/_libs/cargonizer';
 import { TAKE_MAX_ROWS } from '~/settings';
 
 import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
 import RoastOverviewBox from '~/components/RoastOverviewBox';
-import CargonizerProfileBox from '~/components/CargonizerProfileBox';
+// import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
 import StaffSubscriptions from '~/components/StaffSubscriptions';
 import PublishedProductsBox from '~/components/PublishedProductsBox';
 
 type LoaderData = {
-  wooProductImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   wooOrderImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
   wooProductSyncStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
-  wooProductCleanupResult: Awaited<ReturnType<typeof getLastJobResult>>;
   updateGaboStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
   createRenewalOrdersResult: Awaited<ReturnType<typeof getLastJobResult>>;
 
@@ -60,55 +44,87 @@ type LoaderData = {
     ReturnType<typeof getPublishedCoffeeProducts>
   >;
 
-  cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
+  // cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
 };
 
 export const loader = async () => {
-  const wooProductSyncStatusResult = await getLastJobResult(
-    'woo-product-sync-status'
-  );
-  const wooProductCleanupResult = await getLastJobResult('woo-product-cleanup');
-  const wooSubscriptionImportResult = await getLastJobResult(
-    'woo-import-subscriptions'
-  );
-  const wooOrderImportResult = await getLastJobResult('woo-import-orders');
-  const updateGaboStatusResult = await getLastJobResult(
-    'update-status-on-gift-subscriptions'
-  );
-  const createRenewalOrdersResult = await getLastJobResult(
-    'create-renewal-orders'
-  );
-
-  const allActiveSubscriptions = await getSubscriptions({
-    where: {
-      status: SubscriptionStatus.ACTIVE,
-    },
-    select: {
-      id: true,
-      type: true,
-      frequency: true,
-      quantity250: true,
-      quantity500: true,
-      quantity1200: true,
-      wooNextPaymentDate: true,
-    },
-    take: TAKE_MAX_ROWS,
-  });
-
-  // DELIVERIES USED IN ROAST OVERVIEW - ONLY "ACTIVE" AND "COMPLETED"
-  // TODO: ROAST OVERVIEW SHOULD DO IT'S OWN DATA LOADING
-  const currentDeliveries = await getDeliveries({
-    relations: [
-      'product1',
-      'product2',
-      'product3',
-      'product4',
-      'orders',
-      'orders.orderItems',
-    ],
-    orderBy: { date: 'desc' },
-    take: 5,
-  });
+  const [
+    wooProductSyncStatusResult,
+    wooSubscriptionImportResult,
+    wooOrderImportResult,
+    updateGaboStatusResult,
+    createRenewalOrdersResult,
+    allActiveSubscriptions,
+    currentDeliveries,
+    allCoffeeProductsForRoastOverview,
+    notYetPublishedCoffeeProducts,
+    publishedCoffeeProducts,
+    // cargonizerProfile,
+  ] = await Promise.all([
+    getLastJobResult('woo-product-sync-status'),
+    getLastJobResult('woo-import-subscriptions'),
+    getLastJobResult('woo-import-orders'),
+    getLastJobResult('update-status-on-gift-subscriptions'),
+    getLastJobResult('create-renewal-orders'),
+    getSubscriptions({
+      where: {
+        status: SubscriptionStatus.ACTIVE,
+      },
+      select: {
+        id: true,
+        type: true,
+        frequency: true,
+        quantity250: true,
+        quantity500: true,
+        quantity1200: true,
+        wooNextPaymentDate: true,
+      },
+      take: TAKE_MAX_ROWS,
+    }),
+    getDeliveries({
+      relations: [
+        'product1',
+        'product2',
+        'product3',
+        'product4',
+        'orders',
+        'orders.orderItems',
+      ],
+      orderBy: { date: 'desc' },
+      take: 5,
+    }),
+    getAllCoffeeProducts({
+      select: {
+        id: true,
+        productCode: true,
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 10,
+    }),
+    getNotYetPublishedCoffeeProducts({
+      select: {
+        id: true,
+        name: true,
+        productCode: true,
+        status: true,
+        coffee_country: true,
+        stockStatus: true,
+        stockRemaining: true,
+      },
+    }),
+    getPublishedCoffeeProducts({
+      select: {
+        id: true,
+        name: true,
+        productCode: true,
+        status: true,
+        coffee_country: true,
+        stockStatus: true,
+        stockRemaining: true,
+      },
+    }),
+    // getCargonizerProfile(),
+  ]);
 
   // Filter orders to only include ACTIVE and COMPLETED orders
   currentDeliveries.forEach((delivery) => {
@@ -121,44 +137,8 @@ export const loader = async () => {
     }
   });
 
-  const allCoffeeProductsForRoastOverview = await getAllCoffeeProducts({
-    select: {
-      id: true,
-      productCode: true,
-    },
-    orderBy: { updatedAt: 'desc' },
-    take: 10,
-  });
-
-  const notYetPublishedCoffeeProducts = await getNotYetPublishedCoffeeProducts({
-    select: {
-      id: true,
-      name: true,
-      productCode: true,
-      status: true,
-      coffee_country: true,
-      stockStatus: true,
-      stockRemaining: true,
-    },
-  });
-
-  const publishedCoffeeProducts = await getPublishedCoffeeProducts({
-    select: {
-      id: true,
-      name: true,
-      productCode: true,
-      status: true,
-      coffee_country: true,
-      stockStatus: true,
-      stockRemaining: true,
-    },
-  });
-
-  const cargonizerProfile = await getCargonizerProfile();
-
   return Response.json({
     wooProductSyncStatusResult,
-    wooProductCleanupResult,
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
@@ -168,14 +148,13 @@ export const loader = async () => {
     allCoffeeProductsForRoastOverview,
     notYetPublishedCoffeeProducts,
     publishedCoffeeProducts,
-    cargonizerProfile,
+    // cargonizerProfile,
   });
 };
 
 export default function Dashboard() {
   const {
     wooProductSyncStatusResult,
-    wooProductCleanupResult,
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
@@ -185,86 +164,28 @@ export default function Dashboard() {
     allCoffeeProductsForRoastOverview,
     notYetPublishedCoffeeProducts,
     publishedCoffeeProducts,
-    cargonizerProfile,
+    // cargonizerProfile,
   } = useLoaderData() as unknown as LoaderData;
 
-  const [subscriptions, setSubscriptions] = useState<SubscriptionEntity[]>();
-  const [deliveries, setDeliveries] = useState<DeliveryEntity[]>();
-  const [allCoffees, setAllCoffees] = useState<ProductEntity[]>();
-  const [notYetPublishedCoffees, setNotYetPublishedCoffees] =
-    useState<ProductEntity[]>();
-  const [publishedCoffees, setPublishedCoffees] = useState<ProductEntity[]>();
-  const [cargonizer, setCargonizer] = useState();
+  const orderImportResult = (() => {
+    const result = {
+      ordersWithUnknownProduct: null as string[] | null,
+      hasErrors: false,
+    };
 
-  const [orderImportResult, setOrderImportResult] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    function resolveOrderImportResult() {
-      const result = {
-        ordersWithUnknownProduct: null,
-        hasErrors: false,
-      };
-
-      const importResult = wooOrderImportResult[0].result;
-      if (importResult) {
-        const res = JSON.parse(importResult);
-        result.ordersWithUnknownProduct = res.ordersWithUnknownProduct.length
-          ? res.ordersWithUnknownProduct
-          : null;
-      }
-
-      result.hasErrors = !!wooOrderImportResult[0].errors;
-      return result;
+    const importResult = wooOrderImportResult[0]?.result;
+    if (importResult) {
+      const res = JSON.parse(importResult);
+      result.ordersWithUnknownProduct = res.ordersWithUnknownProduct?.length
+        ? res.ordersWithUnknownProduct
+        : null;
     }
 
-    if (
-      loading &&
-      allActiveSubscriptions &&
-      currentDeliveries &&
-      allCoffeeProductsForRoastOverview &&
-      notYetPublishedCoffeeProducts &&
-      publishedCoffeeProducts &&
-      cargonizerProfile &&
-      wooOrderImportResult
-    ) {
-      setSubscriptions(allActiveSubscriptions);
-      setDeliveries(currentDeliveries);
-      setAllCoffees(allCoffeeProductsForRoastOverview);
-      setNotYetPublishedCoffees(notYetPublishedCoffeeProducts);
-      setPublishedCoffees(publishedCoffeeProducts);
-      setCargonizer(cargonizerProfile);
-      setOrderImportResult(resolveOrderImportResult());
-      setLoading(false);
-    }
-  }, [
-    loading,
-    allActiveSubscriptions,
-    currentDeliveries,
-    allCoffeeProductsForRoastOverview,
-    notYetPublishedCoffeeProducts,
-    publishedCoffeeProducts,
-    cargonizerProfile,
-    wooOrderImportResult,
-    orderImportResult,
-  ]);
+    result.hasErrors = !!wooOrderImportResult[0]?.errors;
+    return result;
+  })();
 
-  if (loading) {
-    return (
-      <main>
-        <Grid2 container>
-          <Grid2 size={12} style={{ textAlign: 'center' }}>
-            <Box sx={{ m: 10 }}>
-              <CircularProgress color="primary" />
-              <Typography>Loading dashboard...</Typography>
-            </Box>
-          </Grid2>
-        </Grid2>
-      </main>
-    );
-  }
-
-  const aboStats = resolveAboStats(subscriptions || []);
+  const aboStats = resolveAboStats(allActiveSubscriptions || []);
 
   return (
     <main>
@@ -338,8 +259,8 @@ export default function Dashboard() {
         <Typography variant="h3">Roast overview</Typography>
         <RoastOverviewBox
           subscriptions={allActiveSubscriptions}
-          deliveries={deliveries || []}
-          coffees={allCoffees || []}
+          deliveries={currentDeliveries}
+          coffees={allCoffeeProductsForRoastOverview}
         />
       </Box>
 
@@ -347,13 +268,13 @@ export default function Dashboard() {
         <Grid2 size={{ xs: 12, md: 6 }}>
           <Box sx={{ minWidth: 120, my: 2 }}>
             <Typography variant="h3">Published coffees</Typography>
-            <PublishedProductsBox products={publishedCoffees || []} />
+            <PublishedProductsBox products={publishedCoffeeProducts} />
           </Box>
         </Grid2>
         <Grid2 size={{ xs: 12, md: 6 }}>
           <Box sx={{ minWidth: 120, my: 2 }}>
             <Typography variant="h3">Coffees coming soon</Typography>
-            <PublishedProductsBox products={notYetPublishedCoffees || []} />
+            <PublishedProductsBox products={notYetPublishedCoffeeProducts} />
           </Box>
         </Grid2>
       </Grid2>
@@ -376,11 +297,11 @@ export default function Dashboard() {
             />
           </Paper>
         </Grid2>
-        <Grid2 size={{ md: 5, xl: 3 }}>
+        {/* <Grid2 size={{ md: 5, xl: 3 }}>
           <Paper sx={{ p: 1 }}>
-            <CargonizerProfileBox profile={cargonizer} />
+            <CargonizerProfileBox profile={cargonizerProfile} />
           </Paper>
-        </Grid2>
+        </Grid2> */}
         <Grid2 size={{ md: 5, xl: 3 }}>
           <Paper sx={{ p: 1 }}>
             <StaffSubscriptions />
