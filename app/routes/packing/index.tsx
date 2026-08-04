@@ -60,7 +60,7 @@ export const loader = async ({ request }: { request: Request }) => {
       type: true,
     },
     orderBy: { date: 'desc' },
-    take: 10,
+    take: 5,
   });
 
   const selectedDelivery = deliveryId

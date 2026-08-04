@@ -79,6 +79,40 @@ export async function generatePreview(deliveryIds: number[]) {
       deliveryId: In(deliveryIds),
     },
     relations: ['orderItems', 'orderItems.product', 'subscription', 'delivery'],
+    select: {
+      id: true,
+      status: true,
+      type: true,
+      name: true,
+      shippingType: true,
+      quantity250: true,
+      quantity500: true,
+      quantity1200: true,
+      wooOrderId: true,
+      subscriptionId: true,
+      deliveryId: true,
+      createdAt: true,
+      updatedAt: true,
+      orderItems: {
+        id: true,
+        variation: true,
+        quantity: true,
+        product: {
+          id: true,
+          productCode: true,
+        },
+      },
+      subscription: {
+        id: true,
+        type: true,
+        specialRequest: true,
+        fikenContactId: true,
+      },
+      delivery: {
+        id: true,
+        date: true,
+      },
+    },
     take: TAKE_MAX_ROWS,
   });
 

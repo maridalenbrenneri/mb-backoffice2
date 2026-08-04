@@ -64,6 +64,7 @@ export async function getOrders(filter?: any) {
   // Copy other filter properties
   if (filter.where) options.where = filter.where;
   if (filter.orderBy) options.order = filter.orderBy; // TypeORM uses 'order' not 'orderBy'
+  if (filter.select) options.select = filter.select;
   if (filter.take) options.take = filter.take;
   if (filter.skip) options.skip = filter.skip;
 
