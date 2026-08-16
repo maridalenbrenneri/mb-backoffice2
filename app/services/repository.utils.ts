@@ -1,8 +1,11 @@
-import { Repository, EntityTarget, ObjectLiteral } from 'typeorm';
+import { Repository, EntityTarget, ObjectLiteral, DataSource } from 'typeorm';
 import { ensureDataSourceInitialized } from '~/typeorm/data-source';
 
-// Cache for repository instances
-const repositoryCache = new Map<EntityTarget<any>, Repository<any>>();
+// Cache for repository instances (invalidated when DataSource is replaced)
+const repositoryCache = new Map<
+  EntityTarget<any>,
+  { ds: DataSource; repo: Repository<any> }
+>();
 
 /**
  * Get a cached repository instance for the given entity
@@ -11,13 +14,14 @@ const repositoryCache = new Map<EntityTarget<any>, Repository<any>>();
 export async function getCachedRepository<T extends ObjectLiteral>(
   entity: EntityTarget<T>
 ): Promise<Repository<T>> {
-  if (repositoryCache.has(entity)) {
-    return repositoryCache.get(entity) as Repository<T>;
+  const ds = await ensureDataSourceInitialized();
+  const cached = repositoryCache.get(entity);
+  if (cached && cached.ds === ds) {
+    return cached.repo as Repository<T>;
   }
 
-  const ds = await ensureDataSourceInitialized();
   const repo = ds.getRepository(entity);
-  repositoryCache.set(entity, repo);
+  repositoryCache.set(entity, { ds, repo });
 
   return repo;
 }
