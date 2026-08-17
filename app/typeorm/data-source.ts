@@ -1,5 +1,8 @@
+import dns from 'node:dns';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
+
+dns.setDefaultResultOrder('ipv6first');
 import {
   UserEntity,
   ProductEntity,
@@ -56,12 +59,13 @@ function createDataSource() {
     extra: {
       max: isProduction ? 5 : 10,
       min: 0,
-      connectionTimeoutMillis: 5_000,
+      connectionTimeoutMillis: 10_000,
       idleTimeoutMillis: 30_000,
       maxLifetimeSeconds: 300,
-      allowExitOnIdle: true,
       keepAlive: true,
       keepAliveInitialDelayMillis: 10_000,
+      // Client-side abort if a query is stuck on a silently dropped socket
+      query_timeout: 20_000,
     },
 
     ssl: sslOption,

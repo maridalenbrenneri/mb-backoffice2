@@ -1,3 +1,4 @@
+import dns from 'node:dns';
 import { PassThrough } from 'stream';
 import {
   createReadableStreamFromReadable,
@@ -7,7 +8,15 @@ import { RemixServer } from '@remix-run/react';
 import * as isbot from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 
-const ABORT_DELAY = 5000;
+// Fly private network is IPv6. Node 17+ defaults to ipv4first, which hangs
+// connecting to *.flympg.net until the TCP timeout.
+dns.setDefaultResultOrder('ipv6first');
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+
+const ABORT_DELAY = 25_000;
 
 process.env.TZ = 'Europe/Oslo';
 

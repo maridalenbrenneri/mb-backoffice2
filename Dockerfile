@@ -41,6 +41,8 @@ FROM base
 
 ENV PORT="8080"
 ENV NODE_ENV="production"
+# Fly machines reach Managed Postgres over IPv6
+ENV NODE_OPTIONS="--dns-result-order=ipv6first"
 
 WORKDIR /myapp
 
