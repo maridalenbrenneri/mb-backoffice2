@@ -11,21 +11,21 @@ Github repo: https://github.com/maridalenbrenneri/mb-backoffice2
 Prerequisites and setup:
 
 - Install Node >= 20
-- Install flyctl (Fly.io command util), https://fly.io/docs/hands-on/install-flyctl/
+- Install Fly.io command util, https://fly.io/docs/flyctl/install/
 - Run "npm install" (in repo root folder)
 - Copy .env.example => .env (in repo root folder)
 
 Run app:
 
-- Start database proxy:
+1. Start database proxy:
 
 ```sh
 fly mpg proxy w76geopdnqloplk4
 ```
 
-Legacy proxy: flyctl proxy 5432 -a mb-pg
+(Legacy proxy: flyctl proxy 5432 -a mb-pg)
 
-- Run:
+2. Run:
 
 ```sh
   npm run dev
@@ -35,7 +35,7 @@ Legacy proxy: flyctl proxy 5432 -a mb-pg
 
 - Remix / React - Full stack client framework (https://remix.run)
   - Material UI - UI component library (https://mui.com)
-- Prisma - Database ORM (https://prisma.io)
+- TypeORM - Database ORM
 - PostgresSQL - Database hosted on Fly.io (https://fly.io)
 - Fly.io - Cloud and run environment (https://fly.io)
 
@@ -56,82 +56,27 @@ fly deploy --local-only
 
 Deploys app to https://mb-backoffice.fly.dev
 
-#### Secrets / env vars
-
-```sh
-flyctl secrets set DATABASE_URL=postgres://example.com/mydb
-
-flyctl secrets unset
-
-flyctl secrets list
-```
-
 ### Database
 
-Postgres app name: mb-pg
+Using Fly.io Managed Postgres
 
-- Username: postgres
-- Password: ###
-- Hostname: mb-pg.internal
-- Proxy Port: 5432
-- PG Port: 5433
-
-- Dev/Test database: "mb_backoffice_dev"
-- Production database: "mb_backoffice_prod"
+- Database: mb-prod
+- User: mb-backoffice
 
 Connection string example, when using database proxy on localhost (env var DATABASE_URL)
 
-```sh
-postgres://username:password@localhost:5432/mb_backoffice_dev
-```
+DATABASE_URL="postgres://mb-backoffice:password@localhost:16380/mb-prod"
 
-### Info / Misc / History
+### Fly.io cli commands - tips and tricks
 
-- Deploy scripts were initially created by the "fly launch" command.
-- DATABASE_URL was set by the "fly pg attach" command.
+fly ssh console -a mb-backoffice -C 'printenv DATABASE_URL'
 
-#### Task: Deploy dev and prod versions (with different DATABASE_URL)
+fly secrets list
 
-- How to configure this with Fly.io?
-
-#### Task: Automatic deploys with GitHub Actions
-
-- Commit to branch "dev" => https://mb-backoffice.fly.dev
-- Commit to branch "prod" => ...
-
-## Commands
-
-### Start local database proxy
-
-```sh
-flyctl proxy 5432 -a mb-pg
-```
-
-### Prisma: Sync database and types with schema.prisma
-
-```sh
-npx prisma db push
-```
-
-### Prisma: Create migration sql file with current schema changes
-
-```sh
-npx prisma migrate dev --name init
-```
-
-### Deploy to Fly.io
-
-```sh
-fly deploy
-```
-
-#### Build locally on deploy (sometimes faster)
-
-```sh
+-- Deploy with local build (sometimes faster)
 fly deploy --local-only
-```
 
-# Concepts
+# App concepts
 
 Everything is based on subscriptions, either a private (PRIVATE) subscription imported from Woo, a gift subscription (PRIVATE_GIFT) or a business subscription (B2B). Non-subscription
 orders from Woo are added to a read-only system subscription ("Woo Custom Orders Subscription", id: 2)
