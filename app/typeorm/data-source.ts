@@ -15,6 +15,8 @@ dns.setDefaultResultOrder('ipv6first');
 
 let _dataSource: DataSource | null = null;
 let _initPromise: Promise<DataSource> | null = null;
+let _lastHealthCheckAt = 0;
+const HEALTH_CHECK_INTERVAL_MS = 15_000;
 
 function parseDatabaseUrl(databaseUrl: string | undefined) {
   if (!databaseUrl) {
@@ -120,12 +122,35 @@ export function getDataSource() {
 }
 
 export async function ensureDataSourceInitialized() {
-  const ds = getDataSource();
-  if (ds.isInitialized) {
-    return ds;
+  let ds = getDataSource();
+  if (!ds.isInitialized) {
+    if (!_initPromise) {
+      _initPromise = ds.initialize().then(
+        () => ds,
+        (err) => {
+          _initPromise = null;
+          _dataSource = null;
+          throw err;
+        }
+      );
+    }
+    ds = await _initPromise;
   }
 
-  if (!_initPromise) {
+  // Detect stale pool state periodically and recreate the DataSource on failure.
+  const now = Date.now();
+  if (now - _lastHealthCheckAt < HEALTH_CHECK_INTERVAL_MS) {
+    return ds;
+  }
+  _lastHealthCheckAt = now;
+
+  try {
+    await ds.query('SELECT 1');
+    return ds;
+  } catch (err) {
+    console.warn('[db] health check failed; recreating DataSource', err);
+    await closeDataSource();
+    ds = getDataSource();
     _initPromise = ds.initialize().then(
       () => ds,
       (err) => {
@@ -134,12 +159,14 @@ export async function ensureDataSourceInitialized() {
         throw err;
       }
     );
+    ds = await _initPromise;
+    await ds.query('SELECT 1');
+    return ds;
   }
-
-  return _initPromise;
 }
 
 export async function closeDataSource() {
+  _lastHealthCheckAt = 0;
   _initPromise = null;
   if (_dataSource?.isInitialized) {
     try {

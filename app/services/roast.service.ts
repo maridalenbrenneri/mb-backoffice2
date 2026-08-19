@@ -364,7 +364,6 @@ export function getRoastOverview(
         key !== delivery.product4Id
       ) {
         const coffee = resolveCoffee(coffees, key);
-        console.debug('coffee', coffee);
         coffeesFromCustomOrdersNotSetOnDelivery.push({
           productId: key,
           productCode: coffee?.productCode || `${key}`,

@@ -165,7 +165,7 @@ async function writeToCsv(emails: string[]) {
 export async function report_getInfoForDiscountSubscriptions(
   wooSubscriptions: any[]
 ) {
-  console.log(wooSubscriptions[0]);
+  // console.log(wooSubscriptions[0]);
   // console.log(wooSubscriptions[0].line_items);
   // console.log(wooSubscriptions[0].shipping_lines);
 
