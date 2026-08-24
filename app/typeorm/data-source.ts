@@ -11,75 +11,33 @@ import {
   JobResultEntity,
 } from '~/services/entities';
 
+// Fly private network is IPv6. Node 17+ defaults to ipv4first, which can hang
+// connecting to *.flympg.net until TCP timeout.
+// https://fly.io/docs/mpg/client-configuration/
 dns.setDefaultResultOrder('ipv6first');
 
 let _dataSource: DataSource | null = null;
 let _initPromise: Promise<DataSource> | null = null;
-let _lastHealthCheckAt = 0;
-const HEALTH_CHECK_INTERVAL_MS = 15_000;
 
-function parseDatabaseUrl(databaseUrl: string | undefined) {
-  if (!databaseUrl) {
-    return { url: databaseUrl, ssl: false as const };
-  }
-
-  let hostname = '';
-  let username: string | undefined;
-  let password: string | undefined;
-  let host: string | undefined;
-  let port: number | undefined;
-  let database: string | undefined;
-
+function sslFromDatabaseUrl() {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) return false;
   try {
-    const parsed = new URL(databaseUrl);
-    hostname = parsed.hostname ?? '';
-    username = decodeURIComponent(parsed.username);
-    password = decodeURIComponent(parsed.password);
-    host = parsed.hostname;
-    port = parsed.port ? Number(parsed.port) : 5432;
-    database = parsed.pathname.replace(/^\//, '') || undefined;
+    const host = new URL(databaseUrl).hostname;
+    if (host === 'localhost' || host === '127.0.0.1') return false;
   } catch {
-    return {
-      url: databaseUrl,
-      ssl:
-        process.env.NODE_ENV === 'production'
-          ? { rejectUnauthorized: false as const }
-          : false,
-    };
+    return false;
   }
-
-  const isInternal = hostname.endsWith('.internal');
-  const useSsl =
-    process.env.NODE_ENV === 'production' && !isInternal
-      ? { rejectUnauthorized: false as const }
-      : false;
-
-  return {
-    username,
-    password,
-    host,
-    port,
-    database,
-    ssl: useSsl,
-  };
+  // MPG requires SSL. Node-pg will not enable TLS unless asked.
+  // rejectUnauthorized: false is the usual Fly/internal-CA setup.
+  return { rejectUnauthorized: false };
 }
 
 function createDataSource() {
-  const isProduction = process.env.NODE_ENV === 'production';
-  const parsed = parseDatabaseUrl(process.env.DATABASE_URL);
-
   return new DataSource({
     type: 'postgres',
-    // Prefer discrete fields so sslmode= in DATABASE_URL cannot disable SSL
-    ...(parsed.host
-      ? {
-          host: parsed.host,
-          port: parsed.port,
-          username: parsed.username,
-          password: parsed.password,
-          database: parsed.database,
-        }
-      : { url: parsed.url }),
+    url: process.env.DATABASE_URL,
+    ssl: sslFromDatabaseUrl(),
     entities: [
       UserEntity,
       ProductEntity,
@@ -95,18 +53,14 @@ function createDataSource() {
         ? ['query', 'error', 'warn']
         : ['error', 'warn'],
 
-    // Exact pg.Pool settings from Fly MPG client docs
+    // Fly Managed Postgres — Node pg.Pool recommended settings
     // https://fly.io/docs/mpg/client-configuration/
     extra: {
-      max: isProduction ? 5 : 10,
-      connectionTimeoutMillis: 5_000,
+      max: 10,
       idleTimeoutMillis: 300_000, // 5 min
-      maxLifetimeSeconds: 600, // 10 min — recycle before proxy drain
-      keepAlive: true,
-      keepAliveInitialDelayMillis: 10_000,
+      maxLifetimeSeconds: 600, // 10 min — recycle before Fly proxy drain
+      connectionTimeoutMillis: 5_000,
     },
-
-    ssl: parsed.ssl,
 
     poolErrorHandler: (err) => {
       console.warn('[db] pool error', err);
@@ -122,35 +76,12 @@ export function getDataSource() {
 }
 
 export async function ensureDataSourceInitialized() {
-  let ds = getDataSource();
-  if (!ds.isInitialized) {
-    if (!_initPromise) {
-      _initPromise = ds.initialize().then(
-        () => ds,
-        (err) => {
-          _initPromise = null;
-          _dataSource = null;
-          throw err;
-        }
-      );
-    }
-    ds = await _initPromise;
-  }
-
-  // Detect stale pool state periodically and recreate the DataSource on failure.
-  const now = Date.now();
-  if (now - _lastHealthCheckAt < HEALTH_CHECK_INTERVAL_MS) {
+  const ds = getDataSource();
+  if (ds.isInitialized) {
     return ds;
   }
-  _lastHealthCheckAt = now;
 
-  try {
-    await ds.query('SELECT 1');
-    return ds;
-  } catch (err) {
-    console.warn('[db] health check failed; recreating DataSource', err);
-    await closeDataSource();
-    ds = getDataSource();
+  if (!_initPromise) {
     _initPromise = ds.initialize().then(
       () => ds,
       (err) => {
@@ -159,14 +90,12 @@ export async function ensureDataSourceInitialized() {
         throw err;
       }
     );
-    ds = await _initPromise;
-    await ds.query('SELECT 1');
-    return ds;
   }
+
+  return _initPromise;
 }
 
 export async function closeDataSource() {
-  _lastHealthCheckAt = 0;
   _initPromise = null;
   if (_dataSource?.isInitialized) {
     try {
