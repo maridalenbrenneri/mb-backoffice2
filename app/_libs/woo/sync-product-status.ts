@@ -23,8 +23,6 @@ export default async function syncAllWooProducts() {
 
   console.debug(`=> DONE (${wooProducts.length} fetched)`);
 
-  console.debug('Products from Woo', wooProducts);
-
   let created = 0;
   let updated = 0;
   let notChanged = 0;

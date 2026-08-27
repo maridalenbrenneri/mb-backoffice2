@@ -1,4 +1,4 @@
-import { ensureDataSourceInitialized } from '~/typeorm/data-source';
+import { getRepository } from '~/services/repository.utils';
 import { JobResultEntity } from '~/services/entities';
 
 export type CreateJobResultInput = Pick<
@@ -7,8 +7,7 @@ export type CreateJobResultInput = Pick<
 >;
 
 async function getRepo() {
-  const ds = await ensureDataSourceInitialized();
-  return ds.getRepository(JobResultEntity);
+  return getRepository(JobResultEntity);
 }
 
 export async function getLastJobResult(name: string) {

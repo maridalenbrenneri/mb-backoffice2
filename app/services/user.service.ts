@@ -1,13 +1,12 @@
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { ensureDataSourceInitialized } from '~/typeorm/data-source';
+import { getRepository } from '~/services/repository.utils';
 import { UserEntity } from '~/services/entities';
 
 export type { UserEntity as User };
 
 async function getRepo() {
-  const ds = await ensureDataSourceInitialized();
-  return ds.getRepository(UserEntity);
+  return getRepository(UserEntity);
 }
 
 export async function getUserById(id: string) {

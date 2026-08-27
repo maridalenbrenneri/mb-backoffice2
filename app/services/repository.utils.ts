@@ -1,41 +1,73 @@
 import { Repository, EntityTarget, ObjectLiteral, DataSource } from 'typeorm';
-import { ensureDataSourceInitialized } from '~/typeorm/data-source';
+import {
+  ensureDataSourceInitialized,
+  withDbRetry,
+  isTransientDbError,
+  closeDataSource,
+} from '~/typeorm/data-source';
 
-// Cache for repository instances (invalidated when DataSource is replaced)
 const repositoryCache = new Map<
   EntityTarget<any>,
   { ds: DataSource; repo: Repository<any> }
 >();
 
+function wrapRepositoryWithRetry<T extends ObjectLiteral>(
+  repo: Repository<T>
+): Repository<T> {
+  return new Proxy(repo, {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value !== 'function') return value;
+
+      return (...args: unknown[]) => {
+        const result = value.apply(target, args);
+        if (!result || typeof (result as Promise<unknown>).then !== 'function') {
+          return result;
+        }
+
+        return (result as Promise<unknown>).catch(async (err: unknown) => {
+          if (!isTransientDbError(err)) throw err;
+
+          console.warn(
+            `[db] transient error on Repository.${String(prop)}, retrying once`,
+            err
+          );
+          repositoryCache.clear();
+          await closeDataSource();
+          const ds = await ensureDataSourceInitialized();
+          const fresh = ds.getRepository(target.target as EntityTarget<T>);
+          repositoryCache.set(target.target, { ds, repo: fresh });
+          return (fresh as any)[prop](...args);
+        });
+      };
+    },
+  });
+}
+
 /**
- * Get a cached repository instance for the given entity
- * This reduces the overhead of repeatedly calling getRepository
+ * Get a repository for the given entity.
+ * Async methods retry once after resetting the pool on Fly connection drops.
  */
 export async function getCachedRepository<T extends ObjectLiteral>(
   entity: EntityTarget<T>
 ): Promise<Repository<T>> {
-  const ds = await ensureDataSourceInitialized();
-  const cached = repositoryCache.get(entity);
-  if (cached && cached.ds === ds) {
-    return cached.repo as Repository<T>;
-  }
+  return withDbRetry(async () => {
+    const ds = await ensureDataSourceInitialized();
+    const cached = repositoryCache.get(entity);
+    if (cached && cached.ds === ds) {
+      return wrapRepositoryWithRetry(cached.repo as Repository<T>);
+    }
 
-  const repo = ds.getRepository(entity);
-  repositoryCache.set(entity, { ds, repo });
-
-  return repo;
+    const repo = ds.getRepository(entity);
+    repositoryCache.set(entity, { ds, repo });
+    return wrapRepositoryWithRetry(repo);
+  });
 }
 
-/**
- * Clear the repository cache (useful for testing or when connections are reset)
- */
 export function clearRepositoryCache(): void {
   repositoryCache.clear();
 }
 
-/**
- * Get repository with proper typing
- */
 export async function getRepository<T extends ObjectLiteral>(
   entity: EntityTarget<T>
 ): Promise<Repository<T>> {

@@ -1,4 +1,4 @@
-import { ensureDataSourceInitialized } from '~/typeorm/data-source';
+import { getRepository } from '~/services/repository.utils';
 import { OrderEntity, OrderItemEntity } from '~/services/entities';
 import {
   OrderStatus,
@@ -34,13 +34,11 @@ export type OrderItemUpsertData = Pick<
 >;
 
 async function getOrderRepo() {
-  const ds = await ensureDataSourceInitialized();
-  return ds.getRepository(OrderEntity);
+  return getRepository(OrderEntity);
 }
 
 async function getOrderItemRepo() {
-  const ds = await ensureDataSourceInitialized();
-  return ds.getRepository(OrderItemEntity);
+  return getRepository(OrderItemEntity);
 }
 
 // Repository functions

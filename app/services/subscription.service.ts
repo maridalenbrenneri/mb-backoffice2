@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { ensureDataSourceInitialized } from '~/typeorm/data-source';
+import { getRepository } from '~/services/repository.utils';
 import { In } from 'typeorm';
 import { SubscriptionEntity } from '~/services/entities';
 import {
@@ -94,8 +94,7 @@ export type WooGiftSubscriptionCreateInput = Pick<
 >;
 
 async function getRepo() {
-  const ds = await ensureDataSourceInitialized();
-  return ds.getRepository(SubscriptionEntity);
+  return getRepository(SubscriptionEntity);
 }
 
 // Repository functions

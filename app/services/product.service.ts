@@ -12,7 +12,7 @@ import {
   WOO_PRODUCT_WEIGHT_DEFAULT,
 } from '~/settings';
 import { areEqual } from '~/utils/are-equal';
-import { ensureDataSourceInitialized } from '~/typeorm/data-source';
+import { getRepository } from '~/services/repository.utils';
 import {
   ProductEntity,
   ProductStatus,
@@ -43,8 +43,7 @@ export type WooApiUpdateProductData = Pick<
 >;
 
 async function getRepo() {
-  const ds = await ensureDataSourceInitialized();
-  return ds.getRepository(ProductEntity);
+  return getRepository(ProductEntity);
 }
 
 async function getProducts(filter?: any) {
