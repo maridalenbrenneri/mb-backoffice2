@@ -1,6 +1,7 @@
 # fly.toml file generated for mb-backoffice on 2022-10-31T16:04:15+01:00
 
 app = "mb-backoffice"
+primary_region = "ams"
 
 kill_signal = "SIGINT"
 kill_timeout = 30
