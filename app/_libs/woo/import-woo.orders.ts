@@ -27,36 +27,50 @@ import {
   updateStatusOnSubscription,
 } from '~/services/subscription.service';
 
-async function resolveSubscription(info: OrderInfo) {
-  if (!info.wooCustomerId) {
-    // ORDER PLACED AS "GUEST" IN VIEW. CANNOT BE SUBSCRIPTION RENEWAL.
-    return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
-  }
+function createSubscriptionResolver() {
+  const cache = new Map<string, number>();
 
-  const subscription = await getSubscription({
-    where: {
-      type: SubscriptionType.PRIVATE, // This is needed because orders with gift subscriptions ordered by an owner of a subscription will have same customer id
-      wooCustomerId: info.wooCustomerId,
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  if (!subscription) {
-    if (info.wooCreatedVia === 'subscription') {
-      console.warn(
-        `No subscription was found for Woo renewal order. Woo order id: ${info.order.id} ${info.wooCustomerId}. Order is added to default system renewal subscription.`
-      );
-      return WOO_RENEWALS_SUBSCRIPTION_ID;
+  return async function resolveSubscription(info: OrderInfo): Promise<number> {
+    if (!info.wooCustomerId) {
+      // ORDER PLACED AS "GUEST" IN VIEW. CANNOT BE SUBSCRIPTION RENEWAL.
+      return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
     }
 
-    // NON RENEWAL ORDER ON A CUSTOMER THAT HASN'T A SUBSCRIPTION IN BACKOFFICE, RETURN DEFAULT NON RECURRENT SYSTEM SUBSCRIPTION
-    return WOO_NON_RECURRENT_SUBSCRIPTION_ID;
-  }
+    const cacheKey = `${info.wooCustomerId}:${info.wooCreatedVia}`;
+    const cached = cache.get(cacheKey);
+    if (cached !== undefined) {
+      return cached;
+    }
 
-  // console.debug('Resolved subscription', subscription.id);
-  return subscription.id;
+    const subscription = await getSubscription({
+      where: {
+        type: SubscriptionType.PRIVATE, // This is needed because orders with gift subscriptions ordered by an owner of a subscription will have same customer id
+        wooCustomerId: info.wooCustomerId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    let subscriptionId: number;
+
+    if (!subscription) {
+      if (info.wooCreatedVia === 'subscription') {
+        console.warn(
+          `No subscription was found for Woo renewal order. Woo order id: ${info.order.id} ${info.wooCustomerId}. Order is added to default system renewal subscription.`
+        );
+        subscriptionId = WOO_RENEWALS_SUBSCRIPTION_ID;
+      } else {
+        // NON RENEWAL ORDER ON A CUSTOMER THAT HASN'T A SUBSCRIPTION IN BACKOFFICE, RETURN DEFAULT NON RECURRENT SYSTEM SUBSCRIPTION
+        subscriptionId = WOO_NON_RECURRENT_SUBSCRIPTION_ID;
+      }
+    } else {
+      subscriptionId = subscription.id;
+    }
+
+    cache.set(cacheKey, subscriptionId);
+    return subscriptionId;
+  };
 }
 
 export default async function importWooOrders(fetchAll: boolean = false) {
@@ -111,6 +125,8 @@ export default async function importWooOrders(fetchAll: boolean = false) {
   let updated = 0;
   let notChanged = 0;
   let ignored = 0;
+
+  const resolveSubscription = createSubscriptionResolver();
 
   for (const info of orderInfos) {
     // GIFT SUBSCRIPTIONS
