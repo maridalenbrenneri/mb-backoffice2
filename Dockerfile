@@ -1,7 +1,7 @@
 # Docker file from Remix Jokes App example, with minor modifications
 
 # base node image
-FROM node:24-bullseye-slim as base
+FROM node:20-bullseye-slim as base
 
 # set for base and all layer that inherit from it
 ENV NODE_ENV production
@@ -40,7 +40,6 @@ RUN npm run build
 FROM base
 
 ENV PORT="8080"
-ENV HOST="0.0.0.0"
 ENV NODE_ENV="production"
 # Fly machines reach Managed Postgres over IPv6
 ENV NODE_OPTIONS="--dns-result-order=ipv6first"
@@ -54,4 +53,4 @@ ADD . .
 
 EXPOSE 8080
 
-CMD ["./node_modules/.bin/remix-serve", "build/index.js"]
+CMD ["npm", "start"]

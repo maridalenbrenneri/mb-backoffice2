@@ -1,4 +1,3 @@
-import dns from 'node:dns';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import {
@@ -14,7 +13,7 @@ import {
 // Fly private network is IPv6. Node 17+ defaults to ipv4first, which can hang
 // connecting to *.flympg.net until TCP timeout.
 // https://fly.io/docs/mpg/client-configuration/
-dns.setDefaultResultOrder('ipv6first');
+// dns.setDefaultResultOrder('ipv6first');
 
 // Keep the process alive when pg emits async pool errors.
 process.on('unhandledRejection', (reason) => {
