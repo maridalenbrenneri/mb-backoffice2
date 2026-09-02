@@ -4,6 +4,7 @@ import { getRepository } from '~/services/repository.utils';
 import { DeliveryEntity } from '~/services/entities';
 import { TAKE_DEFAULT_ROWS, TAKE_MAX_ROWS } from '~/settings';
 import { getNextDeliveryDateFrom, getDeliveryDateForTuesday } from '~/utils/dates';
+import { normalizeRelations, resolveRelationsOption } from '~/utils/typeorm-relations';
 
 export type { DeliveryEntity as Delivery };
 
@@ -25,17 +26,11 @@ export async function getDeliveryById(id: number, include?: any) {
   // Convert include to relations for TypeORM compatibility
   if (include) {
     if (include.relations) {
-      options.relations = include.relations;
+      options.relations = normalizeRelations(include.relations);
     } else if (include.include) {
-      // Convert include object to relations array
-      const relations: string[] = [];
-      Object.keys(include.include).forEach((key) => {
-        relations.push(key);
-      });
-      options.relations = relations;
+      options.relations = include.include;
     } else {
-      // Assume it's already a relations array
-      options.relations = include;
+      options.relations = normalizeRelations(include);
     }
   }
 
@@ -47,16 +42,9 @@ export async function getDeliveries(filter?: any) {
 
   const options: any = {};
 
-  // Handle include to relations conversion if needed
-  if (filter.include) {
-    // Convert include object to relations array
-    const relations: string[] = [];
-    Object.keys(filter.include).forEach((key) => {
-      relations.push(key);
-    });
+  const relations = resolveRelationsOption(filter);
+  if (relations) {
     options.relations = relations;
-  } else if (filter.relations) {
-    options.relations = filter.relations;
   }
 
   // Copy other filter properties
@@ -71,9 +59,6 @@ export async function getDeliveries(filter?: any) {
   if (!options.take || options.take > TAKE_MAX_ROWS)
     options.take = TAKE_DEFAULT_ROWS;
 
-  //  options.where = options.where || {};
-  // TODO: Always exclude DELETED
-
   const repo = await getRepo();
   return repo.find(options);
 }
@@ -83,16 +68,9 @@ async function getDelivery(filter: any) {
 
   const options: any = {};
 
-  // Handle include to relations conversion if needed
-  if (filter.include) {
-    // Convert include object to relations array
-    const relations: string[] = [];
-    Object.keys(filter.include).forEach((key) => {
-      relations.push(key);
-    });
+  const relations = resolveRelationsOption(filter);
+  if (relations) {
     options.relations = relations;
-  } else if (filter.relations) {
-    options.relations = filter.relations;
   }
 
   // Copy other filter properties

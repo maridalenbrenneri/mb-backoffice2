@@ -71,10 +71,10 @@ function createDataSource() {
     // Fly Managed Postgres — Node pg.Pool recommended settings
     // https://fly.io/docs/mpg/client-configuration/
     extra: {
-      max: 5,
-      idleTimeoutMillis: 300_000, // 5 min
-      maxLifetimeSeconds: 600, // 10 min — recycle before Fly proxy drain
-      connectionTimeoutMillis: 5_000,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      maxLifetimeSeconds: 300, // 5 min — recycle before Fly proxy drain
+      connectionTimeoutMillis: 5000,
     },
 
     poolErrorHandler: (err) => {

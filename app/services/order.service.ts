@@ -1,5 +1,6 @@
 import { getRepository } from '~/services/repository.utils';
 import { OrderEntity, OrderItemEntity } from '~/services/entities';
+import { resolveRelationsOption } from '~/utils/typeorm-relations';
 import {
   OrderStatus,
   OrderType,
@@ -47,16 +48,9 @@ export async function getOrders(filter?: any) {
 
   const options: any = {};
 
-  // Handle include to relations conversion if needed
-  if (filter.include) {
-    // Convert include object to relations array
-    const relations: string[] = [];
-    Object.keys(filter.include).forEach((key) => {
-      relations.push(key);
-    });
+  const relations = resolveRelationsOption(filter);
+  if (relations) {
     options.relations = relations;
-  } else if (filter.relations) {
-    options.relations = filter.relations;
   }
 
   // Copy other filter properties
@@ -81,15 +75,9 @@ export async function getOrdersPaginated(filter?: any) {
 
   const options: any = {};
 
-  // Handle include to relations conversion if needed
-  if (filter.include) {
-    const relations: string[] = [];
-    Object.keys(filter.include).forEach((key) => {
-      relations.push(key);
-    });
+  const relations = resolveRelationsOption(filter);
+  if (relations) {
     options.relations = relations;
-  } else if (filter.relations) {
-    options.relations = filter.relations;
   }
 
   // Copy other filter properties
@@ -120,16 +108,9 @@ export async function getOrder(filter: any) {
 
   const options: any = {};
 
-  // Handle include to relations conversion if needed
-  if (filter.include) {
-    // Convert include object to relations array
-    const relations: string[] = [];
-    Object.keys(filter.include).forEach((key) => {
-      relations.push(key);
-    });
+  const relations = resolveRelationsOption(filter);
+  if (relations) {
     options.relations = relations;
-  } else if (filter.relations) {
-    options.relations = filter.relations;
   }
 
   // Copy other filter properties
