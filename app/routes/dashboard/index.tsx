@@ -1,4 +1,5 @@
-import { useLoaderData } from '@remix-run/react';
+import { Suspense } from 'react';
+import { Await, useLoaderData } from '@remix-run/react';
 
 import { Alert, Paper, Box, Typography, Grid2 } from '@mui/material';
 
@@ -14,73 +15,93 @@ import {
 import { getDeliveries } from '~/services/delivery.service';
 import { resolveAboStats } from '~/services/subscription-stats.service';
 
-// import { getCargonizerProfile } from '~/_libs/cargonizer';
 import { TAKE_MAX_ROWS } from '~/settings';
 
 import SubscriptionStatsBox from '~/components/SubscriptionStatsBox';
 import RoastOverviewBox from '~/components/RoastOverviewBox';
-// import CargonizerProfileBox from '~/components/CargonizerProfileBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
 import StaffSubscriptions from '~/components/StaffSubscriptions';
 import PublishedProductsBox from '~/components/PublishedProductsBox';
+import { SectionSkeleton } from '~/components/DashboardFallback';
 
-type LoaderData = {
-  wooSubscriptionImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
-  wooOrderImportResult: Awaited<ReturnType<typeof getLastJobResult>>;
-  wooProductSyncStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
-  updateGaboStatusResult: Awaited<ReturnType<typeof getLastJobResult>>;
-  createRenewalOrdersResult: Awaited<ReturnType<typeof getLastJobResult>>;
-
-  allActiveSubscriptions: Awaited<ReturnType<typeof getSubscriptions>>;
-  currentDeliveries: Awaited<ReturnType<typeof getDeliveries>>;
-
-  allCoffeeProductsForRoastOverview: Awaited<
-    ReturnType<typeof getAllCoffeeProducts>
-  >;
-  notYetPublishedCoffeeProducts: Awaited<
-    ReturnType<typeof getNotYetPublishedCoffeeProducts>
-  >;
-  publishedCoffeeProducts: Awaited<
-    ReturnType<typeof getPublishedCoffeeProducts>
-  >;
-
-  // cargonizerProfile: Awaited<ReturnType<typeof getCargonizerProfile>>;
+const subscriptionQuery = {
+  where: {
+    status: SubscriptionStatus.ACTIVE,
+  },
+  select: {
+    id: true,
+    type: true,
+    frequency: true,
+    quantity250: true,
+    quantity500: true,
+    quantity1200: true,
+    wooNextPaymentDate: true,
+  },
+  take: TAKE_MAX_ROWS,
 };
 
-export const loader = async () => {
-  const [
-    wooProductSyncStatusResult,
-    wooSubscriptionImportResult,
-    wooOrderImportResult,
-    updateGaboStatusResult,
-    createRenewalOrdersResult,
+const productSelect = {
+  id: true,
+  name: true,
+  productCode: true,
+  status: true,
+  coffee_country: true,
+  stockStatus: true,
+  stockRemaining: true,
+};
+
+type JobResult = Awaited<ReturnType<typeof getLastJobResult>>[number];
+type Subscriptions = Awaited<ReturnType<typeof getSubscriptions>>;
+type Deliveries = Awaited<ReturnType<typeof getDeliveries>>;
+type CoffeeProducts = Awaited<ReturnType<typeof getAllCoffeeProducts>>;
+
+type RoastOverviewData = {
+  subscriptions: Subscriptions;
+  deliveries: Deliveries;
+  coffees: CoffeeProducts;
+};
+
+type JobResultsData = {
+  products: JobResult | undefined;
+  subscriptions: JobResult | undefined;
+  orders: JobResult | undefined;
+  gaboStatus: JobResult | undefined;
+  createRenewalOrders: JobResult | undefined;
+  orderImport: {
+    ordersWithUnknownProduct: string[] | null;
+    hasErrors: boolean;
+  };
+};
+
+function serialize<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
+function parseOrderImportResult(
+  wooOrderImportResult: Awaited<ReturnType<typeof getLastJobResult>>
+) {
+  const result = {
+    ordersWithUnknownProduct: null as string[] | null,
+    hasErrors: false,
+  };
+
+  const importResult = wooOrderImportResult[0]?.result;
+  if (importResult) {
+    const res = JSON.parse(importResult);
+    result.ordersWithUnknownProduct = res.ordersWithUnknownProduct?.length
+      ? res.ordersWithUnknownProduct
+      : null;
+  }
+
+  result.hasErrors = !!wooOrderImportResult[0]?.errors;
+  return result;
+}
+
+async function loadRoastOverview(
+  allActiveSubscriptions: Promise<Subscriptions>
+): Promise<RoastOverviewData> {
+  const [subscriptions, deliveries, coffees] = await Promise.all([
     allActiveSubscriptions,
-    currentDeliveries,
-    allCoffeeProductsForRoastOverview,
-    notYetPublishedCoffeeProducts,
-    publishedCoffeeProducts,
-    // cargonizerProfile,
-  ] = await Promise.all([
-    getLastJobResult('woo-product-sync-status'),
-    getLastJobResult('woo-import-subscriptions'),
-    getLastJobResult('woo-import-orders'),
-    getLastJobResult('update-status-on-gift-subscriptions'),
-    getLastJobResult('create-renewal-orders'),
-    getSubscriptions({
-      where: {
-        status: SubscriptionStatus.ACTIVE,
-      },
-      select: {
-        id: true,
-        type: true,
-        frequency: true,
-        quantity250: true,
-        quantity500: true,
-        quantity1200: true,
-        wooNextPaymentDate: true,
-      },
-      take: TAKE_MAX_ROWS,
-    }),
     getDeliveries({
       relations: [
         'product1',
@@ -101,33 +122,9 @@ export const loader = async () => {
       orderBy: { updatedAt: 'desc' },
       take: 10,
     }),
-    getNotYetPublishedCoffeeProducts({
-      select: {
-        id: true,
-        name: true,
-        productCode: true,
-        status: true,
-        coffee_country: true,
-        stockStatus: true,
-        stockRemaining: true,
-      },
-    }),
-    getPublishedCoffeeProducts({
-      select: {
-        id: true,
-        name: true,
-        productCode: true,
-        status: true,
-        coffee_country: true,
-        stockStatus: true,
-        stockRemaining: true,
-      },
-    }),
-    // getCargonizerProfile(),
   ]);
 
-  // Filter orders to only include ACTIVE and COMPLETED orders
-  currentDeliveries.forEach((delivery) => {
+  deliveries.forEach((delivery) => {
     if (delivery.orders) {
       delivery.orders = delivery.orders.filter(
         (order) =>
@@ -137,59 +134,188 @@ export const loader = async () => {
     }
   });
 
-  return Response.json({
+  return serialize({ subscriptions, deliveries, coffees });
+}
+
+async function loadJobResults(): Promise<JobResultsData> {
+  const [
     wooProductSyncStatusResult,
     wooSubscriptionImportResult,
     wooOrderImportResult,
     updateGaboStatusResult,
     createRenewalOrdersResult,
-    allActiveSubscriptions,
-    currentDeliveries,
-    allCoffeeProductsForRoastOverview,
-    notYetPublishedCoffeeProducts,
-    publishedCoffeeProducts,
-    // cargonizerProfile,
+  ] = await Promise.all([
+    getLastJobResult('woo-product-sync-status'),
+    getLastJobResult('woo-import-subscriptions'),
+    getLastJobResult('woo-import-orders'),
+    getLastJobResult('update-status-on-gift-subscriptions'),
+    getLastJobResult('create-renewal-orders'),
+  ]);
+
+  return serialize({
+    products: wooProductSyncStatusResult[0],
+    subscriptions: wooSubscriptionImportResult[0],
+    orders: wooOrderImportResult[0],
+    gaboStatus: updateGaboStatusResult[0],
+    createRenewalOrders: createRenewalOrdersResult[0],
+    orderImport: parseOrderImportResult(wooOrderImportResult),
   });
+}
+
+function SectionError({ message }: { message: string }) {
+  return <Alert severity="error">{message}</Alert>;
+}
+
+export const loader = async () => {
+  const allActiveSubscriptions = getSubscriptions(subscriptionQuery);
+
+  return {
+    roastOverview: loadRoastOverview(allActiveSubscriptions),
+    allActiveSubscriptions: allActiveSubscriptions.then(serialize),
+    publishedCoffeeProducts: getPublishedCoffeeProducts({
+      select: productSelect,
+    }).then(serialize),
+    notYetPublishedCoffeeProducts: getNotYetPublishedCoffeeProducts({
+      select: productSelect,
+    }).then(serialize),
+    jobResults: loadJobResults(),
+  };
+};
+
+type DashboardLoaderData = {
+  roastOverview: Promise<RoastOverviewData>;
+  allActiveSubscriptions: Promise<Subscriptions>;
+  publishedCoffeeProducts: Promise<CoffeeProducts>;
+  notYetPublishedCoffeeProducts: Promise<CoffeeProducts>;
+  jobResults: Promise<JobResultsData>;
 };
 
 export default function Dashboard() {
-  const {
-    wooProductSyncStatusResult,
-    wooSubscriptionImportResult,
-    wooOrderImportResult,
-    updateGaboStatusResult,
-    createRenewalOrdersResult,
-    allActiveSubscriptions,
-    currentDeliveries,
-    allCoffeeProductsForRoastOverview,
-    notYetPublishedCoffeeProducts,
-    publishedCoffeeProducts,
-    // cargonizerProfile,
-  } = useLoaderData() as unknown as LoaderData;
-
-  const orderImportResult = (() => {
-    const result = {
-      ordersWithUnknownProduct: null as string[] | null,
-      hasErrors: false,
-    };
-
-    const importResult = wooOrderImportResult[0]?.result;
-    if (importResult) {
-      const res = JSON.parse(importResult);
-      result.ordersWithUnknownProduct = res.ordersWithUnknownProduct?.length
-        ? res.ordersWithUnknownProduct
-        : null;
-    }
-
-    result.hasErrors = !!wooOrderImportResult[0]?.errors;
-    return result;
-  })();
-
-  const aboStats = resolveAboStats(allActiveSubscriptions || []);
+  const data = useLoaderData() as unknown as DashboardLoaderData;
 
   return (
     <main>
-      {orderImportResult.ordersWithUnknownProduct && (
+      <Suspense fallback={null}>
+        <Await resolve={data.jobResults}>
+          {(jobResults) => (
+            <OrderImportAlerts orderImport={jobResults.orderImport} />
+          )}
+        </Await>
+      </Suspense>
+
+      <Box sx={{ minWidth: 120, my: 4 }}>
+        <Typography variant="h3">Roast overview</Typography>
+        <Suspense fallback={<SectionSkeleton height={180} />}>
+          <Await
+            resolve={data.roastOverview}
+            errorElement={
+              <SectionError message="Could not load roast overview" />
+            }
+          >
+            {(roastOverview) => (
+              <RoastOverviewBox
+                subscriptions={roastOverview.subscriptions}
+                deliveries={roastOverview.deliveries}
+                coffees={roastOverview.coffees}
+              />
+            )}
+          </Await>
+        </Suspense>
+      </Box>
+
+      <Grid2 container spacing={2}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
+          <Box sx={{ minWidth: 120, my: 2 }}>
+            <Typography variant="h3">Published coffees</Typography>
+            <Suspense fallback={<SectionSkeleton height={140} />}>
+              <Await
+                resolve={data.publishedCoffeeProducts}
+                errorElement={
+                  <SectionError message="Could not load published coffees" />
+                }
+              >
+                {(products) => <PublishedProductsBox products={products} />}
+              </Await>
+            </Suspense>
+          </Box>
+        </Grid2>
+        <Grid2 size={{ xs: 12, md: 6 }}>
+          <Box sx={{ minWidth: 120, my: 2 }}>
+            <Typography variant="h3">Coffees coming soon</Typography>
+            <Suspense fallback={<SectionSkeleton height={140} />}>
+              <Await
+                resolve={data.notYetPublishedCoffeeProducts}
+                errorElement={
+                  <SectionError message="Could not load upcoming coffees" />
+                }
+              >
+                {(products) => <PublishedProductsBox products={products} />}
+              </Await>
+            </Suspense>
+          </Box>
+        </Grid2>
+      </Grid2>
+
+      <Box sx={{ minWidth: 120, my: 4 }}>
+        <Typography variant="h3">Subscription overview</Typography>
+        <Suspense fallback={<SectionSkeleton height={160} />}>
+          <Await
+            resolve={data.allActiveSubscriptions}
+            errorElement={
+              <SectionError message="Could not load subscription overview" />
+            }
+          >
+            {(subscriptions) => (
+              <SubscriptionStatsBox
+                stats={resolveAboStats(subscriptions || [])}
+              />
+            )}
+          </Await>
+        </Suspense>
+      </Box>
+
+      <Typography variant="h3">Other stuff</Typography>
+      <Grid2 container spacing={2}>
+        <Grid2 size={{ md: 7, xl: 5 }}>
+          <Suspense fallback={<SectionSkeleton height={160} />}>
+            <Await
+              resolve={data.jobResults}
+              errorElement={
+                <SectionError message="Could not load scheduled jobs" />
+              }
+            >
+              {(jobResults) => (
+                <Paper sx={{ p: 1 }}>
+                  <JobsInfoBox
+                    products={jobResults.products}
+                    subscriptions={jobResults.subscriptions}
+                    orders={jobResults.orders}
+                    gaboStatus={jobResults.gaboStatus}
+                    createRenewalOrders={jobResults.createRenewalOrders}
+                  />
+                </Paper>
+              )}
+            </Await>
+          </Suspense>
+        </Grid2>
+        <Grid2 size={{ md: 5, xl: 3 }}>
+          <Paper sx={{ p: 1 }}>
+            <StaffSubscriptions />
+          </Paper>
+        </Grid2>
+      </Grid2>
+    </main>
+  );
+}
+
+function OrderImportAlerts({
+  orderImport,
+}: {
+  orderImport: JobResultsData['orderImport'];
+}) {
+  return (
+    <>
+      {orderImport.ordersWithUnknownProduct && (
         <Grid2 size={12} style={{ textAlign: 'center' }}>
           <Alert
             severity="error"
@@ -211,13 +337,13 @@ export default function Dashboard() {
               </p>
               <p>
                 Orders not imported (woo order ids):{' '}
-                {orderImportResult.ordersWithUnknownProduct.join()}
+                {orderImport.ordersWithUnknownProduct.join()}
               </p>
             </Grid2>
           </Alert>
         </Grid2>
       )}
-      {orderImportResult.hasErrors && (
+      {orderImport.hasErrors && (
         <Grid2 size={12} style={{ textAlign: 'center' }}>
           <Alert
             severity="error"
@@ -254,60 +380,6 @@ export default function Dashboard() {
           </Alert>
         </Grid2>
       )}
-
-      <Box sx={{ minWidth: 120, my: 4 }}>
-        <Typography variant="h3">Roast overview</Typography>
-        <RoastOverviewBox
-          subscriptions={allActiveSubscriptions}
-          deliveries={currentDeliveries}
-          coffees={allCoffeeProductsForRoastOverview}
-        />
-      </Box>
-
-      <Grid2 container spacing={2}>
-        <Grid2 size={{ xs: 12, md: 6 }}>
-          <Box sx={{ minWidth: 120, my: 2 }}>
-            <Typography variant="h3">Published coffees</Typography>
-            <PublishedProductsBox products={publishedCoffeeProducts} />
-          </Box>
-        </Grid2>
-        <Grid2 size={{ xs: 12, md: 6 }}>
-          <Box sx={{ minWidth: 120, my: 2 }}>
-            <Typography variant="h3">Coffees coming soon</Typography>
-            <PublishedProductsBox products={notYetPublishedCoffeeProducts} />
-          </Box>
-        </Grid2>
-      </Grid2>
-
-      <Box sx={{ minWidth: 120, my: 4 }}>
-        <Typography variant="h3">Subscription overview</Typography>
-        <SubscriptionStatsBox stats={aboStats} />
-      </Box>
-
-      <Typography variant="h3">Other stuff</Typography>
-      <Grid2 container spacing={2}>
-        <Grid2 size={{ md: 7, xl: 5 }}>
-          <Paper sx={{ p: 1 }}>
-            <JobsInfoBox
-              products={wooProductSyncStatusResult[0]}
-              subscriptions={wooSubscriptionImportResult[0]}
-              orders={wooOrderImportResult[0]}
-              gaboStatus={updateGaboStatusResult[0]}
-              createRenewalOrders={createRenewalOrdersResult[0]}
-            />
-          </Paper>
-        </Grid2>
-        {/* <Grid2 size={{ md: 5, xl: 3 }}>
-          <Paper sx={{ p: 1 }}>
-            <CargonizerProfileBox profile={cargonizerProfile} />
-          </Paper>
-        </Grid2> */}
-        <Grid2 size={{ md: 5, xl: 3 }}>
-          <Paper sx={{ p: 1 }}>
-            <StaffSubscriptions />
-          </Paper>
-        </Grid2>
-      </Grid2>
-    </main>
+    </>
   );
 }

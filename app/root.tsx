@@ -9,10 +9,18 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
+  useNavigation,
   useRouteError,
 } from '@remix-run/react';
 
-import { Box, ThemeProvider, CssBaseline, Typography } from '@mui/material';
+import {
+  Box,
+  ThemeProvider,
+  CssBaseline,
+  Typography,
+  LinearProgress,
+} from '@mui/material';
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -20,6 +28,7 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
 import MainMenu from './components/MainMenu';
+import { DashboardFallback } from './components/DashboardFallback';
 import { theme } from './style/theme';
 import { requireUserId } from './utils/session.server';
 
@@ -76,13 +85,29 @@ function Document({ children }: { children: React.ReactNode; title?: string }) {
 
 export default function App() {
   const { userId } = useLoaderData() as unknown as LoaderData;
+  const navigation = useNavigation();
+  const location = useLocation();
+
+  const isNavigatingToNewPage =
+    navigation.state === 'loading' &&
+    !navigation.formMethod &&
+    !!navigation.location &&
+    navigation.location.pathname !== location.pathname;
+
+  const pendingPath = navigation.location?.pathname;
+  const isNavigatingToDashboard =
+    isNavigatingToNewPage &&
+    (pendingPath === '/dashboard' || pendingPath === '/');
 
   return (
     <ThemeProvider theme={theme}>
       <Document>
         <MainMenu loggedIn={!!userId} />
+        {isNavigatingToNewPage && !isNavigatingToDashboard && (
+          <LinearProgress />
+        )}
         <Box m={2}>
-          <Outlet />
+          {isNavigatingToDashboard ? <DashboardFallback /> : <Outlet />}
         </Box>
       </Document>
     </ThemeProvider>

@@ -56,7 +56,8 @@ export default function MainMenu(props: { loggedIn: boolean }) {
             >
               <ListItemButton
                 component={Link}
-                to={'/'}
+                to={'/dashboard'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <DashboardIcon />
@@ -68,6 +69,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               <ListItemButton
                 component={Link}
                 to={'/packing'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <LocalPostOfficeIcon />
@@ -77,6 +79,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               <ListItemButton
                 component={Link}
                 to={'/products'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <CoffeeIcon />
@@ -86,6 +89,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               <ListItemButton
                 component={Link}
                 to={'/inventory'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <InventoryIcon />
@@ -97,6 +101,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               <ListItemButton
                 component={Link}
                 to={'/subscriptions'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <ListItemText secondary="Subscriptions" />
@@ -105,6 +110,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               <ListItemButton
                 component={Link}
                 to={'/orders'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <ListItemText secondary="Orders" />
@@ -113,6 +119,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               <ListItemButton
                 component={Link}
                 to={'/deliveries'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <ListItemText secondary="Delivery days" />
@@ -123,6 +130,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               <ListItemButton
                 component={Link}
                 to={'/b2b'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <ListItemText secondary="Fiken customers" />
@@ -131,6 +139,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               <ListItemButton
                 component={Link}
                 to={'/scheduled-jobs'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <ListItemText secondary="Scheduled jobs" />
@@ -141,6 +150,7 @@ export default function MainMenu(props: { loggedIn: boolean }) {
               <ListItemButton
                 component={Link}
                 to={'/help'}
+                prefetch="intent"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <ListItemText secondary="Help" />
