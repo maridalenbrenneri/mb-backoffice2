@@ -231,6 +231,38 @@ async function getOneProductWithWooId(
   };
 }
 
+export async function updateProductImage(id: number, imageSrc: string) {
+  const result = await getOneProductWithWooId(id);
+  if (result.kind !== 'success') return result;
+
+  const existingImages = (result.product.images || [])
+    .filter((image) => image.wooMediaId)
+    .map((image) => ({ id: image.wooMediaId }));
+
+  const wooResult = await woo.productUpdate(
+    result.product.wooProductId as number,
+    {
+      images: [{ src: imageSrc }, ...existingImages],
+    }
+  );
+
+  if (wooResult.kind !== 'success') {
+    console.error('updateProductImage error', wooResult.error);
+    return wooResult;
+  }
+
+  try {
+    await woo_syncOneProduct(result.product.wooProductId as number);
+  } catch (err) {
+    console.error(
+      'Product image set in Woo, but sync to backoffice failed',
+      err
+    );
+  }
+
+  return { kind: 'success' as const };
+}
+
 export async function publishProduct(id: number, publish: boolean = true) {
   const result = await getOneProductWithWooId(id);
   if (result.kind !== 'success') return result;

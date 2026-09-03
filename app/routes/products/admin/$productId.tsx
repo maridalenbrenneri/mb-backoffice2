@@ -9,6 +9,7 @@ import {
 import { json, LoaderFunction, ActionFunction } from '@remix-run/node';
 import {
   useActionData,
+  useFetcher,
   useLoaderData,
   useNavigation,
   useRevalidator,
@@ -23,6 +24,7 @@ import {
   updateAction,
   publishAction,
   unpublishAction,
+  uploadImageAction,
   CreateActionData,
   renderStockStatus,
   renderCountries,
@@ -74,18 +76,22 @@ export const loader: LoaderFunction = async ({ params }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const { _action, ...values } = Object.fromEntries(formData);
+  const _action = formData.get('_action');
 
   if (_action === 'publish')
-    return await publishAction(values as { id: string });
+    return await publishAction({ id: String(formData.get('id')) });
   if (_action === 'unpublish')
-    return await unpublishAction(values as { id: string });
+    return await unpublishAction({ id: String(formData.get('id')) });
+  if (_action === 'uploadImage')
+    return await uploadImageAction(request, formData);
 
+  const values = Object.fromEntries(formData);
   return await updateAction(values);
 };
 
 export default function UpdateProduct() {
   const data = useActionData<CreateActionData>();
+  const imageFetcher = useFetcher<CreateActionData>();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
   const { loadedProduct } = useLoaderData() as unknown as LoaderData;
@@ -93,8 +99,18 @@ export default function UpdateProduct() {
   const [openErrorSnack, setOpenErrorSnack] = useState<boolean>(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [unpublishDialogOpen, setUnpublishDialogOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
+  const [snackMessage, setSnackMessage] = useState('');
+  const [selectedImagePreview, setSelectedImagePreview] = useState<
+    string | null
+  >(null);
+  const [selectedImageName, setSelectedImageName] = useState<string | null>(
+    null
+  );
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectedImagePreviewRef = useRef<string | null>(null);
 
   // Add state for form values to track changes
   const [formValues, setFormValues] = useState({
@@ -122,6 +138,12 @@ export default function UpdateProduct() {
     isSubmitting && (!submitAction || submitAction === 'update');
   const isPublishing = isSubmitting && submitAction === 'publish';
   const isUnpublishing = isSubmitting && submitAction === 'unpublish';
+  const isUploadingImage = imageFetcher.state !== 'idle';
+  const canUploadImage =
+    loadedProduct.status !== ProductStatus.DELETED &&
+    !!loadedProduct.wooProductId &&
+    !hasChanges &&
+    !isUploadingImage;
 
   const showPublishButton =
     loadedProduct.status === ProductStatus.DRAFT ||
@@ -235,6 +257,7 @@ export default function UpdateProduct() {
 
   useEffect(() => {
     if (data?.didUpdate === true) {
+      setSnackMessage(data.updateMessage || 'Updated');
       setOpenSnack(true);
       setOpenErrorSnack(false);
       setPublishDialogOpen(false);
@@ -246,12 +269,75 @@ export default function UpdateProduct() {
       // Revalidate the loader data to fetch fresh data from the database
       revalidator.revalidate();
     } else if (data?.didUpdate === false) {
+      setSnackMessage(data.updateMessage || 'An error occurred');
       setOpenErrorSnack(true);
       setOpenSnack(false);
       setPublishDialogOpen(false);
       setUnpublishDialogOpen(false);
     }
   }, [data, formValues, revalidator]);
+
+  const clearSelectedImagePreview = () => {
+    if (selectedImagePreviewRef.current) {
+      URL.revokeObjectURL(selectedImagePreviewRef.current);
+      selectedImagePreviewRef.current = null;
+    }
+    setSelectedImagePreview(null);
+    setSelectedImageName(null);
+  };
+
+  const closeUploadDialog = () => {
+    if (isUploadingImage) return;
+    setUploadDialogOpen(false);
+    clearSelectedImagePreview();
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  useEffect(() => {
+    if (imageFetcher.data?.didUpdate === true) {
+      setSnackMessage(imageFetcher.data.updateMessage || 'Updated');
+      setOpenSnack(true);
+      setOpenErrorSnack(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      clearSelectedImagePreview();
+      setUploadDialogOpen(false);
+    } else if (imageFetcher.data?.didUpdate === false) {
+      setSnackMessage(imageFetcher.data.updateMessage || 'An error occurred');
+      setOpenErrorSnack(true);
+      setOpenSnack(false);
+    }
+  }, [imageFetcher.data]);
+
+  const handleSelectedImageChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    clearSelectedImagePreview();
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    selectedImagePreviewRef.current = previewUrl;
+    setSelectedImagePreview(previewUrl);
+    setSelectedImageName(file.name);
+  };
+
+  const handleUploadImage = () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      setSnackMessage('Select an image to upload');
+      setOpenErrorSnack(true);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('_action', 'uploadImage');
+    formData.append('id', String(loadedProduct.id));
+    formData.append('image', file);
+    imageFetcher.submit(formData, {
+      method: 'post',
+      encType: 'multipart/form-data',
+    });
+  };
 
   // Update form values when loadedProduct changes (after revalidation)
   useEffect(() => {
@@ -314,7 +400,7 @@ export default function UpdateProduct() {
         onClose={() => setOpenSnack(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert severity="success">{data?.updateMessage || 'Updated'}</Alert>
+        <Alert severity="success">{snackMessage || 'Updated'}</Alert>
       </Snackbar>
 
       <Snackbar
@@ -323,9 +409,7 @@ export default function UpdateProduct() {
         onClose={() => setOpenErrorSnack(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert severity="error">
-          {data?.updateMessage || 'An error occurred'}
-        </Alert>
+        <Alert severity="error">{snackMessage || 'An error occurred'}</Alert>
       </Snackbar>
 
       <Typography variant="h2">{loadedProduct.name}</Typography>
@@ -406,6 +490,70 @@ export default function UpdateProduct() {
               {isUnpublishing ? 'Unpublishing...' : 'OK'}
             </Button>
           </Form>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={uploadDialogOpen}
+        onClose={closeUploadDialog}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Add image</DialogTitle>
+        <DialogContent>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            ref={fileInputRef}
+            disabled={!canUploadImage}
+            onChange={handleSelectedImageChange}
+            style={{ display: 'none' }}
+          />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              marginTop: 8,
+            }}
+          >
+            <Button
+              type="button"
+              variant="outlined"
+              disabled={!canUploadImage}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Browse
+            </Button>
+            <span>{selectedImageName || 'No file selected'}</span>
+          </div>
+          {selectedImagePreview && (
+            <div style={{ marginTop: 16 }}>
+              <img
+                src={selectedImagePreview}
+                alt="Selected image preview"
+                width={120}
+                style={{
+                  objectFit: 'cover',
+                  height: 120,
+                  border: '1px solid #ccc',
+                }}
+              />
+            </div>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={closeUploadDialog} disabled={isUploadingImage}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="contained"
+            disabled={!canUploadImage || !selectedImagePreview}
+            onClick={handleUploadImage}
+          >
+            {isUploadingImage ? 'Uploading...' : 'Upload image'}
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -524,14 +672,15 @@ export default function UpdateProduct() {
           </div>
 
           <div>
-            <FormControl sx={{ marginLeft: 2, marginTop: 1 }}>
-              <div>Product has {loadedProduct.images.length} images</div>
+            <div style={{ marginLeft: 16, marginTop: 8 }}>
+              <p>Product has {loadedProduct.images.length} images</p>
               <div
                 style={{
                   display: 'flex',
                   flexWrap: 'wrap',
                   gap: '8px',
                   alignItems: 'center',
+                  marginBottom: 12,
                 }}
               >
                 {loadedProduct.images.map((image) => (
@@ -540,19 +689,47 @@ export default function UpdateProduct() {
                   </div>
                 ))}
               </div>
-              <div>
+              {loadedProduct.status !== ProductStatus.DELETED && (
+                <div>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    size="small"
+                    disabled={!canUploadImage}
+                    onClick={() => setUploadDialogOpen(true)}
+                  >
+                    Add image
+                  </Button>
+                  {hasChanges && (
+                    <div>
+                      <small>
+                        Save product changes before uploading an image.
+                      </small>
+                    </div>
+                  )}
+                  {!loadedProduct.wooProductId && (
+                    <div>
+                      <small>
+                        Product must exist in Woo before an image can be
+                        uploaded.
+                      </small>
+                    </div>
+                  )}
+                </div>
+              )}
+              <p>
                 <small>
-                  Adding or removing images must be done in{' '}
+                  Removing images must be done in{' '}
                   <ExternalLink
                     href={`${loadedProduct.wooProductUrl}`}
                     text="Woo Admin"
                   />
                   <br />
-                  <b>Note:</b> It may take up to an hour before images added in
-                  Woo are visible here.
+                  <strong>Note:</strong> It may take some time before changes
+                  done in Woo are visible here.
                 </small>
-              </div>
-            </FormControl>
+              </p>
+            </div>
           </div>
 
           <div style={{ marginTop: '20px' }}>
@@ -689,7 +866,7 @@ export default function UpdateProduct() {
                   type="submit"
                   name="_action"
                   value="update"
-                  disabled={isUpdating || !hasChanges}
+                  disabled={isUpdating || isUploadingImage || !hasChanges}
                   variant="contained"
                 >
                   {isUpdating ? 'Updating...' : 'Update Product'}

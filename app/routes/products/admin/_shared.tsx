@@ -8,7 +8,13 @@ import {
   createProduct,
   publishProduct,
   updateProduct,
+  updateProductImage,
 } from '~/services/product.service';
+import {
+  deleteTempPublicImage,
+  isUploadedImage,
+  saveTempPublicImage,
+} from '~/services/temp-image.service';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 export type CreateActionData = {
@@ -72,6 +78,59 @@ export const updateAction = async (values: any) => {
     didUpdate: true,
     updateMessage: 'Product was updated',
   });
+};
+
+export const uploadImageAction = async (
+  request: Request,
+  formData: FormData
+) => {
+  const id = formData.get('id');
+  const image = formData.get('image');
+
+  if (!id || typeof id !== 'string') {
+    return json<CreateActionData>({
+      didUpdate: false,
+      updateMessage: 'Product id is missing',
+    });
+  }
+
+  if (!isUploadedImage(image) || image.size === 0) {
+    return json<CreateActionData>({
+      didUpdate: false,
+      updateMessage: 'Select an image to upload',
+    });
+  }
+
+  const saved = await saveTempPublicImage(image);
+  if (saved.kind !== 'success') {
+    return json<CreateActionData>({
+      didUpdate: false,
+      updateMessage: saved.error,
+    });
+  }
+
+  const publicUrl = `${new URL(request.url).origin}/tmp-uploads/${
+    saved.filename
+  }`;
+
+  try {
+    const result = await updateProductImage(+id, publicUrl);
+
+    if (result.kind !== 'success') {
+      console.error('Failed to update product image', result.error);
+      return json<CreateActionData>({
+        didUpdate: false,
+        updateMessage: result.error || 'Failed to set image on product',
+      });
+    }
+
+    return json<CreateActionData>({
+      didUpdate: true,
+      updateMessage: 'Image was added to the product',
+    });
+  } finally {
+    await deleteTempPublicImage(saved.filename);
+  }
 };
 
 export const publishAction = async (values: { id: string }) => {

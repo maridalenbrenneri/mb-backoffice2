@@ -53,7 +53,10 @@ type LoaderData = {
 export const loader = async ({ request }: { request: any }) => {
   const url = new URL(request.url);
 
-  if (url.pathname === '/login')
+  if (
+    url.pathname === '/login' ||
+    url.pathname.startsWith('/tmp-uploads/')
+  )
     return json<LoaderData>({
       userId: null,
     });

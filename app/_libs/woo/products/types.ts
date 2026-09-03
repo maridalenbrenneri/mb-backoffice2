@@ -22,6 +22,14 @@ export const WooProductUpdateData = z.object({
   name: z.string().optional(),
   short_description: z.string().optional(),
   regular_price: z.string().optional(),
+  images: z
+    .array(
+      z.object({
+        id: z.number().optional(),
+        src: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 export const WooProductCreateData = z.object({

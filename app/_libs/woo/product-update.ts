@@ -3,7 +3,7 @@ import type { WooProductUpdate } from './products/types';
 
 async function doRequest(wooProductId: number, data: any) {
   if (process.env.WOO_ALLOW_UPDATE !== 'true') {
-    return { kind: 'error', error: 'Woo Update not enabled' };
+    return { kind: 'error' as const, error: 'Woo Update not enabled' };
   }
 
   const url = `${WOO_API_BASE_URL}products/${wooProductId}?${process.env.WOO_SECRET_PARAM}`;
@@ -17,17 +17,25 @@ async function doRequest(wooProductId: number, data: any) {
   });
 
   if (response.status !== 200) {
+    let details = `${response.status} ${response.statusText}`;
+    try {
+      const body = await response.json();
+      if (body?.message) details = body.message;
+    } catch {
+      // Keep status text when Woo does not return JSON
+    }
+
     return {
-      kind: 'error',
-      error: `Woo Update failed: ${response.status} ${response.statusText}`,
+      kind: 'error' as const,
+      error: `Woo Update failed: ${details}`,
     };
   }
 
   const json = await response.json();
 
   return {
-    kind: 'success',
-    productId: json.id,
+    kind: 'success' as const,
+    productId: json.id as number,
   };
 }
 

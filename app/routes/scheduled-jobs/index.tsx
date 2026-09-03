@@ -263,7 +263,7 @@ export default function JobResultPage() {
               <TableCell>woo-import-subscriptions</TableCell>
               <TableCell>
                 Import of subscriptions from Woo updated in last 1 day. Runs
-                every hour between 06:00 and 23:00.
+                every hour between 06:15 and 23:15.
               </TableCell>
               <TableCell>
                 <small>
@@ -336,7 +336,7 @@ export default function JobResultPage() {
               <TableCell>woo-product-sync-status</TableCell>
               <TableCell>
                 Sync product status and stock status from Woo to Backoffice (if
-                changes done in Woo admin). Runs every hour
+                changes done in Woo admin). Runs every third hour.
               </TableCell>
               <TableCell>
                 <small>
