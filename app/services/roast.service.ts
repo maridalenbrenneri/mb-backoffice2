@@ -176,8 +176,8 @@ export function getRoastOverview(
       o.status === OrderStatus.ACTIVE || o.status === OrderStatus.COMPLETED
   );
 
-  console.log('delivery.orders', delivery.orders?.length || 0);
-  console.log('orders', orders.length);
+  // console.log('delivery.orders', delivery.orders?.length || 0);
+  // console.log('orders', orders.length);
 
   // ADD MONTHLY SUBSCRIPTIONS (ESTIMATE, NOT FROM ACTUAL RENEWAL ORDERS)
   if (delivery.type === 'MONTHLY') {
@@ -248,10 +248,10 @@ export function getRoastOverview(
     // Exclude if renewal order exist on Delivery (renewal orders will be added below)
     const order = orders.find((o: OrderEntity) => o.subscriptionId === s.id);
     if (order) {
-      console.debug(
-        'Subscription already has a renewal order on delivery',
-        order.id
-      );
+      // console.debug(
+      //   'Subscription already has a renewal order on delivery',
+      //   order.id
+      // );
       fortnigthlyPrivateOrdersOnDelivery.push(order);
       return;
     }
@@ -283,13 +283,13 @@ export function getRoastOverview(
   });
 
   // ADD FORTNIGHTLY ABO ORDERS (THOSE EXCLUDED FROM nextPaymentDate ESTIMATE ABOVE)
-  console.debug(
-    'ROAST OVERVIEW: fortnigthlyPrivateOrdersOnDelivery',
-    fortnigthlyPrivateOrdersOnDelivery.length
-  );
+  // console.debug(
+  //   'ROAST OVERVIEW: fortnigthlyPrivateOrdersOnDelivery',
+  //   fortnigthlyPrivateOrdersOnDelivery.length
+  // );
   if (fortnigthlyPrivateOrdersOnDelivery.length) {
-    console.debug('_250 BEFORE fortnigthlyPrivateOrdersOnDelivery');
-    console.table(_250);
+    // console.debug('_250 BEFORE fortnigthlyPrivateOrdersOnDelivery');
+    // console.table(_250);
 
     aggregateCoffeesOrders(
       fortnigthlyPrivateOrdersOnDelivery,
@@ -300,8 +300,8 @@ export function getRoastOverview(
 
     includedOrderCount += fortnigthlyPrivateOrdersOnDelivery.length;
 
-    console.debug('_250 AFTER fortnigthlyPrivateOrdersOnDelivery');
-    console.table(_250);
+    // console.debug('_250 AFTER fortnigthlyPrivateOrdersOnDelivery');
+    // console.table(_250);
   }
 
   // ADD NON-RENEWAL ORDERS TO OVERVIEW (FROM PASSIVE SUBSCRIPTIONS OR MANUALLY CREATED ORDERS ON ACTIVE SUBSCRIPTIONS)
@@ -313,14 +313,14 @@ export function getRoastOverview(
 
     includedOrderCount += nonRecurringOrders.length;
 
-    console.debug('_250 AFTER nonRecurring');
-    console.table(_250);
+    // console.debug('_250 AFTER nonRecurring');
+    // console.table(_250);
 
-    console.debug('_500 AFTER nonRecurring');
-    console.table(_500);
+    // console.debug('_500 AFTER nonRecurring');
+    // console.table(_500);
 
-    console.debug('_1200 AFTER nonRecurring');
-    console.table(_1200);
+    // console.debug('_1200 AFTER nonRecurring');
+    // console.table(_1200);
   }
 
   // ADD CUSTOM ORDERS
@@ -333,7 +333,7 @@ export function getRoastOverview(
     const list: number[] = [];
     let c1, c2, c3, c4;
 
-    console.debug('delivery', delivery);
+    // console.debug('delivery', delivery);
 
     // ADD QUANTITIES TO COFFEES SET ON DELIVERY - LIST USED TO HANDLE WHEN SAME COFFEE IS SET MULTIPLE TIMES ON DELIVERY
     if (delivery.product1Id) {
@@ -394,22 +394,22 @@ export function getRoastOverview(
 
     includedOrderCount += customOrders.length;
 
-    console.debug('_250 AFTER custom');
-    console.table(_250);
+    // console.debug('_250 AFTER custom');
+    // console.table(_250);
 
-    console.debug('_500 AFTER custom');
-    console.table(_500);
+    // console.debug('_500 AFTER custom');
+    // console.table(_500);
 
-    console.debug('_1200 AFTER custom');
-    console.table(_1200);
+    // console.debug('_1200 AFTER custom');
+    // console.table(_1200);
   }
 
   const weight = calculateWeightByCoffee(_250, _500, _1200);
 
-  console.debug(
-    'coffeesFromCustomOrdersNotSetOnDelivery',
-    coffeesFromCustomOrdersNotSetOnDelivery
-  );
+  // console.debug(
+  //   'coffeesFromCustomOrdersNotSetOnDelivery',
+  //   coffeesFromCustomOrdersNotSetOnDelivery
+  // );
 
   return {
     _250,

@@ -108,7 +108,7 @@ export function getNextDeliveryDateFrom(date: DateTime): DeliveryDate {
 
   const diff = date.diff(today, ['days']);
 
-  console.debug('getNextDeliveryDateFrom', date.toString(), diff.days);
+  // console.debug('getNextDeliveryDateFrom', date.toString(), diff.days);
 
   return getDate(diff.days);
 }
