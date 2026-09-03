@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { getRepository } from '~/services/repository.utils';
 import { OrderEntity, OrderItemEntity } from '~/services/entities';
 import { resolveRelationsOption } from '~/utils/typeorm-relations';
@@ -68,6 +69,69 @@ export async function getOrders(filter?: any) {
 
   const repo = await getOrderRepo();
   return repo.find(options);
+}
+
+/**
+ * Lean orders for roast overview: no delivery join, no cancelled rows,
+ * and line items only for CUSTOM orders (renewals use quantity fields).
+ */
+export async function getOrdersForRoastOverview(deliveryIds: number[]) {
+  if (!deliveryIds.length) return [];
+
+  const orderRepo = await getOrderRepo();
+  const orders = (
+    await Promise.all(
+      deliveryIds.map((deliveryId) =>
+        orderRepo.find({
+          where: {
+            deliveryId,
+            status: In([OrderStatus.ACTIVE, OrderStatus.COMPLETED]),
+          },
+          select: {
+            id: true,
+            status: true,
+            type: true,
+            quantity250: true,
+            quantity500: true,
+            quantity1200: true,
+            subscriptionId: true,
+            deliveryId: true,
+          },
+          take: TAKE_MAX_ROWS,
+        })
+      )
+    )
+  ).flat();
+
+  const customOrderIds = orders
+    .filter((order) => order.type === OrderType.CUSTOM)
+    .map((order) => order.id);
+
+  const itemsByOrderId = new Map<number, OrderItemEntity[]>();
+  if (customOrderIds.length) {
+    const itemRepo = await getOrderItemRepo();
+    const items = await itemRepo.find({
+      where: { orderId: In(customOrderIds) },
+      select: {
+        id: true,
+        orderId: true,
+        productId: true,
+        variation: true,
+        quantity: true,
+      },
+    });
+    for (const item of items) {
+      const list = itemsByOrderId.get(item.orderId) ?? [];
+      list.push(item);
+      itemsByOrderId.set(item.orderId, list);
+    }
+  }
+
+  for (const order of orders) {
+    order.orderItems = itemsByOrderId.get(order.id) ?? [];
+  }
+
+  return orders;
 }
 
 export async function getOrdersPaginated(filter?: any) {

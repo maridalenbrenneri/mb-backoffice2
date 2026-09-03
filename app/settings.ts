@@ -49,6 +49,7 @@ export const WOO_IMPORT_PRODUCTS_UPDATED_TODAY_MINUS_DAYS = 30;
 // SYSADMIN
 export const TAKE_MAX_ROWS = 500;
 export const TAKE_DEFAULT_ROWS = 30;
+export const JOB_RESULT_KEEP_PER_NAME = 20;
 
 export const COMPLETE_ORDERS_DELAY = 400; // milliseconds. being gentle with requests to Cargonizer and Woo on completeing multiple orders (small delay between every 5th request)
 export const COMPLETE_ORDERS_BATCH_MAX = 50;

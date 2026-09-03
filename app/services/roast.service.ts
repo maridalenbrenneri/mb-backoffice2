@@ -137,6 +137,22 @@ function resolveCoffee(coffees: ProductEntity[], productId: number) {
   return coffees.find((c) => c.id === productId);
 }
 
+export function attachOrdersToDeliveries(
+  deliveries: DeliveryEntity[],
+  orders: OrderEntity[]
+) {
+  const byDelivery = new Map<number, OrderEntity[]>();
+  for (const order of orders) {
+    const list = byDelivery.get(order.deliveryId) ?? [];
+    list.push(order);
+    byDelivery.set(order.deliveryId, list);
+  }
+  for (const delivery of deliveries) {
+    delivery.orders = byDelivery.get(delivery.id) ?? [];
+  }
+  return deliveries;
+}
+
 export function getRoastOverview(
   subscriptions: SubscriptionEntity[],
   delivery: DeliveryEntity | undefined = undefined,

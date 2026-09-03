@@ -3,7 +3,7 @@ import { Await, useLoaderData } from '@remix-run/react';
 
 import { Alert, Paper, Box, Typography, Grid2 } from '@mui/material';
 
-import { SubscriptionStatus, OrderStatus } from '~/services/entities/enums';
+import { SubscriptionStatus } from '~/services/entities/enums';
 import { getSubscriptions } from '~/services/subscription.service';
 import { getLastJobResult } from '~/services/job-result.service';
 import {
@@ -13,6 +13,8 @@ import {
 } from '~/services/product.service';
 
 import { getDeliveries } from '~/services/delivery.service';
+import { getOrdersForRoastOverview } from '~/services/order.service';
+import { attachOrdersToDeliveries } from '~/services/roast.service';
 import { resolveAboStats } from '~/services/subscription-stats.service';
 
 import { TAKE_MAX_ROWS } from '~/settings';
@@ -100,20 +102,20 @@ function parseOrderImportResult(
 async function loadRoastOverview(
   allActiveSubscriptions: Promise<Subscriptions>
 ): Promise<RoastOverviewData> {
+  const deliveriesPromise = getDeliveries({
+    relations: ['product1', 'product2', 'product3', 'product4'],
+    orderBy: { date: 'desc' },
+    take: 5,
+  }).then(async (deliveries) => {
+    const orders = await getOrdersForRoastOverview(
+      deliveries.map((delivery) => delivery.id)
+    );
+    return attachOrdersToDeliveries(deliveries, orders);
+  });
+
   const [subscriptions, deliveries, coffees] = await Promise.all([
     allActiveSubscriptions,
-    getDeliveries({
-      relations: [
-        'product1',
-        'product2',
-        'product3',
-        'product4',
-        'orders',
-        'orders.orderItems',
-      ],
-      orderBy: { date: 'desc' },
-      take: 5,
-    }),
+    deliveriesPromise,
     getAllCoffeeProducts({
       select: {
         id: true,
@@ -123,16 +125,6 @@ async function loadRoastOverview(
       take: 10,
     }),
   ]);
-
-  deliveries.forEach((delivery) => {
-    if (delivery.orders) {
-      delivery.orders = delivery.orders.filter(
-        (order) =>
-          order.status === OrderStatus.ACTIVE ||
-          order.status === OrderStatus.COMPLETED
-      );
-    }
-  });
 
   return serialize({ subscriptions, deliveries, coffees });
 }
