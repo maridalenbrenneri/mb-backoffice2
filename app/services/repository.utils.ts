@@ -3,6 +3,7 @@ import {
   ensureDataSourceInitialized,
   withDbRetry,
   isTransientDbError,
+  isPoolCheckoutTimeout,
   closeDataSource,
 } from '~/typeorm/data-source';
 
@@ -21,11 +22,24 @@ function wrapRepositoryWithRetry<T extends ObjectLiteral>(
 
       return (...args: unknown[]) => {
         const result = value.apply(target, args);
-        if (!result || typeof (result as Promise<unknown>).then !== 'function') {
+        if (
+          !result ||
+          typeof (result as Promise<unknown>).then !== 'function'
+        ) {
           return result;
         }
 
         return (result as Promise<unknown>).catch(async (err: unknown) => {
+          if (isPoolCheckoutTimeout(err)) {
+            console.warn(
+              `[db] pool checkout timeout on Repository.${String(
+                prop
+              )}, retrying once`,
+              err
+            );
+            return (target as any)[prop](...args);
+          }
+
           if (!isTransientDbError(err)) throw err;
 
           console.warn(

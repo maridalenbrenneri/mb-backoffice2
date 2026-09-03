@@ -40,10 +40,19 @@ function sslFromDatabaseUrl() {
   return { rejectUnauthorized: false };
 }
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+/** pg.Pool connectionTimeoutMillis — the pool is busy, not necessarily dead. */
+export function isPoolCheckoutTimeout(err: unknown): boolean {
+  return /timeout exceeded when trying to connect/i.test(errorMessage(err));
+}
+
 export function isTransientDbError(err: unknown): boolean {
-  const message = err instanceof Error ? err.message : String(err);
-  return /connection terminated|connection timeout|timeout exceeded|ECONNRESET|ECONNREFUSED|EPIPE|server closed the connection|Connection terminated unexpectedly|cannot connect/i.test(
-    message
+  if (isPoolCheckoutTimeout(err)) return false;
+  return /connection terminated|ECONNRESET|ECONNREFUSED|EPIPE|server closed the connection|Connection terminated unexpectedly|cannot connect/i.test(
+    errorMessage(err)
   );
 }
 
@@ -70,10 +79,10 @@ function createDataSource() {
     // Fly Managed Postgres — Node pg.Pool recommended settings
     // https://fly.io/docs/mpg/client-configuration/
     extra: {
-      max: 10,
-      idleTimeoutMillis: 30000,
-      maxLifetimeSeconds: 300, // 5 min — recycle before Fly proxy drain
-      connectionTimeoutMillis: 5000,
+      max: 5,
+      idleTimeoutMillis: 300_000, // 5 min — close idle connections before proxy does
+      maxLifetimeSeconds: 600, // 10 min — recycle before Fly proxy drain
+      connectionTimeoutMillis: 10_000,
     },
 
     poolErrorHandler: (err) => {
@@ -134,14 +143,21 @@ export async function closeDataSource() {
 }
 
 /**
- * Fly docs: retry transient connection failures after proxy/PgBouncer drops.
- * Resets the pool once and retries the operation.
+ * Retry once on transient Fly/PgBouncer drops. Pool checkout timeouts retry
+ * without destroying the pool — resetting on a busy pool causes a stampede.
  */
 export async function withDbRetry<T>(fn: () => Promise<T>): Promise<T> {
   await ensureDataSourceInitialized();
   try {
     return await fn();
   } catch (err) {
+    if (isPoolCheckoutTimeout(err)) {
+      console.warn(
+        '[db] pool checkout timeout, retrying once without reset',
+        err
+      );
+      return await fn();
+    }
     if (!isTransientDbError(err)) throw err;
     console.warn('[db] transient error, resetting pool and retrying once', err);
     await closeDataSource();
