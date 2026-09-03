@@ -1,5 +1,4 @@
-import { Suspense } from 'react';
-import { Await, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 
 import { Alert, Paper, Box, Typography, Grid2 } from '@mui/material';
 
@@ -24,7 +23,6 @@ import RoastOverviewBox from '~/components/RoastOverviewBox';
 import JobsInfoBox from '~/components/JobsInfoBox';
 import StaffSubscriptions from '~/components/StaffSubscriptions';
 import PublishedProductsBox from '~/components/PublishedProductsBox';
-import { SectionSkeleton } from '~/components/DashboardFallback';
 
 const subscriptionQuery = {
   where: {
@@ -154,141 +152,100 @@ async function loadJobResults(): Promise<JobResultsData> {
   });
 }
 
-function SectionError({ message }: { message: string }) {
-  return <Alert severity="error">{message}</Alert>;
-}
-
 export const loader = async () => {
   const allActiveSubscriptions = getSubscriptions(subscriptionQuery);
 
+  const [
+    roastOverview,
+    subscriptions,
+    publishedCoffeeProducts,
+    notYetPublishedCoffeeProducts,
+    jobResults,
+  ] = await Promise.all([
+    loadRoastOverview(allActiveSubscriptions),
+    allActiveSubscriptions.then(serialize),
+    getPublishedCoffeeProducts({
+      select: productSelect,
+    }).then(serialize),
+    getNotYetPublishedCoffeeProducts({
+      select: productSelect,
+    }).then(serialize),
+    loadJobResults(),
+  ]);
+
   return {
-    roastOverview: loadRoastOverview(allActiveSubscriptions),
-    allActiveSubscriptions: allActiveSubscriptions.then(serialize),
-    publishedCoffeeProducts: getPublishedCoffeeProducts({
-      select: productSelect,
-    }).then(serialize),
-    notYetPublishedCoffeeProducts: getNotYetPublishedCoffeeProducts({
-      select: productSelect,
-    }).then(serialize),
-    jobResults: loadJobResults(),
+    roastOverview,
+    allActiveSubscriptions: subscriptions,
+    publishedCoffeeProducts,
+    notYetPublishedCoffeeProducts,
+    jobResults,
   };
 };
 
 type DashboardLoaderData = {
-  roastOverview: Promise<RoastOverviewData>;
-  allActiveSubscriptions: Promise<Subscriptions>;
-  publishedCoffeeProducts: Promise<CoffeeProducts>;
-  notYetPublishedCoffeeProducts: Promise<CoffeeProducts>;
-  jobResults: Promise<JobResultsData>;
+  roastOverview: RoastOverviewData;
+  allActiveSubscriptions: Subscriptions;
+  publishedCoffeeProducts: CoffeeProducts;
+  notYetPublishedCoffeeProducts: CoffeeProducts;
+  jobResults: JobResultsData;
 };
 
 export default function Dashboard() {
-  const data = useLoaderData() as unknown as DashboardLoaderData;
+  const {
+    roastOverview,
+    allActiveSubscriptions,
+    publishedCoffeeProducts,
+    notYetPublishedCoffeeProducts,
+    jobResults,
+  } = useLoaderData() as unknown as DashboardLoaderData;
 
   return (
     <main>
-      <Suspense fallback={null}>
-        <Await resolve={data.jobResults}>
-          {(jobResults) => (
-            <OrderImportAlerts orderImport={jobResults.orderImport} />
-          )}
-        </Await>
-      </Suspense>
+      <OrderImportAlerts orderImport={jobResults.orderImport} />
 
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h3">Roast overview</Typography>
-        <Suspense fallback={<SectionSkeleton height={180} />}>
-          <Await
-            resolve={data.roastOverview}
-            errorElement={
-              <SectionError message="Could not load roast overview" />
-            }
-          >
-            {(roastOverview) => (
-              <RoastOverviewBox
-                subscriptions={roastOverview.subscriptions}
-                deliveries={roastOverview.deliveries}
-                coffees={roastOverview.coffees}
-              />
-            )}
-          </Await>
-        </Suspense>
+        <RoastOverviewBox
+          subscriptions={roastOverview.subscriptions}
+          deliveries={roastOverview.deliveries}
+          coffees={roastOverview.coffees}
+        />
       </Box>
 
       <Grid2 container spacing={2}>
         <Grid2 size={{ xs: 12, md: 6 }}>
           <Box sx={{ minWidth: 120, my: 2 }}>
             <Typography variant="h3">Published coffees</Typography>
-            <Suspense fallback={<SectionSkeleton height={140} />}>
-              <Await
-                resolve={data.publishedCoffeeProducts}
-                errorElement={
-                  <SectionError message="Could not load published coffees" />
-                }
-              >
-                {(products) => <PublishedProductsBox products={products} />}
-              </Await>
-            </Suspense>
+            <PublishedProductsBox products={publishedCoffeeProducts} />
           </Box>
         </Grid2>
         <Grid2 size={{ xs: 12, md: 6 }}>
           <Box sx={{ minWidth: 120, my: 2 }}>
             <Typography variant="h3">Coffees coming soon</Typography>
-            <Suspense fallback={<SectionSkeleton height={140} />}>
-              <Await
-                resolve={data.notYetPublishedCoffeeProducts}
-                errorElement={
-                  <SectionError message="Could not load upcoming coffees" />
-                }
-              >
-                {(products) => <PublishedProductsBox products={products} />}
-              </Await>
-            </Suspense>
+            <PublishedProductsBox products={notYetPublishedCoffeeProducts} />
           </Box>
         </Grid2>
       </Grid2>
 
       <Box sx={{ minWidth: 120, my: 4 }}>
         <Typography variant="h3">Subscription overview</Typography>
-        <Suspense fallback={<SectionSkeleton height={160} />}>
-          <Await
-            resolve={data.allActiveSubscriptions}
-            errorElement={
-              <SectionError message="Could not load subscription overview" />
-            }
-          >
-            {(subscriptions) => (
-              <SubscriptionStatsBox
-                stats={resolveAboStats(subscriptions || [])}
-              />
-            )}
-          </Await>
-        </Suspense>
+        <SubscriptionStatsBox
+          stats={resolveAboStats(allActiveSubscriptions || [])}
+        />
       </Box>
 
       <Typography variant="h3">Other stuff</Typography>
       <Grid2 container spacing={2}>
         <Grid2 size={{ md: 7, xl: 5 }}>
-          <Suspense fallback={<SectionSkeleton height={160} />}>
-            <Await
-              resolve={data.jobResults}
-              errorElement={
-                <SectionError message="Could not load scheduled jobs" />
-              }
-            >
-              {(jobResults) => (
-                <Paper sx={{ p: 1 }}>
-                  <JobsInfoBox
-                    products={jobResults.products}
-                    subscriptions={jobResults.subscriptions}
-                    orders={jobResults.orders}
-                    gaboStatus={jobResults.gaboStatus}
-                    createRenewalOrders={jobResults.createRenewalOrders}
-                  />
-                </Paper>
-              )}
-            </Await>
-          </Suspense>
+          <Paper sx={{ p: 1 }}>
+            <JobsInfoBox
+              products={jobResults.products}
+              subscriptions={jobResults.subscriptions}
+              orders={jobResults.orders}
+              gaboStatus={jobResults.gaboStatus}
+              createRenewalOrders={jobResults.createRenewalOrders}
+            />
+          </Paper>
         </Grid2>
         <Grid2 size={{ md: 5, xl: 3 }}>
           <Paper sx={{ p: 1 }}>
