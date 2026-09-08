@@ -7,6 +7,7 @@ import {
   TAKE_DEFAULT_ROWS,
   TAKE_MAX_ROWS,
   WOO_PRODUCT_CATEGORY_BUTIKK_ID,
+  WOO_PRODUCT_COFFEE_BAG_IMAGE_ID,
   WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
   WOO_PRODUCT_SHIPPING_CLASS_DEFAULT,
   WOO_PRODUCT_WEIGHT_DEFAULT,
@@ -132,8 +133,22 @@ export async function createProduct(data: Partial<ProductEntity>) {
       ...data,
       wooProductId: wooResult.productId || null,
       wooProductUrl: wooResult.productUrl || null,
+      images: wooResult.images || [],
     })
   );
+
+  // Pull the resolved image URL (and other Woo fields) even if create payload
+  // only sent a media id.
+  if (wooResult.productId) {
+    try {
+      await woo_syncOneProduct(wooResult.productId);
+    } catch (err) {
+      console.error(
+        'Product created in Woo, but sync of image/data to backoffice failed',
+        err
+      );
+    }
+  }
 
   return { kind: 'success', productId };
 }
@@ -409,8 +424,7 @@ function toCreateWooProductData(
     categories: [{ id: WOO_PRODUCT_CATEGORY_BUTIKK_ID }],
     name: createFullProductName(data),
     short_description: createFullProductDescription(data),
-    // TODO: Images is work-in-progress, not sure we shold ever set it in Backoffice
-    // images: createDefaultWooProductImage(data),
+    images: [{ id: WOO_PRODUCT_COFFEE_BAG_IMAGE_ID }],
     regular_price: data.retailPrice || WOO_PRODUCT_REGULAR_PRICE_DEFAULT,
     weight: WOO_PRODUCT_WEIGHT_DEFAULT,
     shipping_class: WOO_PRODUCT_SHIPPING_CLASS_DEFAULT,

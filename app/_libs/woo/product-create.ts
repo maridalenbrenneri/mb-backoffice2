@@ -1,5 +1,5 @@
 import { WOO_API_BASE_URL } from './constants';
-import type { WooProductCreate } from './products/types';
+import { WooProductData, type WooProductCreate } from './products/types';
 
 export default async function productCreate(data: WooProductCreate) {
   if (process.env.WOO_ALLOW_UPDATE !== 'true') {
@@ -26,10 +26,18 @@ export default async function productCreate(data: WooProductCreate) {
   }
 
   const json = await response.json();
+  const parsed = WooProductData.safeParse(json);
+  const images = parsed.success
+    ? parsed.data.images.map((image) => ({
+        wooMediaId: image.id,
+        src: image.src,
+      }))
+    : [];
 
   return {
-    kind: 'success',
-    productId: json.id,
-    productUrl: json.permalink,
+    kind: 'success' as const,
+    productId: json.id as number,
+    productUrl: json.permalink as string,
+    images,
   };
 }

@@ -6,6 +6,7 @@ import {
   useLoaderData,
   useSearchParams,
   useSubmit,
+  type ShouldRevalidateFunction,
 } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -46,6 +47,8 @@ import ProductWebshopStatus from '~/components/ProductWebshopStatus';
 export const loader = async ({ request }: { request: Request }) => {
   return await productLoader(request);
 };
+
+export const shouldRevalidate: ShouldRevalidateFunction = () => true;
 
 export const action: ActionFunction = async ({ request }) => {
   return await productActionHandler(request);
@@ -471,6 +474,7 @@ export default function Products() {
         </Typography>
         <Box>
           <RenderTable
+            key={notYetPublishedProducts.map((p) => p.id).join('-')}
             coffees={notYetPublishedProducts}
             sortable={true}
             onSorted={(sortedItems) => {

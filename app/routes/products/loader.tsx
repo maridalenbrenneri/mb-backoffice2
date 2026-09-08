@@ -2,6 +2,7 @@ import { json } from '@remix-run/node';
 import { getAllCoffeeProducts } from '~/services/product.service';
 import { ProductStatus, ProductStockStatus } from '~/services/entities';
 import { In, Not } from 'typeorm';
+import { TAKE_MAX_ROWS } from '~/settings';
 
 export const defaultStatus = '_in_webshop';
 export const defaultStockStatus = '_backorder_in_stock';
@@ -66,6 +67,7 @@ export const productLoader = async (request: any) => {
       status: ProductStatus.PUBLISHED,
     },
     orderBy: { updatedAt: 'desc' },
+    take: TAKE_MAX_ROWS,
   });
 
   let notYetPublishedProducts = await getAllCoffeeProducts({
@@ -74,12 +76,20 @@ export const productLoader = async (request: any) => {
       ...stockStatusWhere,
     },
     orderBy: { sortOrder: 'desc' },
+    take: TAKE_MAX_ROWS,
   });
 
-  return json<LoaderData>({
-    publishedProducts,
-    notYetPublishedProducts,
-  });
+  return json<LoaderData>(
+    {
+      publishedProducts,
+      notYetPublishedProducts,
+    },
+    {
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    }
+  );
 };
 
 export const productLoaderAllCoffees = async (request: any) => {
