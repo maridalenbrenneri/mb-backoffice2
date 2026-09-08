@@ -1,6 +1,5 @@
 import { json } from '@remix-run/node';
 import {
-  Link,
   useFetcher,
   useLoaderData,
   useSearchParams,
@@ -200,7 +199,7 @@ export default function JobResultPage() {
               <TableCell>woo-import-orders</TableCell>
               <TableCell>
                 Import of orders from Woo updated in last 1 day. Fetches all
-                orders. Runs every 30 minutes between 06:00 and 23:00.
+                orders. Runs hourly between 05:45 and 23:45.
               </TableCell>
               <TableCell>
                 <small>
@@ -229,8 +228,8 @@ export default function JobResultPage() {
             >
               <TableCell>woo-import-orders-full</TableCell>
               <TableCell>
-                Import of orders from Woo updated in the last 3o days. Runs
-                weekly.
+                Import of orders from Woo updated in the last 30 days. Runs
+                weekly on Sunday at 02:15.
               </TableCell>
               <TableCell>
                 <small>
@@ -263,7 +262,7 @@ export default function JobResultPage() {
               <TableCell>woo-import-subscriptions</TableCell>
               <TableCell>
                 Import of subscriptions from Woo updated in last 1 day. Runs
-                every hour between 06:15 and 23:15.
+                hourly between 05:15 and 23:15.
               </TableCell>
               <TableCell>
                 <small>
@@ -298,7 +297,7 @@ export default function JobResultPage() {
               <TableCell>woo-import-subscriptions-full</TableCell>
               <TableCell>
                 Import of subscriptions from Woo updated in the last 30 days.
-                Runs weekly
+                Runs weekly on Sunday at 03:15.
               </TableCell>
               <TableCell>
                 <small>
@@ -369,7 +368,7 @@ export default function JobResultPage() {
               <TableCell>woo-product-cleanup</TableCell>
               <TableCell>
                 Sets status 'deleted' on any products that are deleted in Woo.
-                Runs weekly.
+                Runs weekly on Sunday at 04:15.
               </TableCell>
               <TableCell>
                 <small>
@@ -399,7 +398,7 @@ export default function JobResultPage() {
               <TableCell>update-status-on-gift-subscriptions</TableCell>
               <TableCell>
                 Resolves and updates status on any gift subscription that has
-                expired or should be started . Runs once a day at 04:00
+                expired or should be started. Runs once a day at 03:30.
               </TableCell>
               <TableCell>
                 <small>
@@ -436,7 +435,7 @@ export default function JobResultPage() {
               <TableCell>create-renewal-orders</TableCell>
               <TableCell>
                 Creates renewal orders for active gift and B2B subscriptions.
-                Runs every Thursday at 05:00.
+                Runs every Thursday at 04:30.
               </TableCell>
               <TableCell>
                 <small>
@@ -468,20 +467,10 @@ export default function JobResultPage() {
 
       <Seperator />
 
-      <Link
-        to="https://console.cloud.google.com/cloudscheduler?project=maridalen-brenneri"
-        target="_blank"
-        rel="noreferrer"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
-          textDecoration: 'underline',
-          color: '##0000EE',
-        }}
-      >
-        View Schedule in Google Cloud
-      </Link>
+      <Typography variant="body2" sx={{ m: 2 }}>
+        Automatic schedules run on Fly.io from <code>crontab</code>{' '}
+        (Europe/Oslo). Use “Run now” to trigger a job immediately.
+      </Typography>
       <Seperator />
 
       <Typography variant="h2" sx={{ m: 2 }}>

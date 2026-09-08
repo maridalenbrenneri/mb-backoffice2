@@ -87,8 +87,15 @@ There's no "Lill-abo" in the system. Monthly and fortnighly are supported.
 
 # Jobs
 
-Jobs are implemented as REST endpoints in the routes/api folder. This are triggered from "Scheduled jobs" in Google Cloud. Fly.io doesn't
-have this functionality (consider moving to Fly when/if it can be configured there.)
+Jobs are REST endpoints in `app/routes/api`. They can be run from the Scheduled jobs page, and automatically from a Fly.io `cron` process (Supercronic + `crontab`, timezone Europe/Oslo).
+
+After deploying a build that adds the `cron` process group, scale it once:
+
+```sh
+fly scale count app=1 cron=1
+```
+
+Keep `cron=1` so jobs do not run twice. Logs: `fly logs -a mb-backoffice`. Disable the Google Cloud Scheduler jobs after the first successful Fly runs.
 
 - Import/Sync Woo subscriptions
 - Import/Sync Woo gift subscription orders

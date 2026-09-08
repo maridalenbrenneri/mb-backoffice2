@@ -1,10 +1,9 @@
-import { json } from '@remix-run/node';
 import type { ActionFunction } from '@remix-run/node';
 
 export const action: ActionFunction = async ({ request }) => {
-  const result = { result: 'Hello api' };
+  const result = { result: 'Hello World!' };
 
-  console.log('I AM IN API');
+  console.debug(result.result);
 
-  return json(result);
+  return Response.json(result);
 };

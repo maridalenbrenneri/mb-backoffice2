@@ -1,0 +1,22 @@
+# Schedules are Europe/Oslo. Keep in sync with the Scheduled jobs page.
+CRON_TZ=Europe/Oslo
+
+# woo-import-orders — hourly, 05:45–23:45
+45 5-23 * * * /myapp/scripts/run-job.sh /api/woo-import-orders
+
+# woo-import-subscriptions — hourly, 05:15–23:15
+15 5-23 * * * /myapp/scripts/run-job.sh /api/woo-import-subscriptions
+
+# woo-product-sync-status — every 3 hours
+0 */3 * * * /myapp/scripts/run-job.sh /api/woo-product-sync-status
+
+# update-status-on-gift-subscriptions — daily 03:30
+30 3 * * * /myapp/scripts/run-job.sh /api/update-status-on-gift-subscriptions
+
+# create-renewal-orders — Thursdays 04:30
+30 4 * * 4 /myapp/scripts/run-job.sh /api/create-renewal-orders
+
+# weekly full imports and product cleanup (Sunday)
+15 2 * * 7 /myapp/scripts/run-job.sh "/api/woo-import-orders?full=true"
+15 3 * * 7 /myapp/scripts/run-job.sh "/api/woo-import-subscriptions?full=true"
+15 4 * * 7 /myapp/scripts/run-job.sh /api/woo-product-cleanup

@@ -1,4 +1,3 @@
-import { json } from '@remix-run/node';
 import type { ActionFunction } from '@remix-run/node';
 import { DateTime } from 'luxon';
 import { Not } from 'typeorm';
@@ -10,10 +9,14 @@ import {
   getAllCoffeeProducts,
   setProductsAsDeleted,
 } from '~/services/product.service';
+import { isAuthorizedJobRequest } from './_auth';
 
 export const action: ActionFunction = async ({ request }) => {
+  if (!isAuthorizedJobRequest(request))
+    return Response.json({ message: 'Unauthorized' }, { status: 401 });
+
   if (request.method !== 'POST')
-    return json({ message: 'Method not allowed' }, 405);
+    return Response.json({ message: 'Method not allowed' }, { status: 405 });
 
   const name = 'woo-product-cleanup';
   const jobStartedAt = DateTime.now().toJSDate();
@@ -48,7 +51,7 @@ export const action: ActionFunction = async ({ request }) => {
       errors: null,
     });
 
-    return json(result);
+    return Response.json(result);
   } catch (err: any) {
     await createJobResult({
       jobStartedAt,

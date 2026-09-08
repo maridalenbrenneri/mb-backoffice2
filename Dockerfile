@@ -1,13 +1,34 @@
 # Docker file from Remix Jokes App example, with minor modifications
 
 # base node image
-FROM node:24-bullseye-slim as base
+FROM node:24-bookworm-slim as base
 
 # set for base and all layer that inherit from it
 ENV NODE_ENV production
 
-# Install openssl for database connections
-RUN apt-get update && apt-get install -y openssl
+# openssl: database connections
+# curl: supercronic install + cron job HTTP triggers
+# ca-certificates: HTTPS downloads
+# tzdata: CRON_TZ=Europe/Oslo
+RUN apt-get update && apt-get install -y openssl curl ca-certificates tzdata \
+  && rm -rf /var/lib/apt/lists/*
+
+# Latest releases: https://github.com/aptible/supercronic/releases
+ENV SUPERCRONIC_VERSION=v0.2.49
+RUN set -eux; \
+  arch="$(uname -m)"; \
+  case "$arch" in \
+    x86_64) supercronic_arch=amd64; sha=e63c11a9726b775a6a11801e81af4f3fb926aa68 ;; \
+    aarch64) supercronic_arch=arm64; sha=0b6c5bb743e0b0dafed1132198c81807927ac413 ;; \
+    *) echo "unsupported architecture: $arch" >&2; exit 1 ;; \
+  esac; \
+  supercronic="supercronic-linux-${supercronic_arch}"; \
+  url="https://github.com/aptible/supercronic/releases/download/${SUPERCRONIC_VERSION}/${supercronic}"; \
+  curl -fsSLO --retry 5 --retry-delay 2 --retry-all-errors "$url"; \
+  echo "${sha}  ${supercronic}" | sha1sum -c -; \
+  chmod +x "$supercronic"; \
+  mv "$supercronic" "/usr/local/bin/${supercronic}"; \
+  ln -sf "/usr/local/bin/${supercronic}" /usr/local/bin/supercronic
 
 # Install all node_modules, including dev dependencies
 FROM base as deps
@@ -50,6 +71,7 @@ COPY --from=production-deps /myapp/node_modules /myapp/node_modules
 COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
 ADD . .
+RUN chmod +x /myapp/scripts/run-job.sh
 
 EXPOSE 8080
 

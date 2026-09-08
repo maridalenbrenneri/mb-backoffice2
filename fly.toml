@@ -5,7 +5,10 @@ primary_region = "ams"
 
 kill_signal = "SIGINT"
 kill_timeout = 30
-processes = []
+
+[processes]
+  app = "npm start"
+  cron = "supercronic /myapp/crontab"
 
 [env]
 
