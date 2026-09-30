@@ -6,8 +6,15 @@
 
   "configurations": [
     {
-      "command": "npm run dev",
-      "name": "Run npm run dev",
+      "command": "npm run dev:backoffice",
+      "name": "Run mb-backoffice",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "command": "npm run dev:shop",
+      "name": "Run mb-shop",
       "request": "launch",
       "type": "node-terminal",
       "cwd": "${workspaceFolder}"

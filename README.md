@@ -1,8 +1,9 @@
-# MB Backoffice
+# MB monorepo
 
-MB Backoffice is a Node app written in Typescript using the React and Remix frameworks.
+Two apps for Maridalen Brenneri:
 
-The app was initially created based on official Remix template/example with Fly.io deployment.
+- [`apps/mb-backoffice`](apps/mb-backoffice) — internal backoffice (Remix)
+- [`apps/mb-shop`](apps/mb-shop) — shop web app (React Router / Remix Vite)
 
 Github repo: https://github.com/maridalenbrenneri/mb-backoffice2
 
@@ -10,12 +11,12 @@ Github repo: https://github.com/maridalenbrenneri/mb-backoffice2
 
 Prerequisites and setup:
 
-- Install Node >= 20
+- Install Node >= 24
 - Install Fly.io command util, https://fly.io/docs/flyctl/install/
-- Run "npm install" (in repo root folder)
-- Copy .env.example => .env (in repo root folder)
+- Run `npm install` from the **repo root** (npm workspaces)
+- Copy `apps/mb-backoffice/.env.example` => `apps/mb-backoffice/.env`
 
-Run app:
+### Backoffice (port 4001)
 
 1. Start database proxy:
 
@@ -28,23 +29,30 @@ fly mpg proxy w76geopdnqloplk4
 2. Run:
 
 ```sh
-  npm run dev
+npm run dev
+# or: npm run dev:backoffice
+```
+
+### Shop (port 4002)
+
+```sh
+npm run dev:shop
 ```
 
 ## Tools and frameworks
 
-- Remix / React - Full stack client framework (https://remix.run)
-  - Material UI - UI component library (https://mui.com)
-- TypeORM - Database ORM
-- PostgresSQL - Database hosted on Fly.io (https://fly.io)
-- Fly.io - Cloud and run environment (https://fly.io)
+- Remix / React Router — full-stack React frameworks
+  - Material UI — UI component library in backoffice (https://mui.com)
+- TypeORM — Database ORM (backoffice)
+- PostgresSQL — Database hosted on Fly.io (https://fly.io)
+- Fly.io — Cloud and run environment (https://fly.io)
 
 ## Fly.io devops and deployment
 
 Organization name: Maridalen Brenneri
 App name: mb-backoffice
 
-### Deploy app
+Deploy from the **repo root** (Docker context is the monorepo):
 
 ```sh
 fly deploy
@@ -87,7 +95,7 @@ There's no "Lill-abo" in the system. Monthly and fortnighly are supported.
 
 # Jobs
 
-Jobs are REST endpoints in `app/routes/api`. They can be run from the Scheduled jobs page, and automatically from a Fly.io `cron` process (Supercronic + `crontab`, timezone Europe/Oslo).
+Jobs are REST endpoints in `apps/mb-backoffice/app/routes/api`. They can be run from the Scheduled jobs page, and automatically from a Fly.io `cron` process (Supercronic + `crontab`, timezone Europe/Oslo).
 
 After deploying a build that adds the `cron` process group, scale it once:
 
@@ -105,7 +113,7 @@ Keep `cron=1` so jobs do not run twice. Logs: `fly logs -a mb-backoffice`. Disab
 
 # Integrations
 
-Integration libs are located in app/\_libs folder. All code referencing third party API's is found here.
+Integration libs are located in `apps/mb-backoffice/app/_libs`. All code referencing third party API's is found here.
 
 ## Cargonizer
 
