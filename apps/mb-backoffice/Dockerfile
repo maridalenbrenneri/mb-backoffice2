@@ -1,4 +1,8 @@
-# Docker file from Remix Jokes App example, with minor modifications
+# Docker build context must be the monorepo root:
+#   fly deploy
+#   docker build -f apps/mb-backoffice/Dockerfile .
+#
+# Deploys mb-backoffice only (mb-shop is not part of this image).
 
 # base node image
 FROM node:24-bookworm-slim as base
@@ -35,7 +39,7 @@ FROM base as deps
 
 WORKDIR /myapp
 
-ADD package.json package-lock.json ./
+COPY apps/mb-backoffice/package.json ./
 RUN npm install --production=false
 
 # Setup production node_modules
@@ -44,8 +48,8 @@ FROM base as production-deps
 WORKDIR /myapp
 
 COPY --from=deps /myapp/node_modules /myapp/node_modules
-ADD package.json package-lock.json ./
-RUN npm prune --production
+COPY apps/mb-backoffice/package.json ./
+RUN npm prune --omit=dev
 
 # Build the app
 FROM base as build
@@ -53,8 +57,7 @@ FROM base as build
 WORKDIR /myapp
 
 COPY --from=deps /myapp/node_modules /myapp/node_modules
-
-ADD . .
+COPY apps/mb-backoffice ./
 RUN npm run build
 
 # Finally, build the production image with minimal footprint
@@ -70,7 +73,9 @@ WORKDIR /myapp
 COPY --from=production-deps /myapp/node_modules /myapp/node_modules
 COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
-ADD . .
+COPY apps/mb-backoffice/package.json /myapp/package.json
+COPY apps/mb-backoffice/crontab /myapp/crontab
+COPY apps/mb-backoffice/scripts /myapp/scripts
 RUN chmod +x /myapp/scripts/run-job.sh
 
 EXPOSE 8080

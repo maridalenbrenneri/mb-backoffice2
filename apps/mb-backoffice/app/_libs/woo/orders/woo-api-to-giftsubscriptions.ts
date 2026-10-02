@@ -57,14 +57,41 @@ function createGiftSubscription(
       'abo_msg_retriever'
     ),
     customerNote: order.customer_note,
-    recipientName: resolveMetadataValue(item.meta_data, 'abo_name'),
-    recipientEmail:
-      resolveMetadataValue(item.meta_data, 'abo_email') || order.billing.email,
-    recipientMobile: resolveMetadataValue(item.meta_data, 'abo_mobile'),
-    recipientAddress1: resolveMetadataValue(item.meta_data, 'abo_address1'),
-    recipientAddress2: resolveMetadataValue(item.meta_data, 'abo_address2'),
-    recipientPostalCode: resolveMetadataValue(item.meta_data, 'abo_zip'),
-    recipientPostalPlace: resolveMetadataValue(item.meta_data, 'city'),
+    recipientName: resolveMetadataValue(
+      item.meta_data,
+      'abo_name',
+      order.billing.first_name + ' ' + order.billing.last_name
+    ),
+    recipientEmail: resolveMetadataValue(
+      item.meta_data,
+      'abo_email',
+      order.billing.email
+    ),
+    recipientMobile: resolveMetadataValue(
+      item.meta_data,
+      'abo_mobile',
+      order.billing.phone
+    ),
+    recipientAddress1: resolveMetadataValue(
+      item.meta_data,
+      'abo_address1',
+      order.billing.address_1
+    ),
+    recipientAddress2: resolveMetadataValue(
+      item.meta_data,
+      'abo_address2',
+      order.billing.address_2
+    ),
+    recipientPostalCode: resolveMetadataValue(
+      item.meta_data,
+      'abo_zip',
+      order.billing.postcode
+    ),
+    recipientPostalPlace: resolveMetadataValue(
+      item.meta_data,
+      'city',
+      order.billing.city
+    ),
 
     quantity500: 0,
     quantity1200: 0,

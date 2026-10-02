@@ -1,8 +1,12 @@
-/node_modules
+node_modules
 *.log
 .DS_Store
 .env
-/.cache
-/public/build
-/build
+**/.env
+**/.cache
+**/build
+**/public/build
+**/.react-router
 cloud_sql_proxy
+.git
+apps/mb-shop
